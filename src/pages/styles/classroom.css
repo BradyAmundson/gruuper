@@ -1,0 +1,73 @@
+/* Main container */
+div {
+    font-family: Arial, sans-serif;
+}
+  
+  /* Lobby and RoomID headers */
+h1, h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+  
+  /* Randomize Groups button */
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+  
+button:hover {
+    background-color: #0056b3;
+}
+  
+  /* Members section */
+#Members {
+    margin: 20px 0;
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 20px;
+}
+  
+#Members h3 {
+    background-color: #ddd;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+#Members li {
+    background-color: #f1f1f1;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 4px;
+    list-style: none;
+}
+  
+  /* Groups section */
+#Groups {
+    margin: 20px 0;
+}
+  
+#Groups h3 {
+    background-color: #ddd;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 4px;
+}
+  
+#Groups ul {
+    list-style: none;
+    padding-left: 0;
+}
+  
+#Groups li {
+    background-color: #f1f1f1;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 4px;
+}
