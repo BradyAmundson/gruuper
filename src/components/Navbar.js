@@ -55,6 +55,7 @@ function Navbar() {
               letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
+              cursor: "pointer",
             }}
             onClick={() => navigate("/")}
           >
