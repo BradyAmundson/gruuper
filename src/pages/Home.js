@@ -17,11 +17,11 @@ function Home() {
     navigate(`/class?roomId=${newRoomId}`);
   };
 
-  const joinClass = (event) => {
+  const joinClass = async (event) => {
     event.preventDefault();
     const roomId = document.getElementById("roomId").value;
     const name = document.getElementById("name").value;
-    joinClassroom(roomId, name);
+    await joinClassroom(roomId, name);
     navigate(`/class?roomId=${roomId}`);
   };
 

@@ -41,7 +41,7 @@ export async function joinClassroom(roomId, name) {
   if (documentSnapshot.exists()) {
     const members = documentSnapshot.data().members;
     members.push(name);
-    await setDoc(documentRef, { members: members });
+    await updateDoc(documentRef, { members: members });
   } else {
     return null;
   }

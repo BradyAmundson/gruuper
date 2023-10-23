@@ -19,8 +19,7 @@ const Class = () => {
 
   return (
     <div>
-      <h1>Lobby</h1>
-      <h2>{roomId}</h2>
+      <h1>Classroom: {roomId}</h1>
       <button onClick={() => getGroups(roomId, setGroups)}>Randomize Groups</button>
       {classroom.groups && Object.entries(classroom.groups).map(([key, group], index) => (
         <div id="Groups">
