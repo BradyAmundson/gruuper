@@ -20,8 +20,8 @@ function Home() {
   const joinClass = async (event) => {
     event.preventDefault();
     const roomId = document.getElementById("roomId").value;
-    const name = document.getElementById("name").value;
-    await joinClassroom(roomId, name);
+    const userId = localStorage.getItem("userId");
+    await joinClassroom(roomId, userId);
     navigate(`/class?roomId=${roomId}`);
   };
 
@@ -33,12 +33,6 @@ function Home() {
         <TextField
           id="roomId"
           label="Insert class code here"
-          type="search"
-          variant="outlined"
-        />
-        <TextField
-          id="name"
-          label="Insert name here"
           type="search"
           variant="outlined"
         />

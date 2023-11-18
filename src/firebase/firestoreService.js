@@ -11,7 +11,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { randomizeGroups } from "../components/GroupRandomizer.js"
+import { randomizeGroups } from "../components/GroupRandomizer.js";
 
 export async function createClassroom(roomId) {
   console.log(roomId);
@@ -47,15 +47,49 @@ export async function joinClassroom(roomId, name) {
   }
 }
 
-export async function getGroups(roomId, setGroups) {
+export async function getGroups(
+  roomId,
+  setGroups,
+  memberNames,
+  numberOfGroups
+) {
   const documentRef = doc(db, "classrooms", roomId);
   const documentSnapshot = await getDoc(documentRef);
   if (documentSnapshot.exists()) {
     const classroom = documentSnapshot.data();
-    const randomGroups = randomizeGroups(classroom.members, 2)
-    await updateDoc(documentRef, {groups: randomGroups});
-    setGroups(randomGroups)
+    const randomGroups = randomizeGroups(memberNames, numberOfGroups);
+    await updateDoc(documentRef, { groups: randomGroups });
+    setGroups(randomGroups);
   } else {
     return null;
   }
+}
+
+export async function createUser(firstName, lastName, userId, userType) {
+  await setDoc(doc(db, "users", userId), {
+    firstName: firstName,
+    lastName: lastName,
+    userType: userType,
+  })
+    .then(() => {
+      return { id: userId, data: { firstName, lastName, userType } };
+    })
+    .catch((error) => {
+      console.error("Error writing document: ", error);
+      return null;
+    });
+}
+
+export async function getUser(userId) {
+  const documentRef = doc(db, "users", userId);
+  const documentSnapshot = await getDoc(documentRef);
+  if (documentSnapshot.exists()) {
+    return { id: documentSnapshot.id, ...documentSnapshot.data() };
+  } else {
+    return null;
+  }
+}
+
+export async function updateUser(userId, data) {
+  await updateDoc(doc(db, "users", userId), data);
 }

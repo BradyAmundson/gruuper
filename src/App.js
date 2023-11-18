@@ -7,18 +7,34 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
 import Class from "./pages/Classroom";
+import SignUp from "./pages/Signup";
+import AuthPage from "./pages/AuthPage";
+import {
+  SignIn,
+  SignOut,
+  useAuthentication,
+  SignInPhone,
+  SignInEmail,
+} from "./firebase/authService";
+import { useNavigate, Navigate } from "react-router-dom";
 
 function App() {
+  const user = useAuthentication();
+  console.log(user);
   return (
     <Router>
       <Navbar />
       <div>
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/class" element={<Class />} />
-          <Route path="/" element={<Home />} />
-        </Routes>
+        {!user ? (
+          <AuthPage />
+        ) : (
+          <Routes>
+            <Route path="/about" element={<About />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/class" element={<Class />} />
+            <Route path="/" element={<Home />} />
+          </Routes>
+        )}
       </div>
     </Router>
   );
