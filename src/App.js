@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
-import Class from "./pages/Classroom";
+import Classroom from "./pages/Classroom";
 import SignUp from "./pages/Signup";
 import AuthPage from "./pages/AuthPage";
 import {
@@ -31,7 +31,7 @@ function App() {
           <Routes>
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/class" element={<Class />} />
+            <Route path="/classroom" element={<Classroom />} />
             <Route path="/" element={<Home />} />
           </Routes>
         )}

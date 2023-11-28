@@ -1,4 +1,7 @@
-export const randomizeGroups = (members, numGroups) => {
+export const randomizeGroups = (members, groupSize) => {
+  console.log("GROUPSIZE: ", groupSize)
+  const numGroups = Math.ceil(members.length/groupSize);
+  console.log("NUMGROUPS: ", numGroups)
   const nameArray = members
     .map((name) => name.trim())
     .filter((name) => name !== "");

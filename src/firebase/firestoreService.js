@@ -51,18 +51,23 @@ export async function getGroups(
   roomId,
   setGroups,
   memberNames,
-  numberOfGroups
+  groupSize
 ) {
   const documentRef = doc(db, "classrooms", roomId);
   const documentSnapshot = await getDoc(documentRef);
   if (documentSnapshot.exists()) {
     const classroom = documentSnapshot.data();
-    const randomGroups = randomizeGroups(memberNames, numberOfGroups);
+    const randomGroups = randomizeGroups(memberNames, groupSize);
     await updateDoc(documentRef, { groups: randomGroups });
     setGroups(randomGroups);
   } else {
     return null;
   }
+}
+
+export async function saveGroups(roomId, groups) {
+  const documentRef = doc(db, "classrooms", roomId);
+  await updateDoc(documentRef, { groups: groups });
 }
 
 export async function createUser(firstName, lastName, userId, userType) {

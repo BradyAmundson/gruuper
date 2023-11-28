@@ -47,10 +47,30 @@ button:hover {
     border-radius: 4px;
     list-style: none;
 }
-  
+
+
+.draggable-item:hover {
+    cursor: grab; /* Changes cursor to 'grab' when hovering over the item */
+}
+
+.dragging-item {
+    opacity: .25;
+}
+
   /* Groups section */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust as needed */
+    gap: 20px; /* Spacing between grid items */
+    padding: 20px;
+}
+
 #Groups {
-    margin: 20px 0;
+    background-color: #fff; /* Optional: Adds a background color */
+    border: 1px solid #ddd; /* Optional: Adds a border */
+    border-radius: 4px;
+    padding: 10px;
+    height:100%
 }
   
 #Groups h3 {
@@ -70,4 +90,16 @@ button:hover {
     margin: 5px;
     padding: 5px;
     border-radius: 4px;
+}
+
+.new-group-area {
+    background-color: #fff; /* Matches the background color of existing groups */
+    border: 1px solid #ddd; /* Matches the border of existing groups */
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center; /* Center the text inside the new group area */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Set a fixed height, adjust as needed */
 }
