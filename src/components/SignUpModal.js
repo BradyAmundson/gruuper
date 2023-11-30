@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { SignUpEmail } from "../firebase/authService";
+import Button from "@mui/material/Button";
 
 const SignUpModal = ({ isOpen, onRequestClose }) => {
   const [step, setStep] = useState(1);
@@ -85,24 +86,18 @@ const Step1 = ({ userType, setUserType, onNext, error }) => {
   return (
     <div>
       <h2>Step 1: User Type</h2>
-      <label>
-        <input
-          type="radio"
-          value="Student"
-          checked={userType === "Student"}
-          onChange={() => setUserType("Student")}
-        />
+      <Button
+        variant={userType === "Student" ? "contained" : "outlined"}
+        onClick={() => setUserType("Student")}
+      >
         Student
-      </label>
-      <label>
-        <input
-          type="radio"
-          value="Professor"
-          checked={userType === "Professor"}
-          onChange={() => setUserType("Professor")}
-        />
+      </Button>
+      <Button
+        variant={userType === "Professor" ? "contained" : "outlined"}
+        onClick={() => setUserType("Professor")}
+      >
         Professor
-      </label>
+      </Button>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <button onClick={onNext}>Next &gt;</button>
     </div>
