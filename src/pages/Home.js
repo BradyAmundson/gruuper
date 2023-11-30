@@ -14,7 +14,7 @@ function Home() {
   const createClass = () => {
     const newRoomId = nanoid(5);
     createClassroom(newRoomId);
-    navigate(`/class?roomId=${newRoomId}`);
+    navigate(`/classroom?roomId=${newRoomId}`);
   };
 
   const joinClass = async (event) => {
@@ -22,7 +22,7 @@ function Home() {
     const roomId = document.getElementById("roomId").value;
     const userId = localStorage.getItem("userId");
     await joinClassroom(roomId, userId);
-    navigate(`/class?roomId=${roomId}`);
+    navigate(`/classroom?roomId=${roomId}`);
   };
 
   return (

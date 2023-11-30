@@ -4,21 +4,28 @@ import {
   getDocument,
   getGroups,
   getUser,
-  saveGroups
+  saveGroups,
 } from "../firebase/firestoreService";
 import "./styles/classroom.css";
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useDrag, useDrop } from 'react-dnd';
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { useDrag, useDrop } from "react-dnd";
 
 const ItemTypes = {
-  MEMBER: 'member',
+  MEMBER: "member",
 };
 
-const DraggableMember = ({ name, index, moveMember, setCurrentlyDragging, currentlyDragging }) => {  const [, drag] = useDrag(() => ({
+const DraggableMember = ({
+  name,
+  index,
+  moveMember,
+  setCurrentlyDragging,
+  currentlyDragging,
+}) => {
+  const [, drag] = useDrag(() => ({
     type: ItemTypes.MEMBER,
     item: { name, index },
-    collect: monitor => {
+    collect: (monitor) => {
       const isDragging = monitor.isDragging();
       if (isDragging) {
         setCurrentlyDragging(index);
@@ -28,13 +35,16 @@ const DraggableMember = ({ name, index, moveMember, setCurrentlyDragging, curren
       return {
         isDragging: isDragging,
       };
-    },end: (item, monitor) => {
+    },
+    end: (item, monitor) => {
       setCurrentlyDragging(null);
     },
   }));
 
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  const className = `draggable-item ${isCurrentlyBeingDragged ? 'dragging-item' : ''}`;
+  const className = `draggable-item ${
+    isCurrentlyBeingDragged ? "dragging-item" : ""
+  }`;
 
   return (
     <li ref={drag} className={className}>
@@ -43,7 +53,13 @@ const DraggableMember = ({ name, index, moveMember, setCurrentlyDragging, curren
   );
 };
 
-const DroppableGroup = ({ group, index, moveMember, setCurrentlyDragging, currentlyDragging }) => {
+const DroppableGroup = ({
+  group,
+  index,
+  moveMember,
+  setCurrentlyDragging,
+  currentlyDragging,
+}) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
     drop: (item, monitor) => moveMember(item.index, index),
@@ -54,7 +70,14 @@ const DroppableGroup = ({ group, index, moveMember, setCurrentlyDragging, curren
       <h3>Group {index + 1}</h3>
       <ul>
         {group.map((name, idx) => (
-          <DraggableMember key={idx} name={name} index={{ groupIndex: index, memberIndex: idx }} moveMember={moveMember} setCurrentlyDragging={setCurrentlyDragging} currentlyDragging={currentlyDragging} />
+          <DraggableMember
+            key={idx}
+            name={name}
+            index={{ groupIndex: index, memberIndex: idx }}
+            moveMember={moveMember}
+            setCurrentlyDragging={setCurrentlyDragging}
+            currentlyDragging={currentlyDragging}
+          />
         ))}
       </ul>
     </div>
@@ -74,7 +97,6 @@ const NewGroupArea = ({ createNewGroup }) => {
   );
 };
 
-
 const Classroom = () => {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -84,8 +106,6 @@ const Classroom = () => {
   const [memberNames, setMemberNames] = useState([]);
   const [groupSize, setGroupSize] = useState(1);
   const [currentlyDragging, setCurrentlyDragging] = useState(null);
-
-
 
   useEffect(() => {
     getDocument("classrooms", roomId).then(setClassroom);
@@ -108,21 +128,21 @@ const Classroom = () => {
   const handleRandomizeGroups = () => {
     getGroups(roomId, setGroups, memberNames, groupSize);
   };
-  
+
   const saveGroupsToFirestore = () => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       const currentGroups = prevClassroom.groups;
       const newGroups = {};
-  
+
       // Filter out empty groups and reassign keys
       let newGroupIndex = 0;
-      Object.keys(currentGroups).forEach(groupKey => {
+      Object.keys(currentGroups).forEach((groupKey) => {
         if (currentGroups[groupKey].length > 0) {
           newGroups[newGroupIndex] = currentGroups[groupKey];
           newGroupIndex++;
         }
       });
-  
+
       // Now newGroups contains only non-empty groups
       // Perform your save operation here (e.g., saving to a backend)
       saveGroups(roomId, newGroups);
@@ -130,31 +150,30 @@ const Classroom = () => {
       return { ...prevClassroom, groups: newGroups };
     });
   };
-  
 
   const moveMember = (fromIndexes, toGroupIndex) => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       // Deep cloning the groups to avoid direct state mutation
       const newGroups = { ...prevClassroom.groups };
-  
+
       // Extracting the member's name from the source group
       const fromGroupIndex = fromIndexes.groupIndex;
       const fromMemberIndex = fromIndexes.memberIndex;
       const memberName = newGroups[fromGroupIndex][fromMemberIndex];
-  
+
       // Remove the member from the original group
       newGroups[fromGroupIndex].splice(fromMemberIndex, 1);
-  
+
       // Add the member to the destination group
       newGroups[toGroupIndex].push(memberName);
-  
+
       // Return the updated classroom object with new groups
       return { ...prevClassroom, groups: newGroups };
     });
   };
 
   const createNewGroup = (memberIndex) => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       const newGroups = { ...prevClassroom.groups };
       const fromGroupIndex = memberIndex.groupIndex;
       const fromMemberIndex = memberIndex.memberIndex;
@@ -170,12 +189,20 @@ const Classroom = () => {
       return { ...prevClassroom, groups: newGroups };
     });
   };
-  
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
         <h1>Classroom: {roomId}</h1>
+        <button
+          className="randomize-groups-button"
+          onClick={handleRandomizeGroups}
+        >
+          Randomize Groups
+        </button>
+        <button className="save-groups-button" onClick={saveGroupsToFirestore}>
+          Save Groups
+        </button>
         <label>
           Group Size:
           <input
@@ -189,16 +216,23 @@ const Classroom = () => {
             }}
           />
         </label>
-        <button onClick={handleRandomizeGroups}>Randomize Groups</button>
-        <button onClick={saveGroupsToFirestore}>Save Groups</button>
         <div className="grid-container">
           {classroom.groups &&
             Object.entries(classroom.groups).map(([key, group], index) => (
-              <DroppableGroup key={index} group={group} index={index} moveMember={moveMember} setCurrentlyDragging={setCurrentlyDragging} currentlyDragging={currentlyDragging} />
+              <DroppableGroup
+                key={index}
+                group={group}
+                index={index}
+                moveMember={moveMember}
+                setCurrentlyDragging={setCurrentlyDragging}
+                currentlyDragging={currentlyDragging}
+              />
             ))}
-          {currentlyDragging !== null && <NewGroupArea createNewGroup={createNewGroup} />}
+          {currentlyDragging !== null && (
+            <NewGroupArea createNewGroup={createNewGroup} />
+          )}
         </div>
-         
+
         <div id="Members">
           <h3>Classroom Members</h3>
           {memberNames.sort().map((member) => (
