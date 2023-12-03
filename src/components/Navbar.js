@@ -15,7 +15,7 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { Navigate, useNavigate } from "react-router-dom";
 import { SignOut, useAuthentication } from "../firebase/authService";
 
-const pages = ["About", "Dashboard"];
+const pages = ["About", "Classrooms"];
 const settings = ["Profile", "Logout"];
 
 function Navbar() {
@@ -42,13 +42,14 @@ function Navbar() {
 
   return (
     <AppBar position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
+      <Container maxWidth="false">
+        <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
           <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
           <Typography
             variant="h6"
             noWrap
             component="a"
+            color="primary"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -145,7 +146,19 @@ function Navbar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open profile">
               <IconButton onClick={() => navigate("/profile")} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar
+                  color="secondary"
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    borderRadius: "50%", // Make it circular
+                    backgroundColor: "#2196f3", // Add a background color
+                    color: "#ffffff", // Text color
+                    fontSize: "24px", // Adjust the font size
+                  }}
+                >
+                  {localStorage.getItem("firstName")[0]}{" "}
+                </Avatar>
               </IconButton>
             </Tooltip>
           </Box>

@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import Classroom from "./pages/Classroom";
 import SignUp from "./pages/Signup";
 import AuthPage from "./pages/AuthPage";
+import Classrooms from "./pages/Classrooms";
 import {
   SignIn,
   SignOut,
@@ -32,6 +33,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/classroom" element={<Classroom />} />
+            <Route path="/classrooms" element={<Classrooms />} />
             <Route path="/" element={<Home />} />
           </Routes>
         )}

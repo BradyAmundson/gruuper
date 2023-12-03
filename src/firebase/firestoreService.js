@@ -35,29 +35,35 @@ export async function getDocument(collectionName, documentId) {
   }
 }
 
-export async function joinClassroom(roomId, name) {
+export async function joinClassroom(roomId, userId) {
   const documentRef = doc(db, "classrooms", roomId);
   const documentSnapshot = await getDoc(documentRef);
-  if (documentSnapshot.exists()) {
+  const usrDocumentRef = doc(db, "users", userId);
+  const usrDocumentSnapshot = await getDoc(usrDocumentRef);
+  if (documentSnapshot.exists() && usrDocumentSnapshot.exists()) {
     const members = documentSnapshot.data().members;
-    members.push(name);
+    const currentCodes = usrDocumentSnapshot.data().classroomCodes || [];
+    if (currentCodes.includes(roomId)) {
+      return null;
+    }
+    const updatedCodes = [...currentCodes, roomId];
+    members.push(userId);
     await updateDoc(documentRef, { members: members });
+    await updateDoc(usrDocumentRef, {
+      classroomCodes: updatedCodes,
+    });
   } else {
     return null;
   }
 }
 
-export async function getGroups(
-  roomId,
-  setGroups,
-  memberNames,
-  groupSize
-) {
+export async function getGroups(roomId, setGroups, memberNames, groupSize) {
   const documentRef = doc(db, "classrooms", roomId);
   const documentSnapshot = await getDoc(documentRef);
   if (documentSnapshot.exists()) {
     const classroom = documentSnapshot.data();
-    const randomGroups = randomizeGroups(memberNames, groupSize);
+    const members = classroom.members;
+    const randomGroups = randomizeGroups(members, groupSize);
     await updateDoc(documentRef, { groups: randomGroups });
     setGroups(randomGroups);
   } else {
@@ -65,9 +71,10 @@ export async function getGroups(
   }
 }
 
-export async function saveGroups(roomId, groups) {
+export async function saveGroups(roomId, groups, className) {
   const documentRef = doc(db, "classrooms", roomId);
-  await updateDoc(documentRef, { groups: groups });
+  console.log(className);
+  await updateDoc(documentRef, { groups: groups, className: className });
 }
 
 export async function createUser(firstName, lastName, userId, userType) {
@@ -75,6 +82,7 @@ export async function createUser(firstName, lastName, userId, userType) {
     firstName: firstName,
     lastName: lastName,
     userType: userType,
+    classroomCodes: [],
   })
     .then(() => {
       return { id: userId, data: { firstName, lastName, userType } };

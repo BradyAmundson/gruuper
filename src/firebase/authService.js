@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { createUser, getUser } from "./firestoreService";
+import { Button } from "@mui/material";
 
 auth.useDeviceLanguage();
 
@@ -220,9 +221,16 @@ export function SignOut() {
     localStorage.clear();
   };
   return (
-    <div>
-      Hello, {localStorage.getItem("firstName")} &nbsp;
-      <button onClick={handleSignOut}>Sign Out</button>
+    <div style={{ paddingRight: "10px" }}>
+      {/* Hello, {localStorage.getItem("firstName")} &nbsp; */}
+      <Button
+        variant="contained"
+        color="lightBlue"
+        onClick={handleSignOut}
+        fullWidth
+      >
+        Sign Out
+      </Button>
     </div>
   );
 }

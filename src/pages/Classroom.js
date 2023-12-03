@@ -59,20 +59,24 @@ const DroppableGroup = ({
   moveMember,
   setCurrentlyDragging,
   currentlyDragging,
+  memberNames,
 }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
     drop: (item, monitor) => moveMember(item.index, index),
   }));
-
   return (
     <div ref={drop} id="Groups">
       <h3>Group {index + 1}</h3>
       <ul>
-        {group.map((name, idx) => (
+        {group.map((user, idx) => (
           <DraggableMember
             key={idx}
-            name={name}
+            name={
+              memberNames.find(
+                (member) => member.id === "kqwriyDncNXVMF9Feq3OlDL26ir2"
+              )?.name
+            }
             index={{ groupIndex: index, memberIndex: idx }}
             moveMember={moveMember}
             setCurrentlyDragging={setCurrentlyDragging}
@@ -106,27 +110,55 @@ const Classroom = () => {
   const [memberNames, setMemberNames] = useState([]);
   const [groupSize, setGroupSize] = useState(1);
   const [currentlyDragging, setCurrentlyDragging] = useState(null);
+  const [className, setClassName] = useState("");
 
   useEffect(() => {
-    getDocument("classrooms", roomId).then(setClassroom);
-  }, [roomId, groups]);
+    const fetchData = async () => {
+      try {
+        const fetchedClassroom = await getDocument("classrooms", roomId);
+        setClassroom(fetchedClassroom);
+        setClassName(fetchedClassroom?.className || ""); // Use optional chaining
 
-  useEffect(() => {
-    const fetchMemberNames = async () => {
-      const newMemberNames = await Promise.all(
-        classroom?.members?.map(async (member) => {
-          const fetchedUser = await getUser(member);
-          return `${fetchedUser["firstName"]} ${fetchedUser["lastName"]}`;
-        }) || []
-      );
-      setMemberNames(newMemberNames);
+        const members = fetchedClassroom?.members || [];
+        const newMemberNames = await Promise.all(
+          members.map(async (member) => {
+            const fetchedUser = await getUser(member);
+            return {
+              id: member,
+              name: `${fetchedUser?.firstName || ""} ${
+                fetchedUser?.lastName || ""
+              }`,
+            };
+          })
+        );
+        setMemberNames(newMemberNames);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
 
-    fetchMemberNames();
-  }, [classroom]);
+    fetchData();
+  }, [roomId]);
 
-  const handleRandomizeGroups = () => {
-    getGroups(roomId, setGroups, memberNames, groupSize);
+  const handleRandomizeGroups = async () => {
+    await getGroups(roomId, setGroups, memberNames, groupSize);
+    const fetchedClassroom = await getDocument("classrooms", roomId);
+
+    const members = fetchedClassroom?.members || [];
+    const newMemberNames = await Promise.all(
+      members.map(async (member) => {
+        const fetchedUser = await getUser(member);
+        return {
+          id: member,
+          name: `${fetchedUser?.firstName || ""} ${
+            fetchedUser?.lastName || ""
+          }`,
+        };
+      })
+    );
+
+    setMemberNames(newMemberNames);
+    setClassroom(fetchedClassroom);
   };
 
   const saveGroupsToFirestore = () => {
@@ -145,10 +177,11 @@ const Classroom = () => {
 
       // Now newGroups contains only non-empty groups
       // Perform your save operation here (e.g., saving to a backend)
-      saveGroups(roomId, newGroups);
+      saveGroups(roomId, newGroups, className);
       // Return the updated classroom object without empty groups
       return { ...prevClassroom, groups: newGroups };
     });
+    window.location.reload();
   };
 
   const moveMember = (fromIndexes, toGroupIndex) => {
@@ -193,7 +226,9 @@ const Classroom = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
-        <h1>Classroom: {roomId}</h1>
+        <h1>
+          Classroom: {roomId} {classroom.className}
+        </h1>
         <button
           className="randomize-groups-button"
           onClick={handleRandomizeGroups}
@@ -201,7 +236,7 @@ const Classroom = () => {
           Randomize Groups
         </button>
         <button className="save-groups-button" onClick={saveGroupsToFirestore}>
-          Save Groups
+          Save
         </button>
         <label>
           Group Size:
@@ -216,6 +251,14 @@ const Classroom = () => {
             }}
           />
         </label>
+        <label>
+          Class Name:
+          <input
+            type="text"
+            value={className}
+            onChange={(e) => setClassName(e.target.value)}
+          />
+        </label>
         <div className="grid-container">
           {classroom.groups &&
             Object.entries(classroom.groups).map(([key, group], index) => (
@@ -226,6 +269,7 @@ const Classroom = () => {
                 moveMember={moveMember}
                 setCurrentlyDragging={setCurrentlyDragging}
                 currentlyDragging={currentlyDragging}
+                memberNames={memberNames}
               />
             ))}
           {currentlyDragging !== null && (
@@ -236,7 +280,7 @@ const Classroom = () => {
         <div id="Members">
           <h3>Classroom Members</h3>
           {memberNames.sort().map((member) => (
-            <li key={member}>{member}</li>
+            <li key={member.name}>{member.name}</li>
           ))}
         </div>
       </div>

@@ -22,7 +22,7 @@ const PhotoBanner = () => {
   return (
     <Paper
       className="photo-banner-container"
-      style={{ textAlign: "center", zIndex: 1 }}
+      style={{ textAlign: "center", zIndex: 0 }}
     >
       <div className="photo-banner">
         {photos.map((photo, index) => (

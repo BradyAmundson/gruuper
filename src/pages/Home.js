@@ -36,41 +36,56 @@ function Home() {
         style={{
           height: "250px",
           position: "relative",
-          zIndex: 2,
+          zIndex: 1,
           color: "white",
         }}
       >
-        <p
+        <div
           style={{
-            fontSize: "64px",
-            lineHeight: "1.2",
-            margin: 0,
-            paddingLeft: "10px",
-            width: "350px",
-            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)", // Adjust the shadow values
+            height: "250px",
+            position: "relative",
+            zIndex: 2,
+            color: "white",
           }}
         >
-          Welcome to Gruuper!
-        </p>
+          <Typography
+            variant="h2"
+            style={{
+              fontSize: "64px",
+              lineHeight: "1.2",
+              margin: 0,
+              textAlign: "left",
+              paddingLeft: "10px",
+              width: "350px",
+              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
+              fontWeight: "bold",
+            }}
+          >
+            Welcome to Gruuper!
+          </Typography>
+        </div>
       </div>
 
       <div
         style={{
           display: "flex",
+          position: "relative",
           flexDirection: "column",
           alignItems: "center",
-          padding: "20px",
+          padding: "35px",
           border: "1px solid #ccc",
           borderRadius: "8px",
           maxWidth: "400px",
           margin: "auto",
+          zIndex: 0,
+          backgroundColor: "white",
         }}
       >
         <Typography variant="h4">Join or Create a Class</Typography>
         <form onSubmit={joinClass} style={{ marginTop: "20px", width: "100%" }}>
           <TextField
             id="roomId"
-            label="Insert class code here"
+            label="Class Code"
             type="search"
             variant="outlined"
             fullWidth
@@ -85,7 +100,7 @@ function Home() {
         </Typography>
         <Button
           variant="contained"
-          color="secondary"
+          color="lightBlue"
           onClick={createClass}
           fullWidth
         >
