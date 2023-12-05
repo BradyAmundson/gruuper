@@ -55,25 +55,6 @@ function Navbar() {
             }}
             onClick={() => navigate("/")}
           />
-          {/* <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            color="primary"
-            sx={{
-              mr: 2,
-              display: { xs: "none", md: "flex" },
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "inherit",
-              textDecoration: "none",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/")}
-          >
-            Gruuper
-          </Typography> */}
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton

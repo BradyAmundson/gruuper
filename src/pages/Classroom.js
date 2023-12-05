@@ -13,6 +13,7 @@ import { useDrag, useDrop } from "react-dnd";
 
 import { IconButton, TextField } from "@mui/material";
 import CreateIcon from "@mui/icons-material/Create";
+import { increment } from "firebase/firestore";
 
 const ItemTypes = {
   MEMBER: "member",
@@ -239,6 +240,16 @@ const Classroom = () => {
     }
   };
 
+  const incrementSize = () => {
+    setGroupSize(groupSize + 1);
+  };
+
+  const DecrementSize = () => {
+    if (groupSize > 1) {
+      setGroupSize(groupSize - 1);
+    }
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
@@ -298,44 +309,44 @@ const Classroom = () => {
           </div>
         </div>
 
-        <div className="body-container">
+        <div className="body">
           <div className="groups">
             <div className="group-controls">
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <span
-                  style={{
-                    alignItems: "center",
-                    fontWeight: "bold",
-                    display: "flex",
-                    margin: "2rem",
-                    fontSize: "1.5rem",
-                  }}
-                >
-                  {groupSize}
+              <div className="size-counter">
+                <h3 className="counter-title">Group Size</h3>
+                <span className="counter-value">
+                  {groupSize < 10 ? "0" + groupSize : groupSize}
                 </span>
                 <div
+                  className="counter-buttons"
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
                   }}
                 >
-                  <button className="inc-dec-buttons"> + </button>
-                  <button className="inc-dec-buttons"> - </button>
+                  <button class="counter-button" onClick={incrementSize}>
+                    {" "}
+                    +{" "}
+                  </button>
+                  <button class="counter-button" onClick={DecrementSize}>
+                    {" "}
+                    -{" "}
+                  </button>
                 </div>
-                <button
-                  className="randomize-groups-button"
-                  onClick={handleRandomizeGroups}
-                >
-                  Randomize Groups
-                </button>
-                <button
-                  className="save-groups-button"
-                  onClick={saveGroupsToFirestore}
-                >
-                  Save
-                </button>
               </div>
+              <button
+                className="randomize-groups-button"
+                onClick={handleRandomizeGroups}
+              >
+                Randomize Groups
+              </button>
+              <button
+                className="save-groups-button"
+                onClick={saveGroupsToFirestore}
+              >
+                Save
+              </button>
             </div>
             <div className="grid-container">
               {classroom.groups &&
