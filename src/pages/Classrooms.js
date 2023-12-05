@@ -87,8 +87,11 @@ const Classrooms = () => {
                 <ListItemText
                   primary={`Classroom: ${name ? name : "Unnamed"} @ ${code}`}
                   secondary={
-                    userGroup.length > 0
+                    userGroup.length > 0 &&
+                    localStorage.getItem("userType") === "student"
                       ? `Your Group: ${userGroup.join(", ")}`
+                      : localStorage.getItem("userType") === "Professor"
+                      ? "Click to view classroom"
                       : "No group assigned"
                   }
                 />

@@ -15,6 +15,8 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { Navigate, useNavigate } from "react-router-dom";
 import { SignOut, useAuthentication } from "../firebase/authService";
 import logo from "../images/gruuper-logo.png";
+import Stack from "@mui/material/Stack";
+
 
 const pages = ["Classrooms", "About"];
 const settings = ["Profile", "Logout"];
@@ -45,16 +47,18 @@ function Navbar() {
     <AppBar position="static">
       <Container maxWidth="false">
         <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
-          <img
-            src={logo}
-            alt="Logo"
-            className="logo"
-            style={{
-              height: "3rem",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/")}
-          />
+          <Box sx={{ display: { xs: "none", md: "block" } }}>
+            <img
+              src={logo}
+              alt="Logo"
+              className="logo"
+              style={{
+                height: "3rem",
+                cursor: "pointer",
+              }}
+              onClick={() => navigate("/")}
+            />
+          </Box>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
@@ -85,37 +89,31 @@ function Navbar() {
                 display: { xs: "block", md: "none" },
               }}
             >
+              <Stack spacing={1}>
               {pages.map((item) => (
                 <Button
                   key={item}
                   onClick={() => navigate(item.toLowerCase())}
-                  sx={{ color: "#fff" }}
+                  sx={{ color: "#000" }}
                 >
                   {item}
                 </Button>
-              ))}
+              ))}</Stack>
+
             </Menu>
+            <div style={{ width: "100%" }}>
+              <img
+                src={logo}
+                alt="Logo"
+                className="logo"
+                style={{
+                  height: "3rem",
+                  cursor: "pointer",
+                }}
+                onClick={() => navigate("/")}
+              />
+            </div>
           </Box>
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: "flex", md: "none" },
-              flexGrow: 1,
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "inherit",
-              textDecoration: "none",
-            }}
-            onClick={() => navigate("/")}
-          >
-            LOGO
-          </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button

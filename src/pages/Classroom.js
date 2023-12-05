@@ -5,6 +5,7 @@ import {
   getGroups,
   getUser,
   saveGroups,
+  saveClassname,
 } from "../firebase/firestoreService";
 import "./styles/classroom.css";
 import { DndProvider } from "react-dnd";
@@ -28,6 +29,7 @@ const DraggableMember = ({
 }) => {
   const [, drag] = useDrag(() => ({
     type: ItemTypes.MEMBER,
+    canDrag: localStorage.getItem("userType") === "Professor",
     item: { name, index },
     collect: (monitor) => {
       const isDragging = monitor.isDragging();
@@ -120,7 +122,13 @@ const Classroom = () => {
       try {
         const fetchedClassroom = await getDocument("classrooms", roomId);
         setClassroom(fetchedClassroom);
-        setClassName(fetchedClassroom?.className || `${organizer}'s class`); // Use optional chaining
+        const fetchedUser = await getUser(fetchedClassroom?.instructor);
+        setClassName(
+          fetchedClassroom?.className ||
+            `${fetchedUser?.firstName || ""} ${
+              fetchedUser?.lastName || ""
+            }'s class`
+        );
 
         const members = fetchedClassroom?.members || [];
         const newMemberNames = await Promise.all(
@@ -232,6 +240,7 @@ const Classroom = () => {
   const handleSave = () => {
     setIsEditing(false);
     setClassName(className);
+    saveClassname(roomId, className);
   };
 
   const handleKeyDown = (event) => {
@@ -289,21 +298,23 @@ const Classroom = () => {
               />
             ) : (
               <div style={{ display: "flex" }}>
-                <h2 className="class-info">
-                  {className ? className : `${organizer}'s Class`}{" "}
-                </h2>
-                <IconButton
-                  color="primary"
-                  onClick={isEditing ? handleSave : handleEditClick}
-                  style={{
-                    marginTop: ".75rem",
-                    marginRight: "1rem",
-                    height: "2rem",
-                    width: "2rem",
-                  }}
-                >
-                  <CreateIcon style={{ height: "1.25rem", width: "1.25rem" }} />
-                </IconButton>
+                <h2 className="class-info">{className}</h2>
+                {localStorage.getItem("userType") === "Professor" && (
+                  <IconButton
+                    color="primary"
+                    onClick={isEditing ? handleSave : handleEditClick}
+                    style={{
+                      marginTop: ".75rem",
+                      marginRight: "1rem",
+                      height: "2rem",
+                      width: "2rem",
+                    }}
+                  >
+                    <CreateIcon
+                      style={{ height: "1.25rem", width: "1.25rem" }}
+                    />
+                  </IconButton>
+                )}
               </div>
             )}
           </div>
@@ -311,43 +322,45 @@ const Classroom = () => {
 
         <div className="body">
           <div className="groups">
-            <div className="group-controls">
-              <div className="size-counter">
-                <h3 className="counter-title">Group Size</h3>
-                <span className="counter-value">
-                  {groupSize < 10 ? "0" + groupSize : groupSize}
-                </span>
-                <div
-                  className="counter-buttons"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                  }}
-                >
-                  <button class="counter-button" onClick={incrementSize}>
-                    {" "}
-                    +{" "}
-                  </button>
-                  <button class="counter-button" onClick={DecrementSize}>
-                    {" "}
-                    -{" "}
-                  </button>
+            {localStorage.getItem("userType") === "Professor" && (
+              <div className="group-controls">
+                <div className="size-counter">
+                  <h3 className="counter-title">Group Size</h3>
+                  <span className="counter-value">
+                    {groupSize < 10 ? "0" + groupSize : groupSize}
+                  </span>
+                  <div
+                    className="counter-buttons"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <button class="counter-button" onClick={incrementSize}>
+                      {" "}
+                      +{" "}
+                    </button>
+                    <button class="counter-button" onClick={DecrementSize}>
+                      {" "}
+                      -{" "}
+                    </button>
+                  </div>
                 </div>
+                <button
+                  className="randomize-groups-button"
+                  onClick={handleRandomizeGroups}
+                >
+                  Randomize Groups
+                </button>
+                <button
+                  className="save-groups-button"
+                  onClick={saveGroupsToFirestore}
+                >
+                  Save
+                </button>
               </div>
-              <button
-                className="randomize-groups-button"
-                onClick={handleRandomizeGroups}
-              >
-                Randomize Groups
-              </button>
-              <button
-                className="save-groups-button"
-                onClick={saveGroupsToFirestore}
-              >
-                Save
-              </button>
-            </div>
+            )}
             <div className="grid-container">
               {classroom.groups &&
                 Object.entries(classroom.groups).map(([key, group], index) => (

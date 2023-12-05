@@ -16,7 +16,8 @@ function Home() {
 
   const createClass = () => {
     const newRoomId = nanoid(5);
-    createClassroom(newRoomId);
+    const creator = localStorage.getItem("userId");
+    createClassroom(newRoomId, creator);
     navigate(`/classroom?roomId=${newRoomId}`);
   };
 
@@ -41,7 +42,11 @@ function Home() {
       </div>
 
       <div className="form-container">
-        <Typography variant="h4">Join or Create a Class</Typography>
+        {localStorage.getItem("userType") === "Professor" ? (
+          <Typography variant="h4">Join or Create a Class</Typography>
+        ) : (
+          <Typography variant="h4">Join a Class</Typography>
+        )}
         <Typography className="error-text" variant="body1">
           {error}
         </Typography>
@@ -64,18 +69,23 @@ function Home() {
             Join a Class
           </Button>
         </form>
-        <Typography variant="h6" className="separator-text">
-          or
-        </Typography>
-        <Button
-          className="create-class-button"
-          variant="contained"
-          color="lightBlue"
-          onClick={createClass}
-          fullWidth
-        >
-          Create a Class
-        </Button>
+        {localStorage.getItem("userType") === "Professor" ? (
+          <>
+            <Typography variant="h6" className="separator-text">
+              or
+            </Typography>
+
+            <Button
+              className="create-class-button"
+              variant="contained"
+              color="lightBlue"
+              onClick={createClass}
+              fullWidth
+            >
+              Create a Class
+            </Button>
+          </>
+        ) : null}
       </div>
     </div>
   );

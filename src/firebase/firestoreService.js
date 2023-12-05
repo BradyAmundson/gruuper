@@ -13,10 +13,19 @@ import {
 } from "firebase/firestore";
 import { randomizeGroups } from "../components/GroupRandomizer.js";
 
-export async function createClassroom(roomId) {
+export async function createClassroom(roomId, creatorId) {
   console.log(roomId);
-  await setDoc(doc(db, "classrooms", roomId), { members: [] })
-    .then(() => {
+  await setDoc(doc(db, "classrooms", roomId), {
+    members: [],
+    instructor: creatorId,
+  })
+    .then(async () => {
+      const userDoc = await getDoc(doc(db, "users", creatorId));
+      const user = userDoc.data();
+      const classroomCodes = user.classroomCodes || [];
+      await updateDoc(doc(db, "users", creatorId), {
+        classroomCodes: [...classroomCodes, roomId],
+      });
       return { roomId };
     })
     .catch((error) => {
@@ -79,8 +88,12 @@ export async function getGroups(roomId, setGroups, memberNames, groupSize) {
 
 export async function saveGroups(roomId, groups, className) {
   const documentRef = doc(db, "classrooms", roomId);
-  console.log("classname", className);
   await updateDoc(documentRef, { groups: groups, className: className });
+}
+
+export async function saveClassname(roomId, className) {
+  const documentRef = doc(db, "classrooms", roomId);
+  await updateDoc(documentRef, { className: className });
 }
 
 export async function createUser(firstName, lastName, userId, userType) {
