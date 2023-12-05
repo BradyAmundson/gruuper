@@ -1,10 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import CssBaseline from '@mui/material/CssBaseline';
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme({
+  typography: {
+    fontFamily: 'Helvetica, sans-serif',
+  },
   palette: {
     primary: {
       main: "#1F618D", // Set your primary color

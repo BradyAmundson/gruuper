@@ -13,6 +13,7 @@ const SignInModal = ({ isOpen, onRequestClose }) => {
       bottom: "auto",
       transform: "translate(-50%, -50%)",
       height: "fit-content",
+      borderRadius: "10px",
     },
     overlay: {
       backgroundColor: "rgba(0, 0, 0, 0.5)",

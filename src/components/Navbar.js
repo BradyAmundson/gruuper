@@ -15,7 +15,7 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { Navigate, useNavigate } from "react-router-dom";
 import { SignOut, useAuthentication } from "../firebase/authService";
 
-const pages = ["About", "Classrooms"];
+const pages = ["Classrooms", "About"];
 const settings = ["Profile", "Logout"];
 
 function Navbar() {

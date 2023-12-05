@@ -35,7 +35,11 @@ export async function getDocument(collectionName, documentId) {
   }
 }
 
-export async function joinClassroom(roomId, userId) {
+export async function joinClassroom(roomId, userId, setError) {
+  if (!roomId || !userId) {
+    setError("Invalid classroom code!");
+    return null;
+  }
   const documentRef = doc(db, "classrooms", roomId);
   const documentSnapshot = await getDoc(documentRef);
   const usrDocumentRef = doc(db, "users", userId);
@@ -53,6 +57,7 @@ export async function joinClassroom(roomId, userId) {
       classroomCodes: updatedCodes,
     });
   } else {
+    setError("Invalid classroom code!");
     return null;
   }
 }
@@ -73,7 +78,7 @@ export async function getGroups(roomId, setGroups, memberNames, groupSize) {
 
 export async function saveGroups(roomId, groups, className) {
   const documentRef = doc(db, "classrooms", roomId);
-  console.log(className);
+  console.log("classname", className);
   await updateDoc(documentRef, { groups: groups, className: className });
 }
 

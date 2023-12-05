@@ -12,6 +12,7 @@ import { getUser, getDocument } from "../firebase/firestoreService";
 
 const Classrooms = () => {
   const [classrooms, setClassrooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +20,7 @@ const Classrooms = () => {
       try {
         const userId = localStorage.getItem("userId");
         const user = await getUser(userId);
-
+        setLoading(true);
         if (user && user.classroomCodes) {
           const classroomDetails = await Promise.all(
             user.classroomCodes.map(async (code) => {
@@ -34,6 +35,7 @@ const Classrooms = () => {
           );
 
           setClassrooms(classroomDetails);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -66,7 +68,11 @@ const Classrooms = () => {
         Your Classrooms
       </Typography>
       {classrooms.length === 0 ? (
-        <Typography variant="body1">No classrooms found.</Typography>
+        loading ? (
+          <Typography variant="body1">Loading...</Typography>
+        ) : (
+          <Typography variant="body1">No classrooms found.</Typography>
+        )
       ) : (
         <List>
           {classrooms.map(({ code, name, userGroup }) => (

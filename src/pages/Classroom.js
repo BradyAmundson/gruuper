@@ -170,14 +170,13 @@ const Classroom = () => {
           newGroupIndex++;
         }
       });
-
+      console.log("classname2", className);
       // Now newGroups contains only non-empty groups
       // Perform your save operation here (e.g., saving to a backend)
       saveGroups(roomId, newGroups, className);
       // Return the updated classroom object without empty groups
       return { ...prevClassroom, groups: newGroups };
     });
-    window.location.reload();
   };
 
   const moveMember = (fromIndexes, toGroupIndex) => {
@@ -223,7 +222,7 @@ const Classroom = () => {
     <DndProvider backend={HTML5Backend}>
       <div>
         <h1>
-          Classroom: {roomId} {classroom.className}
+          Classroom: {roomId} {className}
         </h1>
         <button
           className="randomize-groups-button"

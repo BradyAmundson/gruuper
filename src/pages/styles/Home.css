@@ -30,8 +30,14 @@
   background-color: white;
 }
 
+.error-text{
+  color: red;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
 .join-class-form {
-  margin-top: 20px;
   width: 100%;
 }
 

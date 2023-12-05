@@ -24,8 +24,8 @@ function App() {
   console.log(user);
   return (
     <Router>
-      <Navbar />
-      <div>
+      <div className="App">
+        <Navbar />
         {!user ? (
           <AuthPage />
         ) : (

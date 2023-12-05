@@ -11,6 +11,7 @@ import { createClassroom, joinClassroom } from "../firebase/firestoreService";
 import "./styles/Home.css";
 
 function Home() {
+  const [error, setError] = React.useState(null);
   const navigate = useNavigate();
 
   const createClass = () => {
@@ -23,7 +24,10 @@ function Home() {
     event.preventDefault();
     const roomId = document.getElementById("roomId").value;
     const userId = localStorage.getItem("userId");
-    await joinClassroom(roomId, userId);
+    const response = await joinClassroom(roomId, userId, setError);
+    if (!response) {
+      return;
+    }
     navigate(`/classroom?roomId=${roomId}`);
   };
 
@@ -38,6 +42,9 @@ function Home() {
 
       <div className="form-container">
         <Typography variant="h4">Join or Create a Class</Typography>
+        <Typography className="error-text" variant="body1">
+          {error}
+        </Typography>
         <form onSubmit={joinClass} className="join-class-form">
           <TextField
             id="roomId"

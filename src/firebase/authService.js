@@ -15,10 +15,13 @@ import { Button } from "@mui/material";
 auth.useDeviceLanguage();
 
 export function SignIn() {
+  const handleSignIn = () => {
+    signInWithPopup(auth, new GoogleAuthProvider());
+  };
   return (
-    <button onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}>
+    <Button variant="contained" color="primary" onClick={handleSignIn}>
       Sign In
-    </button>
+    </Button>
   );
 }
 
@@ -188,7 +191,9 @@ export function SignUpEmail({ firstName, lastName, userType }) {
           />
         </label>
       </div>
-      <button onClick={handleSignUp}>Sign Up</button>
+      <Button variant="contained" color="primary" onClick={handleSignUp}>
+        Sign Up
+      </Button>
     </div>
   );
 }
@@ -249,22 +254,21 @@ export function SignInWithEmail() {
           />
         </label>
       </div>
-      <button
+      <Button
+        variant="contained"
+        color="primary"
         onClick={handleSignIn}
         style={{
           display: "block",
           width: "100%",
           padding: "10px",
           marginTop: "35px",
-          border: "none",
-          borderRadius: "5px",
-          backgroundColor: "#0099ff",
           color: "white",
           cursor: "pointer",
         }}
       >
         Sign In
-      </button>
+      </Button>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
