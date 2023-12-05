@@ -367,7 +367,7 @@ const Classroom = () => {
             </div>
           </div>
           <div id="Members">
-            <h3>Classroom Members</h3>
+            <h3>Classroom Members ({memberNames.length})</h3>
             {memberNames.sort().map((member) => (
               <li key={member.name}>{member.name}</li>
             ))}
