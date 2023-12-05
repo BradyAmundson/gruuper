@@ -157,7 +157,10 @@ function Navbar() {
                     fontSize: "24px", // Adjust the font size
                   }}
                 >
-                  {localStorage.getItem("firstName")[0]}{" "}
+                  {localStorage.getItem("firstName") &&
+                  localStorage.getItem("firstName").length > 0
+                    ? localStorage.getItem("firstName")[0]
+                    : "?"}
                 </Avatar>
               </IconButton>
             </Tooltip>

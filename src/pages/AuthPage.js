@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import SignInModal from "../components/SignInModal";
 import SignUpModal from "../components/SignUpModal";
+import "./styles/AuthPage.css";
 
 const AuthPage = () => {
   const [isSignInModalOpen, setSignInModalOpen] = useState(false);
@@ -20,16 +21,8 @@ const AuthPage = () => {
   return (
     <div>
       <h1>Authentication Page</h1>
-      <nav>
-        <ul>
-          <li>
-            <button onClick={openSignInModal}>Sign In</button>
-          </li>
-          <li>
-            <button onClick={openSignUpModal}>Sign Up</button>
-          </li>
-        </ul>
-      </nav>
+      <button onClick={openSignInModal}>Sign In</button>
+      <button onClick={openSignUpModal}>Sign Up</button>
 
       <SignInModal
         isOpen={isSignInModalOpen}

@@ -1,0 +1,20 @@
+/* AuthPage.css */
+/* General styling for the authentication page */
+h1 {
+  text-align: center;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 3rem;
+  width: 10rem;
+}
+
+button:hover {
+  background-color: #0056b3;
+}

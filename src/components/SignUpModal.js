@@ -4,12 +4,46 @@ import Modal from "react-modal";
 import { SignUpEmail } from "../firebase/authService";
 import Button from "@mui/material/Button";
 
+const labelStyles = {
+  content: {
+    maxWidth: "25rem",
+    margin: "0 auto",
+    height: "fit-content",
+  },
+};
+
+const inputStyles = {
+  content: {
+    width: "95%",
+    padding: "8px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+  },
+};
+
 const SignUpModal = ({ isOpen, onRequestClose }) => {
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userType, setUserType] = useState("");
   const [error, setError] = useState("");
+
+  const customStyles = {
+    content: {
+      backgroundColor: "white",
+      maxWidth: "25rem",
+      margin: "auto",
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      height: "fit-content",
+    },
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+  };
 
   const handleNext = () => {
     switch (step) {
@@ -86,19 +120,30 @@ const Step1 = ({ userType, setUserType, onNext, error }) => {
   return (
     <div>
       <h2>Step 1: User Type</h2>
-      <Button
-        variant={userType === "Student" ? "contained" : "outlined"}
-        onClick={() => setUserType("Student")}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-evenly",
+          marginTop: "2rem",
+          marginBottom: "2rem",
+        }}
       >
-        Student
-      </Button>
-      <Button
-        variant={userType === "Professor" ? "contained" : "outlined"}
-        onClick={() => setUserType("Professor")}
-      >
-        Professor
-      </Button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        <Button
+          variant={userType === "Student" ? "contained" : "outlined"}
+          onClick={() => setUserType("Student")}
+          style={{ marginRight: "1.50rem", width: "10rem" }}
+        >
+          Student
+        </Button>
+        <h3> OR </h3>
+        <Button
+          variant={userType === "Professor" ? "contained" : "outlined"}
+          onClick={() => setUserType("Professor")}
+          style={{ marginLeft: "1.50rem", width: "10rem" }}
+        >
+          Professor
+        </Button>
+      </div>
       <button onClick={onNext}>Next &gt;</button>
     </div>
   );
@@ -114,27 +159,42 @@ const Step2 = ({
   error,
 }) => {
   return (
-    <div>
+    <div style={{ marginBottom: "15px" }}>
       <h2>Step 2: Personal Information</h2>
-      <label>
-        First Name:
-        <input
-          type="text"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-      </label>
-      <label>
-        Last Name:
-        <input
-          type="text"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
-      </label>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <button onClick={onBack}>&lt; Back</button>
-      <button onClick={onNext}>Next &gt;</button>
+      <div style={{ display: "grid" }}>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          First Name:
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Last Name:
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+      </div>
+      <div style={{ display: "flex", justifyContent: "spaced-evently" }}>
+        <button onClick={onBack}>&lt; Back</button>
+        <button onClick={onNext}>Next &gt;</button>
+      </div>
     </div>
   );
 };
@@ -143,9 +203,9 @@ const Step3 = ({ firstName, lastName, userType, onDone, onBack }) => {
   return (
     <div>
       <h2>Step 3: Create Account</h2>
-      <p>First Name: {firstName}</p>
-      <p>Last Name: {lastName}</p>
-      <p>User Type: {userType}</p>
+      <p>
+        {firstName} {lastName}, {userType}
+      </p>
       <SignUpEmail
         firstName={firstName}
         lastName={lastName}
@@ -154,14 +214,6 @@ const Step3 = ({ firstName, lastName, userType, onDone, onBack }) => {
       <button onClick={onBack}>&lt; Back</button>
     </div>
   );
-};
-
-const customStyles = {
-  content: {
-    width: "50%",
-    height: "70%",
-    margin: "auto",
-  },
 };
 
 export default SignUpModal;

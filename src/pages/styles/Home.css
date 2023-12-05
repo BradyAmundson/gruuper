@@ -1,0 +1,40 @@
+.banner-text-container {
+  height: 250px;
+  position: relative;
+  z-index: 1;
+  color: white;
+}
+
+.welcome-text {
+  font-size: 64px;
+  line-height: 1.2;
+  margin: 0;
+  text-align: left;
+  padding-left: 10px;
+  width: 350px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+}
+
+.form-container {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  padding: 35px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: auto;
+  z-index: 0;
+  background-color: white;
+}
+
+.join-class-form {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.separator-text {
+  margin: 20px 0;
+}

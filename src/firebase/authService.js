@@ -128,40 +128,66 @@ export function SignUpEmail({ firstName, lastName, userType }) {
 
   return (
     <div>
-      <h2>Sign Up</h2>
+      {/* <h2>Sign Up</h2> */}
       <p style={{ color: "red" }}>{error}</p>
-      <label>
-        Email:
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </label>
-      <label>
-        Confirm Email:
-        <input
-          type="email"
-          value={secondEmail}
-          onChange={(e) => setSecondEmail(e.target.value)}
-        />
-      </label>
-      <label>
-        Password:
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </label>
-      <label>
-        Confirm Password:
-        <input
-          type="password"
-          value={secondPassword}
-          onChange={(e) => setSecondPassword(e.target.value)}
-        />
-      </label>
+      <div style={{ marginBottom: "15px" }}>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Email:
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Confirm Email:
+          <input
+            type="email"
+            value={secondEmail}
+            onChange={(e) => setSecondEmail(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Password:
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Confirm Password:
+          <input
+            type="password"
+            value={secondPassword}
+            onChange={(e) => setSecondPassword(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+      </div>
       <button onClick={handleSignUp}>Sign Up</button>
     </div>
   );
@@ -191,24 +217,54 @@ export function SignInWithEmail() {
 
   return (
     <div>
-      <h2>Email</h2>
-      <label>
-        Email:
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </label>
-      <label>
-        Password:
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </label>
-      <button onClick={handleSignIn}>Sign In</button>
+      <div className="input-group" style={{ marginBottom: "15px" }}>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Email:
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+      </div>
+      <div className="input-group">
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Password:
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "95%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </label>
+      </div>
+      <button
+        onClick={handleSignIn}
+        style={{
+          display: "block",
+          width: "100%",
+          padding: "10px",
+          marginTop: "35px",
+          border: "none",
+          borderRadius: "5px",
+          backgroundColor: "#0099ff",
+          color: "white",
+          cursor: "pointer",
+        }}
+      >
+        Sign In
+      </button>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>

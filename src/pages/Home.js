@@ -2,13 +2,13 @@ import React from "react";
 import GroupRandomizer from "../components/GroupRandomizer";
 import PhotoBanner from "../components/PhotoBanner";
 import Typography from "@mui/material/Typography";
-
 import TextField from "@mui/material/TextField";
 import { Button } from "@mui/material";
-import { navigate, useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 import { nanoid } from "nanoid";
 import { createClassroom, joinClassroom } from "../firebase/firestoreService";
+
+import "./styles/Home.css";
 
 function Home() {
   const navigate = useNavigate();
@@ -29,60 +29,16 @@ function Home() {
 
   return (
     <div>
-      <div>
-        <PhotoBanner />
-      </div>
-      <div
-        style={{
-          height: "250px",
-          position: "relative",
-          zIndex: 1,
-          color: "white",
-        }}
-      >
-        <div
-          style={{
-            height: "250px",
-            position: "relative",
-            zIndex: 2,
-            color: "white",
-          }}
-        >
-          <Typography
-            variant="h2"
-            style={{
-              fontSize: "64px",
-              lineHeight: "1.2",
-              margin: 0,
-              textAlign: "left",
-              paddingLeft: "10px",
-              width: "350px",
-              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
-              fontWeight: "bold",
-            }}
-          >
-            Welcome to Gruuper!
-          </Typography>
-        </div>
+      <PhotoBanner />
+      <div className="banner-text-container">
+        <Typography className="welcome-text" variant="h2">
+          Welcome to Gruuper!
+        </Typography>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          position: "relative",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "35px",
-          border: "1px solid #ccc",
-          borderRadius: "8px",
-          maxWidth: "400px",
-          margin: "auto",
-          zIndex: 0,
-          backgroundColor: "white",
-        }}
-      >
+      <div className="form-container">
         <Typography variant="h4">Join or Create a Class</Typography>
-        <form onSubmit={joinClass} style={{ marginTop: "20px", width: "100%" }}>
+        <form onSubmit={joinClass} className="join-class-form">
           <TextField
             id="roomId"
             label="Class Code"
@@ -91,14 +47,21 @@ function Home() {
             fullWidth
             margin="normal"
           />
-          <Button variant="contained" color="primary" type="submit" fullWidth>
+          <Button
+            className="join-class-button"
+            variant="contained"
+            color="primary"
+            type="submit"
+            fullWidth
+          >
             Join a Class
           </Button>
         </form>
-        <Typography variant="h6" style={{ margin: "20px 0" }}>
+        <Typography variant="h6" className="separator-text">
           or
         </Typography>
         <Button
+          className="create-class-button"
           variant="contained"
           color="lightBlue"
           onClick={createClass}
