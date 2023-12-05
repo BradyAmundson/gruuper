@@ -14,6 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Navigate, useNavigate } from "react-router-dom";
 import { SignOut, useAuthentication } from "../firebase/authService";
+import logo from "../images/gruuper-logo.png";
 
 const pages = ["Classrooms", "About"];
 const settings = ["Profile", "Logout"];
@@ -44,8 +45,17 @@ function Navbar() {
     <AppBar position="static">
       <Container maxWidth="false">
         <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
-          <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
-          <Typography
+          <img
+            src={logo}
+            alt="Logo"
+            className="logo"
+            style={{
+              height: "3rem",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          />
+          {/* <Typography
             variant="h6"
             noWrap
             component="a"
@@ -63,7 +73,7 @@ function Navbar() {
             onClick={() => navigate("/")}
           >
             Gruuper
-          </Typography>
+          </Typography> */}
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton

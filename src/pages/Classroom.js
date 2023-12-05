@@ -11,6 +11,9 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useDrag, useDrop } from "react-dnd";
 
+import { IconButton, TextField } from "@mui/material";
+import CreateIcon from "@mui/icons-material/Create";
+
 const ItemTypes = {
   MEMBER: "member",
 };
@@ -98,6 +101,8 @@ const NewGroupArea = ({ createNewGroup }) => {
 };
 
 const Classroom = () => {
+  const organizer = "CJ";
+
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const roomId = query.get("roomId");
@@ -107,13 +112,14 @@ const Classroom = () => {
   const [groupSize, setGroupSize] = useState(1);
   const [currentlyDragging, setCurrentlyDragging] = useState(null);
   const [className, setClassName] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const fetchedClassroom = await getDocument("classrooms", roomId);
         setClassroom(fetchedClassroom);
-        setClassName(fetchedClassroom?.className || ""); // Use optional chaining
+        setClassName(fetchedClassroom?.className || `${organizer}'s class`); // Use optional chaining
 
         const members = fetchedClassroom?.members || [];
         const newMemberNames = await Promise.all(
@@ -218,65 +224,143 @@ const Classroom = () => {
     });
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    setIsEditing(false);
+    setClassName(className);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSave();
+    }
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
-        <h1>
-          Classroom: {roomId} {className}
-        </h1>
-        <button
-          className="randomize-groups-button"
-          onClick={handleRandomizeGroups}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            borderBottom: "1px solid #f1f1f1",
+          }}
         >
-          Randomize Groups
-        </button>
-        <button className="save-groups-button" onClick={saveGroupsToFirestore}>
-          Save
-        </button>
-        <label>
-          Group Size:
-          <input
-            type="number"
-            value={groupSize}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (value >= 1) {
-                setGroupSize(value);
-              }
-            }}
-          />
-        </label>
-        <label>
-          Class Name:
-          <input
-            type="text"
-            value={className}
-            onChange={(e) => setClassName(e.target.value)}
-          />
-        </label>
-        <div className="grid-container">
-          {classroom.groups &&
-            Object.entries(classroom.groups).map(([key, group], index) => (
-              <DroppableGroup
-                key={index}
-                group={group}
-                index={index}
-                moveMember={moveMember}
-                setCurrentlyDragging={setCurrentlyDragging}
-                currentlyDragging={currentlyDragging}
-                memberNames={memberNames}
+          <h2 className="class-info" style={{ marginLeft: "1rem" }}>
+            Classroom: {roomId}
+          </h2>
+          <div style={{ display: "flex" }}>
+            {isEditing ? (
+              <TextField
+                variant="standard"
+                InputProps={{
+                  disableUnderline: true,
+                  inputProps: { maxLength: 35 },
+                  style: {
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                  },
+                }}
+                style={{
+                  marginRight: "1.5rem",
+                  marginTop: "1rem",
+                  width: "100%",
+                }}
+                className="class-name-input"
+                value={className}
+                onChange={(e) => setClassName(e.target.value)}
+                onBlur={handleSave}
+                onKeyDown={handleKeyDown}
+                autoFocus
               />
-            ))}
-          {currentlyDragging !== null && (
-            <NewGroupArea createNewGroup={createNewGroup} />
-          )}
+            ) : (
+              <div style={{ display: "flex" }}>
+                <h2 className="class-info">
+                  {className ? className : `${organizer}'s Class`}{" "}
+                </h2>
+                <IconButton
+                  color="primary"
+                  onClick={isEditing ? handleSave : handleEditClick}
+                  style={{
+                    marginTop: ".75rem",
+                    marginRight: "1rem",
+                    height: "2rem",
+                    width: "2rem",
+                  }}
+                >
+                  <CreateIcon style={{ height: "1.25rem", width: "1.25rem" }} />
+                </IconButton>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div id="Members">
-          <h3>Classroom Members</h3>
-          {memberNames.sort().map((member) => (
-            <li key={member.name}>{member.name}</li>
-          ))}
+        <div className="body-container">
+          <div className="groups">
+            <div className="group-controls">
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <span
+                  style={{
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    display: "flex",
+                    margin: "2rem",
+                    fontSize: "1.5rem",
+                  }}
+                >
+                  {groupSize}
+                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <button className="inc-dec-buttons"> + </button>
+                  <button className="inc-dec-buttons"> - </button>
+                </div>
+                <button
+                  className="randomize-groups-button"
+                  onClick={handleRandomizeGroups}
+                >
+                  Randomize Groups
+                </button>
+                <button
+                  className="save-groups-button"
+                  onClick={saveGroupsToFirestore}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+            <div className="grid-container">
+              {classroom.groups &&
+                Object.entries(classroom.groups).map(([key, group], index) => (
+                  <DroppableGroup
+                    key={index}
+                    group={group}
+                    index={index}
+                    moveMember={moveMember}
+                    setCurrentlyDragging={setCurrentlyDragging}
+                    currentlyDragging={currentlyDragging}
+                    memberNames={memberNames}
+                  />
+                ))}
+              {currentlyDragging !== null && (
+                <NewGroupArea createNewGroup={createNewGroup} />
+              )}
+            </div>
+          </div>
+          <div id="Members">
+            <h3>Classroom Members</h3>
+            {memberNames.sort().map((member) => (
+              <li key={member.name}>{member.name}</li>
+            ))}
+          </div>
         </div>
       </div>
     </DndProvider>

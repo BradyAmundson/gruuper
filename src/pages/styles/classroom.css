@@ -1,6 +1,5 @@
 /* Main container */
 
-
 /* Lobby and RoomID headers */
 h1,
 h2 {
@@ -27,21 +26,23 @@ button:hover {
 
 /* Members section */
 #Members {
-  margin: 20px 0;
+  background-color: #999;
+  border-radius: 4px;
+  margin: 10px;
   border-bottom: 1px solid #f1f1f1;
   padding-bottom: 20px;
 }
 
 #Members h3 {
   background-color: #ddd;
-  margin: 5px;
+  margin: 10px 10px 5px 10px;
   padding: 5px;
   border-radius: 4px;
 }
 
 #Members li {
   background-color: #f1f1f1;
-  margin: 5px;
+  margin: 5px 10px 5px 10px;
   padding: 5px;
   border-radius: 4px;
   list-style: none;
@@ -60,10 +61,10 @@ button:hover {
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax(200px, 1fr)
+    minmax(175px, 1fr)
   ); /* Adjust as needed */
   gap: 20px; /* Spacing between grid items */
-  padding: 20px;
+  padding: 10px;
 }
 
 #Groups {
@@ -103,4 +104,29 @@ button:hover {
   align-items: center;
   justify-content: center;
   height: 100%; /* Set a fixed height, adjust as needed */
+}
+
+.body-container {
+  display: grid;
+  flex-direction: column;
+  grid-template-columns: 2.5fr 1fr;
+}
+
+.groups {
+  background-color: white;
+}
+
+.inc-dec-buttons {
+  margin: 0;
+  padding: 5px 10px 5px 10px;
+  margin: 5px 0 5px 0;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.group-controls {
+  background-color: lightGray;
+  border: 5px solid gray;
+  border-radius: 4px;
+  margin: 10px;
 }

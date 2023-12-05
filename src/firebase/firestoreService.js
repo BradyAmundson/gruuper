@@ -48,7 +48,7 @@ export async function joinClassroom(roomId, userId, setError) {
     const members = documentSnapshot.data().members;
     const currentCodes = usrDocumentSnapshot.data().classroomCodes || [];
     if (currentCodes.includes(roomId)) {
-      return null;
+      return roomId;
     }
     const updatedCodes = [...currentCodes, roomId];
     members.push(userId);
@@ -56,6 +56,7 @@ export async function joinClassroom(roomId, userId, setError) {
     await updateDoc(usrDocumentRef, {
       classroomCodes: updatedCodes,
     });
+    return roomId;
   } else {
     setError("Invalid classroom code!");
     return null;
