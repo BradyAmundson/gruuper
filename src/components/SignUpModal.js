@@ -4,23 +4,6 @@ import Modal from "react-modal";
 import { SignUpEmail } from "../firebase/authService";
 import Button from "@mui/material/Button";
 
-const labelStyles = {
-  content: {
-    maxWidth: "25rem",
-    margin: "0 auto",
-    height: "fit-content",
-  },
-};
-
-const inputStyles = {
-  content: {
-    width: "95%",
-    padding: "8px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-  },
-};
-
 const SignUpModal = ({ isOpen, onRequestClose }) => {
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState("");
@@ -145,7 +128,20 @@ const Step1 = ({ userType, setUserType, onNext, error }) => {
           Professor
         </Button>
       </div>
-      <button onClick={onNext}>Next &gt;</button>
+      <div style={{ display: "flex", justifyContent: "space-around" }}>
+        <span style={{ margin: "20px 0px 20px 30px" }}> </span>
+        <button
+          onClick={onNext}
+          style={{
+            margin: "20px 0px 20px 0px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#1f618d",
+          }}
+        >
+          Next &gt;
+        </button>
+      </div>
     </div>
   );
 };
@@ -192,9 +188,29 @@ const Step2 = ({
           />
         </label>
       </div>
-      <div style={{ display: "flex", justifyContent: "spaced-evently" }}>
-        <button onClick={onBack}>&lt; Back</button>
-        <button onClick={onNext}>Next &gt;</button>
+      <div style={{ display: "flex", justifyContent: "space-around" }}>
+        <button
+          onClick={onBack}
+          style={{
+            margin: "20px 0px 20px 0px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#1f618d",
+          }}
+        >
+          &lt; Back
+        </button>
+        <button
+          onClick={onNext}
+          style={{
+            margin: "20px 0px 20px 0px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#1f618d",
+          }}
+        >
+          Next &gt;
+        </button>
       </div>
     </div>
   );
@@ -212,7 +228,17 @@ const Step3 = ({ firstName, lastName, userType, onDone, onBack }) => {
         lastName={lastName}
         userType={userType}
       />
-      <button onClick={onBack}>&lt; Back</button>
+      <button
+        onClick={onBack}
+        style={{
+          margin: "20px 0px 20px 0px",
+          padding: "10px 20px",
+          fontSize: "16px",
+          backgroundColor: "#1f618d",
+        }}
+      >
+        &lt; Back
+      </button>
     </div>
   );
 };

@@ -6,7 +6,7 @@ h1 {
 
 .auth {
   padding: 10px 20px;
-  background-color: #1F618D;
+  background-color: #1f618d;
   color: white;
   border: none;
   border-radius: 5px;
@@ -16,5 +16,14 @@ h1 {
 }
 
 button:hover {
-  background-color: #85C1E9;
+  background-color: #85c1e9;
+}
+
+.auth-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.auth {
+  margin: 2rem;
 }

@@ -21,8 +21,14 @@ const AuthPage = () => {
   return (
     <div>
       <h1>Authentication Page</h1>
-      <button className="auth" onClick={openSignInModal}>Sign In</button>
-      <button className="auth" onClick={openSignUpModal}>Sign Up</button>
+      <div className="auth-buttons">
+        <button className="auth" onClick={openSignInModal}>
+          Sign In
+        </button>
+        <button className="auth" onClick={openSignUpModal}>
+          Sign Up
+        </button>
+      </div>
 
       <SignInModal
         isOpen={isSignInModalOpen}
