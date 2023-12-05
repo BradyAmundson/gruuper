@@ -72,11 +72,7 @@ const DroppableGroup = ({
         {group.map((user, idx) => (
           <DraggableMember
             key={idx}
-            name={
-              memberNames.find(
-                (member) => member.id === "kqwriyDncNXVMF9Feq3OlDL26ir2"
-              )?.name
-            }
+            name={memberNames.find((member) => member.id === user)?.name}
             index={{ groupIndex: index, memberIndex: idx }}
             moveMember={moveMember}
             setCurrentlyDragging={setCurrentlyDragging}
