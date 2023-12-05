@@ -13,7 +13,7 @@ h2 {
   margin: 20px 0px 20px 0px;
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #1f618d;
   color: white;
   border: none;
   border-radius: 4px;
@@ -25,15 +25,11 @@ h2 {
   margin: 20px 6% 20px 0px;
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #1f618d;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
 }
 
 /* Members section */
@@ -136,7 +132,7 @@ button:hover {
   font-weight: bold;
   font-size: 16px;
   border: none;
-  background-color: #007bff;
+  background-color: #1f618d;
   color: white;
   cursor: pointer;
 }
