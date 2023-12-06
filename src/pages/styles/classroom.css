@@ -19,7 +19,7 @@ h2 {
 }
 
 .randomize-groups-button:hover {
-  background-color: #85c1e9;
+  background-color: #154362;
   transform: scale(0.9);
 }
 
@@ -34,7 +34,7 @@ h2 {
 }
 
 .save-groups-button:hover {
-  background-color: #85c1e9;
+  background-color: #154362;
   transform: scale(0.9);
 }
 
@@ -154,6 +154,7 @@ h2 {
 }
 
 .counter-button:hover {
+  background-color: #154362;
   transform: scale(0.9);
 }
 
