@@ -82,7 +82,7 @@ const Classrooms = () => {
                 color="primary"
                 fullWidth
                 onClick={() => navigate(`/classroom?roomId=${code}`)}
-                style={{ borderRadius: 5 }}
+                style={{ borderRadius: 5, marginBottom: "1rem" }}
               >
                 <ListItemText
                   primary={`Classroom: ${name ? name : "Unnamed"} @ ${code}`}

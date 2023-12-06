@@ -16,6 +16,9 @@ import { IconButton, TextField } from "@mui/material";
 import CreateIcon from "@mui/icons-material/Create";
 import { increment } from "firebase/firestore";
 
+import SaveIcon from "@mui/icons-material/Save";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
+
 const ItemTypes = {
   MEMBER: "member",
 };
@@ -48,9 +51,12 @@ const DraggableMember = ({
   }));
 
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  const className = `draggable-item ${
+  let className = `draggable-item-professor ${
     isCurrentlyBeingDragged ? "dragging-item" : ""
   }`;
+  if (localStorage.getItem("userType") !== "Professor") {
+    className = "draggable-item-student";
+  }
 
   return (
     <li ref={drag} className={className}>
@@ -104,8 +110,6 @@ const NewGroupArea = ({ createNewGroup }) => {
 };
 
 const Classroom = () => {
-  const organizer = "CJ";
-
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const roomId = query.get("roomId");
@@ -127,7 +131,7 @@ const Classroom = () => {
           fetchedClassroom?.className ||
             `${fetchedUser?.firstName || ""} ${
               fetchedUser?.lastName || ""
-            }'s class`
+            }'s Class`
         );
 
         const members = fetchedClassroom?.members || [];
@@ -298,7 +302,17 @@ const Classroom = () => {
               />
             ) : (
               <div style={{ display: "flex" }}>
-                <h2 className="class-info">{className}</h2>
+                <h2
+                  className="class-info"
+                  style={{
+                    marginRight:
+                      localStorage.getItem("userType") === "Professor"
+                        ? "0rem"
+                        : "1rem",
+                  }}
+                >
+                  {className}
+                </h2>
                 {localStorage.getItem("userType") === "Professor" && (
                   <IconButton
                     color="primary"
@@ -337,28 +351,26 @@ const Classroom = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <button class="counter-button" onClick={incrementSize}>
+                    <button className="counter-button" onClick={incrementSize}>
                       {" "}
                       +{" "}
                     </button>
-                    <button class="counter-button" onClick={DecrementSize}>
+                    <button className="counter-button" onClick={DecrementSize}>
                       {" "}
                       -{" "}
                     </button>
                   </div>
                 </div>
-                <button
+                <ShuffleIcon
                   className="randomize-groups-button"
                   onClick={handleRandomizeGroups}
-                >
-                  Randomize Groups
-                </button>
-                <button
+                  sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                />
+                <SaveIcon
                   className="save-groups-button"
                   onClick={saveGroupsToFirestore}
-                >
-                  Save
-                </button>
+                  sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                />
               </div>
             )}
             <div className="grid-container">
