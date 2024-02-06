@@ -40,7 +40,7 @@
   }
 }
 
-/* button {
+button {
   display: block;
   background-color: #1f618d;
   color: white;
@@ -51,4 +51,4 @@
 
 button:hover {
   background-color: #85c1e9;
-} */
+}

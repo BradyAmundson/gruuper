@@ -7,10 +7,12 @@ import {
   createUserWithEmailAndPassword,
   signInWithPhoneNumber,
   signInWithEmailAndPassword,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { createUser, getUser } from "./firestoreService";
 import { Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 auth.useDeviceLanguage();
 
@@ -96,6 +98,9 @@ export function SignUpEmail({ firstName, lastName, userType }) {
   const [secondPassword, setSecondPassword] = useState("");
   const [error, setError] = useState(null);
 
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
   const handleSignUp = async () => {
     try {
       // Check for blank fields
@@ -117,12 +122,22 @@ export function SignUpEmail({ firstName, lastName, userType }) {
       }
 
       // Proceed with sign-up
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      setLoading(true);
+      await sendEmailVerification(userCredential.user).then(() => {
+        alert("Email sent");
+        setLoading(false);
+      });
+
+      // auth.currentUser.emailVerified
       createUser(firstName, lastName, auth.currentUser.uid, userType);
-      localStorage.setItem("firstName", firstName);
-      localStorage.setItem("lastName", lastName);
-      localStorage.setItem("userType", userType);
-      localStorage.setItem("userId", auth.currentUser.uid);
+      signOut(auth);
+      localStorage.clear();
+      navigate("/");
     } catch (error) {
       console.error("Error signing up:", error.message);
       setError(error.message);
@@ -191,9 +206,13 @@ export function SignUpEmail({ firstName, lastName, userType }) {
           />
         </label>
       </div>
-      <Button variant="contained" color="primary" onClick={handleSignUp}>
-        Sign Up
-      </Button>
+      {loading ? (
+        <div>Loading</div>
+      ) : (
+        <Button variant="contained" color="primary" onClick={handleSignUp}>
+          Sign Up
+        </Button>
+      )}
     </div>
   );
 }
@@ -203,6 +222,8 @@ export function SignInWithEmail() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate();
+
   const handleSignIn = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -210,11 +231,17 @@ export function SignInWithEmail() {
         email,
         password
       );
+      if (!auth.currentUser.emailVerified) {
+        alert("Must Verify Email");
+        signOut(auth);
+        return;
+      }
       const userData = await getUser(userCredential.user.uid);
       localStorage.setItem("firstName", userData.firstName);
       localStorage.setItem("lastName", userData.lastName);
       localStorage.setItem("userType", userData.userType);
       localStorage.setItem("userId", userCredential.user.uid);
+      navigate("/");
     } catch (error) {
       setError(error.message);
     }
@@ -254,6 +281,7 @@ export function SignInWithEmail() {
           />
         </label>
       </div>
+
       <Button
         variant="contained"
         color="primary"
@@ -269,7 +297,6 @@ export function SignInWithEmail() {
       >
         Sign In
       </Button>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );

@@ -17,7 +17,6 @@ import { SignOut, useAuthentication } from "../firebase/authService";
 import logo from "../images/gruuper-logo.png";
 import Stack from "@mui/material/Stack";
 
-
 const pages = ["Classrooms", "About"];
 const settings = ["Profile", "Logout"];
 
@@ -90,16 +89,16 @@ function Navbar() {
               }}
             >
               <Stack spacing={1}>
-              {pages.map((item) => (
-                <Button
-                  key={item}
-                  onClick={() => navigate(item.toLowerCase())}
-                  sx={{ color: "#000" }}
-                >
-                  {item}
-                </Button>
-              ))}</Stack>
-
+                {pages.map((item) => (
+                  <Button
+                    key={item}
+                    onClick={() => navigate(item.toLowerCase())}
+                    sx={{ color: "#000" }}
+                  >
+                    {item}
+                  </Button>
+                ))}
+              </Stack>
             </Menu>
             <div style={{ width: "100%" }}>
               <img

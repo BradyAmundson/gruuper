@@ -29,10 +29,11 @@ const DraggableMember = ({
   moveMember,
   setCurrentlyDragging,
   currentlyDragging,
+  isProfessor,
 }) => {
   const [, drag] = useDrag(() => ({
     type: ItemTypes.MEMBER,
-    canDrag: localStorage.getItem("userType") === "Professor",
+    canDrag: isProfessor,
     item: { name, index },
     collect: (monitor) => {
       const isDragging = monitor.isDragging();
@@ -54,7 +55,7 @@ const DraggableMember = ({
   let className = `draggable-item-professor ${
     isCurrentlyBeingDragged ? "dragging-item" : ""
   }`;
-  if (localStorage.getItem("userType") !== "Professor") {
+  if (!isProfessor) {
     className = "draggable-item-student";
   }
 
@@ -72,6 +73,7 @@ const DroppableGroup = ({
   setCurrentlyDragging,
   currentlyDragging,
   memberNames,
+  isProfessor,
 }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
@@ -89,6 +91,7 @@ const DroppableGroup = ({
             moveMember={moveMember}
             setCurrentlyDragging={setCurrentlyDragging}
             currentlyDragging={currentlyDragging}
+            isProfessor={isProfessor}
           />
         ))}
       </ul>
@@ -120,6 +123,27 @@ const Classroom = () => {
   const [currentlyDragging, setCurrentlyDragging] = useState(null);
   const [className, setClassName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isProfessor, setIsProfessor] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const user = await getUser(userId);
+        if (user && user.classroomCodes) {
+          setIsProfessor(
+            localStorage.getItem("userType") === "Professor" &&
+              user.classroomCodes.includes(roomId)
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    if (localStorage.getItem("userType") === "Professor") {
+      fetchData();
+    }
+  }, [roomId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,6 +156,10 @@ const Classroom = () => {
             `${fetchedUser?.firstName || ""} ${
               fetchedUser?.lastName || ""
             }'s Class`
+        );
+        setIsProfessor(
+          localStorage.getItem("userType") === "Professor" &&
+            localStorage.getItem("userId") === fetchedClassroom?.instructor
         );
 
         const members = fetchedClassroom?.members || [];
@@ -305,15 +333,12 @@ const Classroom = () => {
                 <h2
                   className="class-info"
                   style={{
-                    marginRight:
-                      localStorage.getItem("userType") === "Professor"
-                        ? "0rem"
-                        : "1rem",
+                    marginRight: isProfessor ? "0rem" : "1rem",
                   }}
                 >
                   {className}
                 </h2>
-                {localStorage.getItem("userType") === "Professor" && (
+                {isProfessor && (
                   <IconButton
                     color="primary"
                     onClick={isEditing ? handleSave : handleEditClick}
@@ -336,7 +361,7 @@ const Classroom = () => {
 
         <div className="body">
           <div className="groups">
-            {localStorage.getItem("userType") === "Professor" && (
+            {isProfessor && (
               <div className="group-controls">
                 <div className="size-counter">
                   <h3 className="counter-title">Group Size</h3>
@@ -384,6 +409,7 @@ const Classroom = () => {
                     setCurrentlyDragging={setCurrentlyDragging}
                     currentlyDragging={currentlyDragging}
                     memberNames={memberNames}
+                    isProfessor={isProfessor}
                   />
                 ))}
               {currentlyDragging !== null && (
