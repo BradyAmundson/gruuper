@@ -135,7 +135,7 @@ function EditProfile() {
                     <Select
                         labelId="class-year-label"
                         id="class-year"
-                        value={major}
+                        value={classYear}
                         label="Class Year"
                         onChange={(e) => setClassYear(e.target.value)}
                     >
