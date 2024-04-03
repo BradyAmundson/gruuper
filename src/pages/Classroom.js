@@ -233,8 +233,15 @@ const Classroom = () => {
       remainingStudents = remainingStudents.filter(student => !currentGroup.includes(student));
     }
 
+    // If there are remaining students, create a group with them
+    if (remainingStudents.length > 0) {
+      matchedGroups.push(remainingStudents);
+    }
+
+
     return matchedGroups;
   };
+
 
   const findBestMatchForGroup = (group) => {
     // Sort students randomly to vary pairings each time the function is called
@@ -255,6 +262,7 @@ const Classroom = () => {
     }
 
     console.log("Best Match Score:", bestMatchScore);
+    console.log("Best Match Group:", bestMatchGroup);
     return bestMatchGroup;
   };
 
