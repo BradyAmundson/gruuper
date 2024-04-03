@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Classroom from "./pages/Classroom";
 import SignUp from "./pages/Signup";
 import AuthPage from "./pages/AuthPage";
@@ -32,6 +33,7 @@ function App() {
           <Routes>
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/classroom" element={<Classroom />} />
             <Route path="/classrooms" element={<Classrooms />} />
             <Route path="/" element={<Home />} />

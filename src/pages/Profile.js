@@ -2,8 +2,12 @@ import React from "react";
 import { Container, Typography, Paper, Avatar, Button } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import EditIcon from "@mui/icons-material/Edit";
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
+
+  const navigate = useNavigate();
+
   const paperStyle = {
     padding: "2rem",
     margin: "2rem", // Add a margin of 2rem to the paper
@@ -43,6 +47,7 @@ function Profile() {
           color="primary"
           startIcon={<EditIcon />}
           style={editButtonStyle}
+          onClick={() => navigate('/edit-profile')}
           onMouseEnter={(event) => {
             event.target.style.transform = "scale(.95)";
           }}

@@ -101,6 +101,12 @@ export async function createUser(firstName, lastName, userId, userType) {
     firstName: firstName,
     lastName: lastName,
     userType: userType,
+    mayor: '',
+    classYear: '',
+    nightOrMorning: '',
+    socialPreference: '',
+    deadlineBehavior: '',
+    unavailableTimes: [],
     classroomCodes: [],
   })
     .then(() => {

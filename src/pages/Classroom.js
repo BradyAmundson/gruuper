@@ -52,9 +52,8 @@ const DraggableMember = ({
   }));
 
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item-professor ${
-    isCurrentlyBeingDragged ? "dragging-item" : ""
-  }`;
+  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
+    }`;
   if (!isProfessor) {
     className = "draggable-item-student";
   }
@@ -133,7 +132,7 @@ const Classroom = () => {
         if (user && user.classroomCodes) {
           setIsProfessor(
             localStorage.getItem("userType") === "Professor" &&
-              user.classroomCodes.includes(roomId)
+            user.classroomCodes.includes(roomId)
           );
         }
       } catch (error) {
@@ -153,13 +152,12 @@ const Classroom = () => {
         const fetchedUser = await getUser(fetchedClassroom?.instructor);
         setClassName(
           fetchedClassroom?.className ||
-            `${fetchedUser?.firstName || ""} ${
-              fetchedUser?.lastName || ""
-            }'s Class`
+          `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+          }'s Class`
         );
         setIsProfessor(
           localStorage.getItem("userType") === "Professor" &&
-            localStorage.getItem("userId") === fetchedClassroom?.instructor
+          localStorage.getItem("userId") === fetchedClassroom?.instructor
         );
 
         const members = fetchedClassroom?.members || [];
@@ -168,9 +166,8 @@ const Classroom = () => {
             const fetchedUser = await getUser(member);
             return {
               id: member,
-              name: `${fetchedUser?.firstName || ""} ${
-                fetchedUser?.lastName || ""
-              }`,
+              name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+                }`,
             };
           })
         );
@@ -193,9 +190,8 @@ const Classroom = () => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${
-            fetchedUser?.lastName || ""
-          }`,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+            }`,
         };
       })
     );
