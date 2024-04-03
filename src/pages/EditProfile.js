@@ -35,6 +35,7 @@ function EditProfile() {
             classYear,
             nightOrMorning,
             socialPreference,
+            deadlineBehavior,
             unavailableTimes,
         };
 
@@ -112,7 +113,7 @@ function EditProfile() {
 
                 {/* Questionnaire Section */}
                 <Typography variant="h6" style={{ margin: '2rem 0 1rem' }}>
-                    GruuperMatch Questionnaire
+                    SmartMatch Questionnaire
                 </Typography>
                 <FormControl fullWidth margin="normal">
                     <InputLabel id="major-label">Major</InputLabel>

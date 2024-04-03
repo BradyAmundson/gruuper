@@ -193,55 +193,71 @@ const Classroom = () => {
     return score;
   }
 
-  function findBestMatches(students) {
-    // Sort students randomly to vary pairings each time the function is called
-    students.sort(() => 0.5 - Math.random());
-
-    let pairs = [];
-    let usedIndices = new Set();
-
-    for (let i = 0; i < students.length; i++) {
-      if (usedIndices.has(i)) continue; // Skip if student is already paired
-
-      let bestMatchIndex = -1;
-      let bestMatchScore = -1;
-
-      for (let j = i + 1; j < students.length; j++) {
-        if (usedIndices.has(j)) continue; // Skip if student is already paired
-
-        const score = calculateMatchScore(students[i], students[j]);
-        if (score > bestMatchScore) {
-          bestMatchScore = score;
-          bestMatchIndex = j;
-        }
-      }
-
-      if (bestMatchIndex !== -1) {
-        pairs.push([students[i], students[bestMatchIndex]]);
-        usedIndices.add(i);
-        usedIndices.add(bestMatchIndex);
-      }
-    }
-
-    return pairs;
-  }
-
   const handleSmartMatch = async () => {
     setIsMatching(true);
+    await getGroups(roomId, setGroups, memberNames, groupSize);
+    const fetchedClassroom = await getDocument("classrooms", roomId);
+
+    const members = fetchedClassroom?.members || [];
 
     // Fetch students and their preferences
     // For demonstration, let's assume `memberNames` includes all necessary info
     const membersWithPreferences = [...memberNames]; // Assume this array has all the data
 
-    const matchedGroups = findBestMatches(membersWithPreferences);
+    const matchedGroups = findBestMatchingGroups(members, groupSize);
 
     // Example: Update your state with these new groups
     // This step will depend on how your groups are structured and stored
     // For now, we'll log the results to demonstrate output
     console.log("Matched Groups:", matchedGroups);
 
+    setClassroom(fetchedClassroom);
     setIsMatching(false);
   };
+
+  const findBestMatchingGroups = (students, groupSize) => {
+    let remainingStudents = [...students];
+    const matchedGroups = [];
+
+    while (remainingStudents.length >= groupSize) {
+      // Take a slice of students for the current group
+      const currentGroup = remainingStudents.slice(0, groupSize);
+
+      // Find the best matching group based on the current group members' profiles
+      const bestMatchingGroup = findBestMatchForGroup(currentGroup);
+
+      // Add the best matching group to the result
+      matchedGroups.push(bestMatchingGroup);
+
+      // Remove the students assigned to the current group from the remaining students
+      remainingStudents = remainingStudents.filter(student => !currentGroup.includes(student));
+    }
+
+    return matchedGroups;
+  };
+
+  const findBestMatchForGroup = (group) => {
+    // Sort students randomly to vary pairings each time the function is called
+    group.sort(() => 0.5 - Math.random());
+
+    let bestMatchScore = -1;
+    let bestMatchGroup = [];
+
+    // Compare each student with every other student in the group
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        const score = calculateMatchScore(group[i], group[j]);
+        if (score > bestMatchScore) {
+          bestMatchScore = score;
+          bestMatchGroup = [group[i], group[j]];
+        }
+      }
+    }
+
+    console.log("Best Match Score:", bestMatchScore);
+    return bestMatchGroup;
+  };
+
 
   const handleRandomizeGroups = async () => {
     await getGroups(roomId, setGroups, memberNames, groupSize);
