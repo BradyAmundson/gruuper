@@ -129,7 +129,7 @@ export function SignUpEmail({ firstName, lastName, userType }) {
       );
       setLoading(true);
       await sendEmailVerification(userCredential.user).then(() => {
-        alert("Email sent");
+        alert("Email sent (Check Spam folder)");
         setLoading(false);
       });
 
@@ -232,7 +232,7 @@ export function SignInWithEmail() {
         password
       );
       if (!auth.currentUser.emailVerified) {
-        alert("Must Verify Email");
+        alert("Must Verify Email (Check Spam folder)");
         signOut(auth);
         return;
       }

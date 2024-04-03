@@ -18,6 +18,7 @@ import { increment } from "firebase/firestore";
 
 import SaveIcon from "@mui/icons-material/Save";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
+import SmartMatchIcon from "@mui/icons-material/Group";
 
 const ItemTypes = {
   MEMBER: "member",
@@ -124,6 +125,8 @@ const Classroom = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isProfessor, setIsProfessor] = useState(false);
 
+  const [isMatching, setIsMatching] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -179,6 +182,66 @@ const Classroom = () => {
 
     fetchData();
   }, [roomId]);
+
+  function calculateMatchScore(student1, student2) {
+    let score = 0;
+    if (student1.major === student2.major) score += 1;
+    if (student1.classYear === student2.classYear) score += 1;
+    if (student1.nightOrMorning === student2.nightOrMorning) score += 1;
+    if (student1.socialPreference === student2.socialPreference) score += 1;
+    if (student1.deadlineBehavior === student2.deadlineBehavior) score += 1;
+    return score;
+  }
+
+  function findBestMatches(students) {
+    // Sort students randomly to vary pairings each time the function is called
+    students.sort(() => 0.5 - Math.random());
+
+    let pairs = [];
+    let usedIndices = new Set();
+
+    for (let i = 0; i < students.length; i++) {
+      if (usedIndices.has(i)) continue; // Skip if student is already paired
+
+      let bestMatchIndex = -1;
+      let bestMatchScore = -1;
+
+      for (let j = i + 1; j < students.length; j++) {
+        if (usedIndices.has(j)) continue; // Skip if student is already paired
+
+        const score = calculateMatchScore(students[i], students[j]);
+        if (score > bestMatchScore) {
+          bestMatchScore = score;
+          bestMatchIndex = j;
+        }
+      }
+
+      if (bestMatchIndex !== -1) {
+        pairs.push([students[i], students[bestMatchIndex]]);
+        usedIndices.add(i);
+        usedIndices.add(bestMatchIndex);
+      }
+    }
+
+    return pairs;
+  }
+
+  const handleSmartMatch = async () => {
+    setIsMatching(true);
+
+    // Fetch students and their preferences
+    // For demonstration, let's assume `memberNames` includes all necessary info
+    const membersWithPreferences = [...memberNames]; // Assume this array has all the data
+
+    const matchedGroups = findBestMatches(membersWithPreferences);
+
+    // Example: Update your state with these new groups
+    // This step will depend on how your groups are structured and stored
+    // For now, we'll log the results to demonstrate output
+    console.log("Matched Groups:", matchedGroups);
+
+    setIsMatching(false);
+  };
 
   const handleRandomizeGroups = async () => {
     await getGroups(roomId, setGroups, memberNames, groupSize);
@@ -385,6 +448,11 @@ const Classroom = () => {
                 <ShuffleIcon
                   className="randomize-groups-button"
                   onClick={handleRandomizeGroups}
+                  sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                />
+                <SmartMatchIcon
+                  className="smart-match-button"
+                  onClick={handleSmartMatch}
                   sx={{ fontSize: "30px", transition: "transform 0.3s" }}
                 />
                 <SaveIcon

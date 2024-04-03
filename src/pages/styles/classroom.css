@@ -38,6 +38,21 @@ h2 {
   transform: scale(0.9);
 }
 
+.smart-match-button {
+  margin-right: 6%;
+  padding: 10px 30px;
+  background-color: #1f618d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.smart-match-button:hover {
+  background-color: #154362;
+  transform: scale(0.9);
+}
+
 /* Members section */
 #Members {
   background-color: #999;
@@ -124,6 +139,28 @@ h2 {
   justify-content: center;
 }
 
+.unmatched-members-area {
+  border: 2px dashed #ccc;
+  padding: 10px;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+}
+
+.unmatched-members-area ul {
+  list-style: none;
+  padding: 0;
+}
+
+.draggable-item-professor,
+.draggable-item-student {
+  cursor: pointer; /* Adjust as needed */
+  /* Additional styling */
+}
+
+.unmatched-members-list {
+  list-style: none;
+}
+
 .body {
   display: grid;
   flex-direction: column;
@@ -191,8 +228,8 @@ h2 {
 .size-counter {
   display: grid;
   grid-template-areas:
-    "title title"
-    "value buttons";
+    'title title'
+    'value buttons';
   grid-template-columns: 1fr 1fr;
   align-items: center;
   margin: 10px 0px 10px 3%;
