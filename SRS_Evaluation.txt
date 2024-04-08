@@ -9,7 +9,7 @@ Gruuper project
 Software Requirements Specification Document:
 ---------------------------------------------
 -- Introduction Section
-   Pretty scan introduction, I don't really know what the software will *DO*
+   Pretty scant introduction, I don't really know what the software will *DO*
    from this description, but at least I know what the parts are.  By the
    way, when using acronyms like "ML" the customary style is to fully define
    the words first, and put the acronym in parens after it like:
@@ -66,3 +66,13 @@ your score:  9% out of 10% which is an A-plus
 All in all, not a bad first effort, you just need to fill in more specifics.
 Make the changes as suggested above, including several more requirements for
 the second submission and you'll get the full 10% on this document.
+
+=============================================================================
+SECOND EVALUATION:
+
+your score:  9% out of 10% which is an A-minus
+
+I don't see any changes in your document, certainly none of the comments or
+suggestions seem to have been incorporated...
+
+Ah well... it's still in pretty good shape.
