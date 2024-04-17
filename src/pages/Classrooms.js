@@ -14,6 +14,7 @@ const Classrooms = () => {
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const userType = localStorage.getItem("userType");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +82,15 @@ const Classrooms = () => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                onClick={() => navigate(`/classroom?roomId=${code}`)}
+                onClick={() => {
+                  // Check the user type and navigate accordingly
+                  const userType = localStorage.getItem("userType");
+                  if (userType === "Student") {
+                    navigate(`/student-view?roomId=${code}`);  // Path for the StudentView
+                  } else {
+                    navigate(`/classroom?roomId=${code}`);  // Existing path for professors
+                  }
+                }}
                 onMouseEnter={(event) => {
                   event.target.style.transform = "scale(.95)";
                 }}
@@ -97,12 +106,11 @@ const Classrooms = () => {
                 <ListItemText
                   primary={`Classroom: ${name ? name : "Unnamed"} @ ${code}`}
                   secondary={
-                    userGroup.length > 0 &&
-                    localStorage.getItem("userType") === "student"
+                    userGroup.length > 0 && userType === "Student"
                       ? `Your Group: ${userGroup.join(", ")}`
-                      : localStorage.getItem("userType") === "Professor"
-                      ? "Click to view classroom"
-                      : "No group assigned"
+                      : userType != "Student"
+                        ? "Click to view classroom"
+                        : "No group assigned"
                   }
                 />
               </Button>

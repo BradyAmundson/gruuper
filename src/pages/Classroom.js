@@ -6,6 +6,7 @@ import {
   getUser,
   saveGroups,
   saveClassname,
+  removeMemberFromClassroom,
 } from "../firebase/firestoreService";
 import "./styles/classroom.css";
 import { DndProvider } from "react-dnd";
@@ -19,6 +20,8 @@ import { increment } from "firebase/firestore";
 import SaveIcon from "@mui/icons-material/Save";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import SmartMatchIcon from "@mui/icons-material/Group";
+import DeleteIcon from '@mui/icons-material/Delete';
+
 
 const ItemTypes = {
   MEMBER: "member",
@@ -98,6 +101,7 @@ const DroppableGroup = ({
     </div>
   );
 };
+
 
 const NewGroupArea = ({ createNewGroup }) => {
   const [, drop] = useDrop(() => ({
@@ -182,6 +186,13 @@ const Classroom = () => {
 
     fetchData();
   }, [roomId]);
+
+  const handleDeleteMember = async (userId, roomId) => {
+    await removeMemberFromClassroom(roomId, userId);
+    // Refresh your member list or handle UI updates here
+    setMemberNames(prevMembers => prevMembers.filter(member => member.id !== userId));
+  }
+
 
   function calculateMatchScore(student1, student2) {
     let score = 0;
@@ -507,9 +518,21 @@ const Classroom = () => {
           </div>
           <div id="Members">
             <h3>Classroom Members ({memberNames.length})</h3>
-            {memberNames.sort().map((member) => (
-              <li key={member.name}>{member.name}</li>
-            ))}
+            <ul>
+              {memberNames.sort((a, b) => a.name.localeCompare(b.name)).map((member) => (
+                <li key={member.id}>
+                  {member.name}
+                  <IconButton
+                    onClick={() => handleDeleteMember(member.id, roomId)}
+                    aria-label="delete member"
+                    size="small"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </li>
+              ))}
+            </ul>
+
           </div>
         </div>
       </div>

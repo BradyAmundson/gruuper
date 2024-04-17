@@ -131,3 +131,30 @@ export async function getUser(userId) {
 export async function updateUser(userId, data) {
   await updateDoc(doc(db, "users", userId), data);
 }
+
+export async function removeMemberFromClassroom(roomId, userId) {
+  const documentRef = doc(db, "classrooms", roomId);
+  const userRef = doc(db, "users", userId);
+
+  try {
+    // Get current classroom data
+    const classroomSnapshot = await getDoc(documentRef);
+    if (classroomSnapshot.exists()) {
+      const classroomData = classroomSnapshot.data();
+      const updatedMembers = classroomData.members.filter(member => member !== userId);
+      await updateDoc(documentRef, { members: updatedMembers });
+
+      // Optionally update user's classroom codes
+      const userSnapshot = await getDoc(userRef);
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+        const updatedClassroomCodes = userData.classroomCodes.filter(code => code !== roomId);
+        await updateDoc(userRef, { classroomCodes: updatedClassroomCodes });
+      }
+
+      console.log("Member removed from classroom.");
+    }
+  } catch (error) {
+    console.error("Error removing member: ", error);
+  }
+}

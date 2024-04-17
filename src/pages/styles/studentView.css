@@ -1,0 +1,54 @@
+.student-view-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.group-box {
+  flex: 1;
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.classroom-box {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  background-color: #f8f8f8;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.member-list {
+  list-style-type: none;
+  width: 100%;
+  padding: 0;
+}
+
+.member-item {
+  padding: 10px;
+  border-bottom: 1px solid #e7e7e7;
+  margin: 5px 0;
+}
+
+.member-name {
+  font-weight: bold;
+  color: inherit; /* Ensures text color matches the styling of the box it's in */
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #232323;
+}
