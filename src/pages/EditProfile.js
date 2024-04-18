@@ -1,44 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Typography, TextField, Button, Paper, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { updateUser } from '../firebase/firestoreService';
+import { updateUser, getUser } from '../firebase/firestoreService';
 
 function EditProfile() {
     const navigate = useNavigate();
     const userId = localStorage.getItem('userId');
-    const [firstName, setFirstName] = useState(localStorage.getItem('firstName') || '');
-    const [lastName, setLastName] = useState(localStorage.getItem('lastName') || '');
-    const [major, setMajor] = useState('');
-    const [classYear, setClassYear] = useState('');
-    const [, set] = useState('');
-    const [nightOrMorning, setnightOrMorning] = useState('');
-    const [socialPreference, setsocialPreference] = useState('');
-    const [deadlineBehavior, setDeadlineBehavior] = useState('');
-    const [unavailableTimes, setUnavailableTimes] = useState([]);
+    const [userData, setUserData] = useState({
+        firstName: '',
+        lastName: '',
+        major: '',
+        classYear: '',
+        nightOrMorning: '',
+        socialPreference: '',
+        deadlineBehavior: '',
+        unavailableTimes: [],
+    });
+
+    // Fetch user profile information from FireBase
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const currentUserData = await getUser(userId);
+                console.log('Fetched user data:', currentUserData);
+                setUserData(currentUserData);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     // Handle selecting/deselecting time slots
     const toggleTimeSlot = (day, slot) => {
         const timeSlotId = `${day}-${slot}`;
-        setUnavailableTimes((prev) =>
-            prev.includes(timeSlotId)
-                ? prev.filter((time) => time !== timeSlotId)
-                : [...prev, timeSlotId]
-        );
+        setUserData(prevUserData => {
+            const updatedUnavailableTimes = prevUserData.unavailableTimes.includes(timeSlotId)
+                ? prevUserData.unavailableTimes.filter(time => time !== timeSlotId)
+                : [...prevUserData.unavailableTimes, timeSlotId];
+
+            return {
+                ...prevUserData,
+                unavailableTimes: updatedUnavailableTimes,
+            };
+        });
     };
+
 
     const handleSave = async () => {
         // Include logic to validate form data
-        const userData = {
-            firstName,
-            lastName,
-            major,
-            classYear,
-            nightOrMorning,
-            socialPreference,
-            deadlineBehavior,
-            unavailableTimes,
-        };
-
         try {
             await updateUser(userId, userData);
             alert('Profile and questionnaire updated successfully!');
@@ -66,10 +77,16 @@ function EditProfile() {
                     return (
                         <Button
                             key={timeSlotId}
-                            variant={unavailableTimes.includes(timeSlotId) ? 'contained' : 'outlined'}
+                            variant={userData.unavailableTimes.includes(timeSlotId) ? 'contained' : 'outlined'}
                             onClick={() => toggleTimeSlot(day, slot)}
                             size="small"
-                            style={{ margin: '2px' }}
+                            style={{ margin: '2px', transition: 'background-color 0.3s, color 0.3s' }}
+                            sx={{
+                                '&:hover': {
+                                    backgroundColor: userData.unavailableTimes.includes(timeSlotId) ? '#1e5799' : '#6db3f2',
+                                    color: 'white',
+                                },
+                            }}
                         >
                             {slot}
                         </Button>
@@ -78,6 +95,7 @@ function EditProfile() {
             </div>
         ));
     };
+
 
     const paperStyle = {
         padding: '2rem',
@@ -89,30 +107,47 @@ function EditProfile() {
         maxWidth: '500px',
     };
 
+    const headingStyle = {
+        margin: '10px',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '28px',
+        color: 'transparent',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundImage: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+        display: 'inline',
+    };
+
+    const handleCancel = () => {
+        navigate('/profile');
+    };
+
     return (
         <Container maxWidth="sm">
             <Paper elevation={3} style={paperStyle}>
-                <Typography variant="h5" gutterBottom>Edit Profile</Typography>
+                <Typography variant="h5" gutterBottom style={headingStyle}>Edit Profile</Typography>
 
                 <TextField
                     label="First Name"
                     variant="outlined"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={userData.firstName}
+                    onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
                     margin="normal"
                     fullWidth
                 />
                 <TextField
                     label="Last Name"
                     variant="outlined"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={userData.lastName}
+                    onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
                     margin="normal"
                     fullWidth
                 />
 
                 {/* Questionnaire Section */}
-                <Typography variant="h6" style={{ margin: '2rem 0 1rem' }}>
+                <Typography variant="h6" style={{ ...headingStyle, margin: '2rem 0 1rem', fontSize: '1.2rem' }}>
                     SmartMatch Questionnaire
                 </Typography>
                 <FormControl fullWidth margin="normal">
@@ -120,9 +155,9 @@ function EditProfile() {
                     <Select
                         labelId="major-label"
                         id="major"
-                        value={major}
+                        value={userData.major}
                         label="Major"
-                        onChange={(e) => setMajor(e.target.value)}
+                        onChange={(e) => setUserData({ ...userData, major: e.target.value })}
                     >
                         <MenuItem value={"Computer Science"}>Computer Science</MenuItem>
                         <MenuItem value={"Engineer"}>Other Engineering Major</MenuItem>
@@ -135,9 +170,9 @@ function EditProfile() {
                     <Select
                         labelId="class-year-label"
                         id="class-year"
-                        value={classYear}
+                        value={userData.classYear}
                         label="Class Year"
-                        onChange={(e) => setClassYear(e.target.value)}
+                        onChange={(e) => setUserData({ ...userData, classYear: e.target.value })}
                     >
                         <MenuItem value={"Freshman"}>Freshman</MenuItem>
                         <MenuItem value={"Sophomore"}>Sophomore</MenuItem>
@@ -151,9 +186,9 @@ function EditProfile() {
                     <Select
                         labelId="time-of-day-preference-label"
                         id="time-of-day-preference"
-                        value={nightOrMorning}
+                        value={userData.nightOrMorning}
                         label="Are you a night owl or an early bird?"
-                        onChange={(e) => setnightOrMorning(e.target.value)}
+                        onChange={(e) => setUserData({ ...userData, nightOrMorning: e.target.value })}
                     >
                         <MenuItem value={"Night Owl"}>Night Owl</MenuItem>
                         <MenuItem value={"Early Bird"}>Early Bird</MenuItem>
@@ -164,9 +199,9 @@ function EditProfile() {
                     <Select
                         labelId="social-preference-label"
                         id="social-preference"
-                        value={socialPreference}
+                        value={userData.socialPreference}
                         label="How do you prefer to do your school work?"
-                        onChange={(e) => setsocialPreference(e.target.value)}
+                        onChange={(e) => setUserData({ ...userData, socialPreference: e.target.value })}
                     >
                         <MenuItem value={"Solo"}>I want to work alone.</MenuItem>
                         <MenuItem value={"Open"}>Solo mostly, but I'm open to a team.</MenuItem>
@@ -178,9 +213,9 @@ function EditProfile() {
                     <Select
                         labelId="deadline-behavior-label"
                         id="deadline-behavior"
-                        value={deadlineBehavior}
+                        value={userData.deadlineBehavior}
                         label="Give it to me straight: How are you with deadlines?"
-                        onChange={(e) => setDeadlineBehavior(e.target.value)}
+                        onChange={(e) => setUserData({ ...userData, deadlineBehavior: e.target.value })}
                     >
                         <MenuItem value={"1"}>On it the day it's assigned.</MenuItem>
                         <MenuItem value={"2"}>Best to spread the work evenly each week.</MenuItem>
@@ -189,21 +224,54 @@ function EditProfile() {
                     </Select>
                 </FormControl>
 
-                <Typography variant="h6" style={{ margin: '2rem 0 1rem' }}>
+
+                <Typography variant="h6" style={{ ...headingStyle, margin: '2rem 0 1rem', fontSize: '1.2rem' }}>
                     Select Weekly Commitments
                 </Typography>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                     {generateTimeSlots()}
                 </div>
 
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSave}
-                    style={{ marginTop: '1rem' }}
-                >
-                    Save Changes
-                </Button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem', gap: '1rem' }}>
+                    <Button
+                        variant="outlined"
+                        style={{
+                            background: 'white',
+                            color: '#1e5799',
+                            borderRadius: '12px',
+                            padding: '12px 36px',
+                            transition: 'background-color 0.3s, color 0.3s',
+                        }}
+                        sx={{
+                            '&:hover': {
+                                backgroundColor: '#6db3f2',
+                                color: 'white',
+                            },
+                        }}
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        style={{
+                            background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+                            color: 'white',
+                            borderRadius: '12px',
+                            padding: '12px 36px',
+                            transition: 'background-color 0.3s, color 0.3s',
+                        }}
+                        sx={{
+                            '&:hover': {
+                                background: 'linear-gradient(145deg, #1e5799, #6db3f2)',
+                                color: 'white',
+                            },
+                        }}
+                        onClick={handleSave}
+                    >
+                        Save Changes
+                    </Button>
+                </div>
             </Paper>
         </Container>
     );

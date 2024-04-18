@@ -351,31 +351,39 @@ export function ResetPassword() {
   };
 
   return (
-    <div>
-      <h2>Reset Password</h2>
+    <div style={{ maxWidth: "400px", margin: "auto", padding: "20px", borderRadius: "8px", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "20px", fontSize: "28px", color: "transparent", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)", display: "inline" }}>Reset Password</h2>
       <form onSubmit={handleResetPassword}>
-        <label>
-          Old Password:
+        <div style={{ marginBottom: "20px", marginTop: "20px" }}>
+          <label style={{ display: "block", marginBottom: "5px" }}>Old Password:</label>
           <input
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
+            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }}
           />
-        </label>
-        <label>
-          New Password:
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{ display: "block", marginBottom: "5px" }}>New Password:</label>
           <input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }}
           />
-        </label>
-        <button type="submit">Reset Password</button>
-        {error && <div className="error">{error}</div>}
+        </div>
+        <button
+          type="submit"
+          style={{ width: "100%", padding: "12px 36px", borderRadius: "12px", border: "none", background: "linear-gradient(145deg, #6db3f2, #1e5799)", color: "white", fontSize: "16px", cursor: "pointer" }}
+        >
+          Reset Password
+        </button>
+        {error && <div style={{ marginTop: "10px", color: "red" }}>{error}</div>}
       </form>
     </div>
   );
 }
+
 
 export function useAuthentication() {
   const [user, setUser] = useState(null);
