@@ -1,119 +1,173 @@
 /* Main container */
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  max-width: 100%;
+}
+
+.control-center {
+  display: flex;
+  flex-direction: row; /* Change flex-direction to row for horizontal alignment */
+  align-items: center; /* Keeps items aligned at their center line */
+  justify-content: space-around; /* Distributes space around items for even spacing */
+  margin: 20px;
+  width: 80%;
+  flex-wrap: wrap;
+}
 
 /* Lobby and RoomID headers */
 h1,
 h2 {
   text-align: center;
+  margin-top: 20px;
   margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #232323;
+  padding: 15px;
 }
 
-/* Randomize Groups button */
-.randomize-groups-button {
-  display: block;
-  padding: 10px 30px;
-  background-color: #1f618d;
+/* Randomize Groups button and other buttons styled uniformly */
+.randomize-groups-button,
+.save-groups-button,
+.smart-match-button,
+.counter-button {
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
   color: white;
-  border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
-}
-
-.randomize-groups-button:hover {
-  background-color: #154362;
-  transform: scale(0.9);
-}
-
-.save-groups-button {
-  margin-right: 6%;
-  padding: 10px 30px;
-  background-color: #1f618d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.save-groups-button:hover {
-  background-color: #154362;
-  transform: scale(0.9);
-}
-
-.smart-match-button {
-  margin-right: 6%;
-  padding: 10px 30px;
-  background-color: #1f618d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.smart-match-button:hover {
-  background-color: #154362;
-  transform: scale(0.9);
-}
-
-/* Members section */
-#Members {
-  background-color: #999;
-  border-radius: 4px;
+  font-size: 16px;
+  padding: 12px 36px;
   margin: 10px;
-  border-bottom: 1px solid #f1f1f1;
-  padding-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.randomize-groups-button:hover,
+.save-groups-button:hover,
+.smart-match-button:hover,
+.counter-button:hover {
+  background-color: #154362;
+  transform: scale(0.9);
+}
+
+/* Members section styling */
+#Members {
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  margin: 20px;
+  border: 2px solid #ccc;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  width: 300px; /* Fixed width */
+  flex-shrink: 0; /* Prevents the box from shrinking */
+  height: calc(
+    75vh - 40px
+  ); /* Height adjusted to start from 1/4 top and end with a margin of 20px */
+  overflow-y: auto; /* Allows scrolling if content is too long */
+  position: fixed; /* Fixed position on the right */
+  right: 20px; /* Right edge alignment */
+  top: 25vh; /* Starts 1/4 down from the top of the viewport */
+  right: -320px; /* Hide by default by shifting it off-screen */
+  transition: right 0.5s, box-shadow 0.3s;
+}
+
+#Members h1 {
+  color: #888; /* Light gray color for the caption */
+  font-size: 14px; /* Smaller font size for the caption */
+  margin-top: 5px; /* Add some margin space between the button and caption */
+  font-style: italic;
 }
 
 #Members h3 {
-  background-color: #ddd;
-  margin: 10px 10px 5px 10px;
-  padding: 5px;
-  border-radius: 4px;
+  margin: 10px; /* Increased margin for spacing */
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 22px;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(145deg, #6db3f2, #1e5799);
+  display: inline;
+}
+
+#Members ul {
+  padding: 0;
+  list-style-type: none;
 }
 
 #Members li {
-  background-color: #f1f1f1;
-  margin: 5px 10px 5px 10px;
-  padding: 5px;
-  border-radius: 4px;
-  list-style: none;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.draggable-item-professor {
-  transition: transform 0.3s;
+/* Button to show/hide Members section */
+.show-members-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 350px; /* Increase the right distance to prevent overlap */
+  background: linear-gradient(
+    145deg,
+    #6db3f2,
+    #1e5799
+  ); /* Styling to match group control buttons */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 35px; /* Bigger button */
+  font-size: 18px; /* Larger font size for better visibility */
+  cursor: pointer;
+  transition: background-color 0.3s, right 0.5s; /* Smooth transitions for background color and right property */
 }
 
-.draggable-item-professor:hover {
-  transform: scale(1.1);
-  cursor: grab;
+.show-members-btn:hover {
+  background-color: #154362; /* Darker shade on hover */
 }
 
-.dragging-item {
-  opacity: 0.25;
-}
-
-/* Groups section */
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(
+  /* grid-template-columns: repeat(
     auto-fill,
     minmax(175px, 1fr)
-  ); /* Adjust as needed */
-  gap: 20px; /* Spacing between grid items */
+  );*/
+  grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 columns */
+  gap: 20px;
   padding: 10px;
+  /* width: 10%; Set width to 75% of the page */
+  margin: 0 auto; /* Center the grid container */
 }
 
 #Groups {
-  background-color: #fff; /* Optional: Adds a background color */
-  border: 1px solid #ddd; /* Optional: Adds a border */
-  border-radius: 4px;
-  padding: 10px;
-  padding-bottom: 10px;
+  background-color: #f8f8f8; /* Soft gray background */
+  border: 1px solid #abd0e4; /* Light gray border */
+  border-radius: 10px;
+  margin-top: 26px; /* Increased from 20px */
+  padding: 26px; /* Increased from 20px */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 #Groups h3 {
-  background-color: #ddd;
-  margin: 5px;
-  padding: 5px;
-  border-radius: 4px;
+  margin: 13px; /* Increased from 10px */
+  padding: 13px; /* Increased from 10px */
+  border-radius: 8px;
+  font-size: 36px; /* Increased from 28px */
+  color: transparent; /* Transparent text color */
+  -webkit-background-clip: text; /* Apply background to text */
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(145deg, #6db3f2, #1e5799);
+  display: inline;
 }
 
 #Groups ul {
@@ -122,115 +176,142 @@ h2 {
 }
 
 #Groups li {
-  background-color: #f1f1f1;
-  margin: 5px;
-  padding: 5px;
-  border-radius: 4px;
+  background-color: #fff; /* White background */
+  margin: 13px; /* Increased from 10px */
+  padding: 13px; /* Increased from 10px */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(7, 47, 65, 0.1); /* Subtle shadow for depth */
+  font-size: 21px; /* Increased from 16px */
+  color: #333; /* Darker text color */
 }
 
-.new-group-area {
-  background-color: #fff; /* Matches the background color of existing groups */
-  border: 1px solid #ddd; /* Matches the border of existing groups */
-  border-radius: 4px;
+.new-group-area,
+.unmatched-members-area {
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 10px;
   padding: 10px;
-  text-align: center; /* Center the text inside the new group area */
+  text-align: center;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.unmatched-members-area {
-  border: 2px dashed #ccc;
-  padding: 10px;
-  margin-top: 20px;
-  background-color: #f9f9f9;
+.new-group-caption {
+  color: #888; /* Light gray color for the caption */
+  font-size: 14px; /* Smaller font size for the caption */
+  margin-top: 5px; /* Add some margin space between the button and caption */
+  font-style: italic;
 }
 
-.unmatched-members-area ul {
-  list-style: none;
-  padding: 0;
+.new-group-plus {
+  display: inline-block;
+  padding: 20px;
+  margin-bottom: 10px;
+  transition: transform 0.3s, background-color 0.3s, border-color 0.3s;
+  position: relative;
 }
 
+.new-group-plus svg {
+  fill: #727477; /* This sets the color of the SVG */
+  width: 80px; /* Set the size of the icon */
+  height: 80px; /* Set the size of the icon */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(1px 2px 4px #acbbc3);
+}
+
+/* Draggable items and special areas */
 .draggable-item-professor,
 .draggable-item-student {
-  cursor: pointer; /* Adjust as needed */
-  /* Additional styling */
-}
-
-.unmatched-members-list {
-  list-style: none;
-}
-
-.body {
-  display: grid;
-  flex-direction: column;
-  grid-template-columns: 2.5fr 1fr;
-}
-
-.groups {
-  background-color: white;
-}
-
-.counter-button {
-  border-radius: 4px;
-  width: 1.75rem;
-  padding: 2px;
-  margin: 2px 10px;
-  font-weight: bold;
-  font-size: 16px;
-  border: none;
-  background-color: #1f618d;
-  color: white;
-  cursor: pointer;
+  cursor: grab;
   transition: transform 0.3s;
 }
 
-.counter-buttons {
-  grid-area: buttons;
-  align-items: left;
+.draggable-item-professor:hover,
+.draggable-item-student:hover {
+  transform: scale(1.1);
 }
 
-.counter-button:hover {
-  background-color: #154362;
-  transform: scale(0.9);
+.dragging-item {
+  opacity: 0.25;
 }
 
+.group-controls,
+.size-counter {
+  height: 100px; /* Replace with the actual height of the .size-counter */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* Counter and control group styling to match the unified aesthetic */
 .group-controls {
-  background-color: lightGray;
-  border: 5px solid gray;
-  border-radius: 4px;
+  background-color: #f8f8f8;
+  border: 2px solid #b1bdc8;
+  border-radius: 10px;
   margin: 10px;
+  padding: 10px;
+  flex-grow: 1;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
-}
-
-.counter-title {
-  grid-area: title;
-  margin: 5px 0px;
-}
-
-.counter-value {
-  align-items: right;
-  grid-area: value;
-  width: 1.75rem;
-  height: 1.75rem;
-  align-items: center;
-  font-weight: bold;
-  display: flex;
-  margin: 2px 0px 2px 20px;
-  padding: 0.5rem;
-  font-size: 1.5rem;
-  background-color: #fff;
-  border-radius: 4px;
 }
 
 .size-counter {
-  display: grid;
-  grid-template-areas:
-    'title title'
-    'value buttons';
+  display: flex;
+  grid-template-areas: 'title title' 'value buttons';
   grid-template-columns: 1fr 1fr;
   align-items: center;
+  justify-content: space-between;
   margin: 10px 0px 10px 3%;
+  border: 2px solid #b1bdc8; /* Highlight with a soft blue outline */
+  padding: 10px;
+  border-radius: 8px; /* Rounded corners for the outline */
+  margin: 10px; /* Spacing around the box */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* Subtle shadow for 3D effect */
+}
+
+.delete-button:hover {
+  color: red;
+}
+
+.counter-value {
+  background-color: #ffffff; /* White background for clarity */
+  color: #0e3057; /* Dark blue text for contrast */
+  font-size: 24px; /* Larger font size for easy reading */
+  font-weight: bold; /* Bold font to highlight importance */
+  padding: 8px 16px; /* Padding for visual space around the text */
+  border-radius: 8px; /* Rounded corners for a smoother look */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  display: inline-flex; /* Flex display to center content */
+  align-items: center; /* Vertical center alignment */
+  justify-content: center; /* Horizontal center alignment */
+  margin: 0 10px; /* Margins to separate from other elements */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
+}
+
+.counter-title {
+  color: #303c48; /* Harmonizing the text color with the theme */
+  font-size: 24px; /* Appropriate font size for headings */
+  font-weight: bold; /* Bold to make it stand out as a heading */
+  display: block; /* Ensures the element is treated as a block for layout purposes */
+  text-align: center; /* Centering the text to align with the centered design of counter elements */
+  width: 100%; /* Ensuring the title spans the full width of its container for better alignment */
+}
+
+.class-info {
+  margin: 10px; /* Increased margin for spacing */
+  padding: 10px; /* Increased padding for a softer appearance */
+  border-radius: 8px;
+  font-size: 28px; /* Larger font size for headings */
+  color: transparent; /* Transparent text color */
+  -webkit-background-clip: text; /* Apply background to text */
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(145deg, #6db3f2, #1e5799);
+  display: inline;
 }

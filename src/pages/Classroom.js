@@ -21,6 +21,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import SmartMatchIcon from "@mui/icons-material/Group";
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+
 
 
 const ItemTypes = {
@@ -111,7 +113,8 @@ const NewGroupArea = ({ createNewGroup }) => {
 
   return (
     <div ref={drop} className="new-group-area">
-      <p>Drop here to create a new group</p>
+      <p className="new-group-plus"><AddIcon fontSize="large" /></p>
+      <p className="new-group-caption">Drop here to create a new group</p>
     </div>
   );
 };
@@ -130,6 +133,12 @@ const Classroom = () => {
   const [isProfessor, setIsProfessor] = useState(false);
 
   const [isMatching, setIsMatching] = useState(false);
+
+  const [showMembers, setShowMembers] = useState(false);
+  const buttonRightPosition = showMembers ? '400px' : '50px';
+  const toggleMembers = () => {
+    setShowMembers(!showMembers);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -454,32 +463,33 @@ const Classroom = () => {
         </div>
 
         <div className="body">
-          <div className="groups">
-            {isProfessor && (
-              <div className="group-controls">
-                <div className="size-counter">
-                  <h3 className="counter-title">Group Size</h3>
-                  <span className="counter-value">
-                    {groupSize < 10 ? "0" + groupSize : groupSize}
-                  </span>
-                  <div
-                    className="counter-buttons"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <button className="counter-button" onClick={incrementSize}>
-                      {" "}
-                      +{" "}
-                    </button>
-                    <button className="counter-button" onClick={DecrementSize}>
-                      {" "}
-                      -{" "}
-                    </button>
-                  </div>
+          {isProfessor && (
+            <div className="control-center">
+              <div className="size-counter">
+                <h3 className="counter-title">Group Size</h3>
+                <span className="counter-value">
+                  {groupSize < 10 ? "0" + groupSize : groupSize}
+                </span>
+                <div
+                  className="counter-buttons"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <button className="counter-button" onClick={incrementSize}>
+                    {" "}
+                    +{" "}
+                  </button>
+                  <button className="counter-button" onClick={DecrementSize}>
+                    {" "}
+                    -{" "}
+                  </button>
                 </div>
+              </div>
+              <div className="group-controls">
+
                 <ShuffleIcon
                   className="randomize-groups-button"
                   onClick={handleRandomizeGroups}
@@ -496,43 +506,59 @@ const Classroom = () => {
                   sx={{ fontSize: "30px", transition: "transform 0.3s" }}
                 />
               </div>
-            )}
-            <div className="grid-container">
-              {classroom.groups &&
-                Object.entries(classroom.groups).map(([key, group], index) => (
-                  <DroppableGroup
-                    key={index}
-                    group={group}
-                    index={index}
-                    moveMember={moveMember}
-                    setCurrentlyDragging={setCurrentlyDragging}
-                    currentlyDragging={currentlyDragging}
-                    memberNames={memberNames}
-                    isProfessor={isProfessor}
-                  />
-                ))}
-              {currentlyDragging !== null && (
-                <NewGroupArea createNewGroup={createNewGroup} />
-              )}
             </div>
-          </div>
-          <div id="Members">
-            <h3>Classroom Members ({memberNames.length})</h3>
-            <ul>
-              {memberNames.sort((a, b) => a.name.localeCompare(b.name)).map((member) => (
-                <li key={member.id}>
-                  {member.name}
-                  <IconButton
-                    onClick={() => handleDeleteMember(member.id, roomId)}
-                    aria-label="delete member"
-                    size="small"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </li>
+          )}
+          <div className="grid-container">
+            {/* <div className="groups"> */}
+            {classroom.groups &&
+              Object.entries(classroom.groups).map(([key, group], index) => (
+                <DroppableGroup
+                  key={index}
+                  group={group}
+                  index={index}
+                  moveMember={moveMember}
+                  setCurrentlyDragging={setCurrentlyDragging}
+                  currentlyDragging={currentlyDragging}
+                  memberNames={memberNames}
+                  isProfessor={isProfessor}
+                />
               ))}
-            </ul>
+            {currentlyDragging !== null && (
+              <NewGroupArea createNewGroup={createNewGroup} />
+            )}
+            {/* </div> */}
+          </div>
+          <div>
+            <button
+              onClick={toggleMembers}
+              className="show-members-btn"
+              style={{ right: buttonRightPosition }}
+            >
+              {showMembers ? "Hide Members" : "Show Members"}
+            </button>
 
+            <div
+              id="Members"
+              style={{ right: showMembers ? '20px' : '-320px' }}  // Conditional styling based on showMembers state
+            >
+              <h3>Classroom Members ({memberNames.length})</h3>
+              <ul>
+                {memberNames.sort((a, b) => a.name.localeCompare(b.name)).map((member) => (
+                  <li key={member.id}>
+                    {member.name}
+                    <IconButton
+                      onClick={() => handleDeleteMember(member.id, roomId)}
+                      aria-label="delete member"
+                      size="small"
+                      className="delete-button"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </li>
+                ))}
+              </ul>
+              <h1>Be sure to click save after removing a student!</h1>
+            </div>
           </div>
         </div>
       </div>
