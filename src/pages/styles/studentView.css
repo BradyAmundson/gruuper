@@ -1,3 +1,5 @@
+/* studentView.css */
+
 .student-view-container {
   max-width: 1200px;
   margin: 20px auto;
@@ -27,6 +29,20 @@
   border-radius: 10px;
   background-color: #f8f8f8;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+h1 {
+  color: #232323;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #232323;
 }
 
 .member-list {
@@ -43,12 +59,16 @@
 
 .member-name {
   font-weight: bold;
-  color: inherit; /* Ensures text color matches the styling of the box it's in */
+  color: inherit;
 }
 
-h2 {
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 600;
-  color: #232323;
+@media (max-width: 768px) {
+  .student-view-container {
+    flex-direction: column;
+  }
+  .group-box,
+  .classroom-box {
+    width: 100%;
+    margin-right: 0;
+  }
 }

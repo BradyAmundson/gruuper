@@ -8,6 +8,7 @@ import {
   signInWithPhoneNumber,
   signInWithEmailAndPassword,
   sendEmailVerification,
+  updatePassword,
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { createUser, getUser } from "./firestoreService";
@@ -318,6 +319,60 @@ export function SignOut() {
       >
         Sign Out
       </Button>
+    </div>
+  );
+}
+
+export function ResetPassword() {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    try {
+      const user = auth.currentUser;
+      if (oldPassword === newPassword) {
+        setError("New password must be different from old password.");
+        return;
+      }
+      await signInWithEmailAndPassword(auth, user.email, oldPassword);
+
+      updatePassword(user, newPassword).then(() => {
+        console.log("Password Updated");
+      });
+      setOldPassword("");
+      setNewPassword("");
+      setError("");
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  return (
+    <div>
+      <h2>Reset Password</h2>
+      <form onSubmit={handleResetPassword}>
+        <label>
+          Old Password:
+          <input
+            type="password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+          />
+        </label>
+        <label>
+          New Password:
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </label>
+        <button type="submit">Reset Password</button>
+        {error && <div className="error">{error}</div>}
+      </form>
     </div>
   );
 }
