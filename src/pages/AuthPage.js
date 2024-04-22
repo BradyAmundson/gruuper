@@ -20,12 +20,12 @@ const AuthPage = () => {
 
   return (
     <div>
-      <h1>Authentication Page</h1>
+      <h1 className="title">Welcome to Gruuper!</h1>
       <div className="auth-buttons">
-        <button className="auth" onClick={openSignInModal}>
+        <button className="sign-in" onClick={openSignInModal}>
           Sign In
         </button>
-        <button className="auth" onClick={openSignUpModal}>
+        <button className="sign-up" onClick={openSignUpModal}>
           Sign Up
         </button>
       </div>

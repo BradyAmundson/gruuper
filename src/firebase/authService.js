@@ -17,14 +17,34 @@ import { useNavigate } from "react-router-dom";
 
 auth.useDeviceLanguage();
 
+const StyledButton = ({ onClick, children }) => (
+  <Button
+    variant="contained"
+    onClick={onClick}
+    style={{
+      marginTop: "1rem",
+      transition: "transform 0.2s",
+      background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+      color: "white",
+      borderRadius: "12px",
+      cursor: "pointer",
+      fontSize: "16px",
+      padding: "12px 36px",
+      margin: "10px",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    {children}
+  </Button>
+);
+
 export function SignIn() {
   const handleSignIn = () => {
     signInWithPopup(auth, new GoogleAuthProvider());
   };
   return (
-    <Button variant="contained" color="primary" onClick={handleSignIn}>
-      Sign In
-    </Button>
+    <StyledButton onClick={handleSignIn}>Sign In</StyledButton>
   );
 }
 
@@ -76,7 +96,7 @@ export function SignUpPhone() {
         />
       </label>
       <div id="recaptcha-container"></div>
-      <button onClick={handleSendCode}>Send Verification Code</button>
+      <StyledButton onClick={handleSendCode}>Send Verification Code</StyledButton>
 
       <label>
         Verification Code:
@@ -86,7 +106,7 @@ export function SignUpPhone() {
           onChange={(e) => setCode(e.target.value)}
         />
       </label>
-      <button onClick={handleVerifyCode}>Verify Code</button>
+      <StyledButton onClick={handleVerifyCode}>Verify Code</StyledButton>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
@@ -210,9 +230,7 @@ export function SignUpEmail({ firstName, lastName, userType }) {
       {loading ? (
         <div>Loading</div>
       ) : (
-        <Button variant="contained" color="primary" onClick={handleSignUp}>
-          Sign Up
-        </Button>
+        <StyledButton onClick={handleSignUp}>Sign Up</StyledButton>
       )}
     </div>
   );
@@ -283,21 +301,7 @@ export function SignInWithEmail() {
         </label>
       </div>
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSignIn}
-        style={{
-          display: "block",
-          width: "100%",
-          padding: "10px",
-          marginTop: "35px",
-          color: "white",
-          cursor: "pointer",
-        }}
-      >
-        Sign In
-      </Button>
+      <StyledButton onClick={handleSignIn}>Sign In</StyledButton>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
@@ -313,9 +317,20 @@ export function SignOut() {
       {/* Hello, {localStorage.getItem("firstName")} &nbsp; */}
       <Button
         variant="contained"
-        color="lightBlue"
         onClick={handleSignOut}
-        fullWidth
+        style={{
+          marginTop: "1rem",
+          transition: "transform 0.2s",
+          background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+          color: "white",
+          borderRadius: "12px",
+          cursor: "pointer",
+          fontSize: "16px",
+          padding: "12px 36px",
+          margin: "10px",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         Sign Out
       </Button>

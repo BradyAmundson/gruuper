@@ -20,9 +20,21 @@ const SignInModal = ({ isOpen, onRequestClose }) => {
     },
   };
 
+  const headingStyle = {
+    margin: '10px',
+    padding: '10px',
+    borderRadius: '8px',
+    fontSize: '28px',
+    color: 'transparent',
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundImage: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+  };
+
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose} style={customStyles}>
-      <h2>Sign Into Gruuper</h2>
+      <h2 style={headingStyle}>Sign-In</h2>
       <SignInWithEmail />
     </Modal>
   );

@@ -185,6 +185,47 @@ h2 {
   color: #333; /* Darker text color */
 }
 
+#UnmatchedGroups {
+  background-color: #fff5f5; /* Light red background for distinction */
+  border: 2px dashed #db6d6d; /* Dashed red border for emphasis */
+  border-radius: 10px;
+  margin-top: 30px; /* Slightly more margin for clear separation */
+  padding: 30px; /* Generous padding for better layout */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
+}
+
+#UnmatchedGroups h3 {
+  margin: 15px; /* Adjusted margin for visual balance */
+  padding: 15px; /* More padding for emphasis */
+  border-radius: 8px;
+  font-size: 36px; /* Large font size for headers */
+  color: transparent; /* Transparent text to apply gradient */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(
+    145deg,
+    #f29d9d,
+    #db6d6d
+  ); /* Reddish gradient for visual impact */
+  display: inline;
+}
+
+#UnmatchedGroups ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#UnmatchedGroups li {
+  background-color: #fff; /* White background to maintain readability */
+  margin: 15px; /* Increased margin for distinct look */
+  padding: 15px; /* Increased padding for comfort */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(217, 83, 79, 0.2); /* Soft red shadow for depth */
+  font-size: 21px; /* Comfortable font size for readability */
+  color: #333; /* Standard text color for consistency */
+}
+
 .new-group-area,
 .unmatched-members-area {
   background-color: #fff;
@@ -304,12 +345,12 @@ h2 {
 }
 
 .class-info {
-  margin: 10px; /* Increased margin for spacing */
-  padding: 10px; /* Increased padding for a softer appearance */
+  margin: 10px;
+  padding: 10px;
   border-radius: 8px;
-  font-size: 28px; /* Larger font size for headings */
-  color: transparent; /* Transparent text color */
-  -webkit-background-clip: text; /* Apply background to text */
+  font-size: 28px;
+  color: transparent;
+  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);

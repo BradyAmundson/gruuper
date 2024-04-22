@@ -1,27 +1,70 @@
 /* AuthPage.css */
 /* General styling for the authentication page */
-h1 {
-  text-align: center;
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
 }
 
-.auth {
-  padding: 10px 20px;
-  background-color: #1f618d;
+.title {
+  margin: 30px 10px 30px 10px;
+  padding: 40px;
+  border-radius: 10px;
+  font-size: 60px;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(145deg, #6db3f2, #1e5799);
+  animation: bounce 1.25s infinite alternate;
+}
+
+.sign-in {
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
   color: white;
-  border: none;
-  border-radius: 5px;
+  border-radius: 12px;
   cursor: pointer;
-  height: 3rem;
-  width: 10rem;
+  font-size: 24px;
+  padding: 12px 36px;
+  margin: 10px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
 }
 
-button:hover {
-  background-color: #85c1e9;
+.sign-in:hover {
+  background-color: #154362;
+  transform: scale(0.9);
+}
+
+.sign-up {
+  background: white;
+  color: #1e5799;
+  border: 1px solid #1e5799; /* Add border */
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 10px 30px;
+  margin: 10px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.sign-up:hover {
+  background-color: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: white; /* Change text color on hover */
+  transform: scale(0.95); /* Adjust scale */
+  border-color: transparent; /* Hide border on hover */
 }
 
 .auth-buttons {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .auth {

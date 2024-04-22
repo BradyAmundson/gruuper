@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import {
   getDocument,
@@ -37,32 +37,29 @@ const DraggableMember = ({
   currentlyDragging,
   isProfessor,
 }) => {
-  const [, drag] = useDrag(() => ({
-    type: ItemTypes.MEMBER,
-    canDrag: isProfessor,
-    item: { name, index },
-    collect: (monitor) => {
-      const isDragging = monitor.isDragging();
-      if (isDragging) {
-        setCurrentlyDragging(index);
-      } else if (currentlyDragging === index) {
-        setCurrentlyDragging(null);
-      }
-      return {
-        isDragging: isDragging,
-      };
-    },
+  // Wrap the drag spec in useCallback to ensure it captures the latest state and props
+  const dragSpec = useCallback(() => ({
+    type: "member",  // Assuming 'member' is the type used for your DnD setup
+    item: { name, index },  // Data being transferred
+    canDrag: isProfessor,  // Only allow dragging if the user is a professor
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
     end: (item, monitor) => {
+      if (monitor.didDrop()) {
+        console.log(`Dropped: ${item.name} at new position`);
+      } else {
+        console.log(`Drop cancelled: ${item.name}`);
+      }
       setCurrentlyDragging(null);
     },
-  }));
+  }), [name, index, isProfessor, setCurrentlyDragging]);  // Dependencies
+
+  const [, drag, preview] = useDrag(dragSpec);
 
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
-    }`;
-  if (!isProfessor) {
-    className = "draggable-item-student";
-  }
+  let className = `draggable-item ${isCurrentlyBeingDragged ? "dragging-item" : ""}`;
+  className += isProfessor ? " professor" : " student";
 
   return (
     <li ref={drag} className={className}>
@@ -108,7 +105,10 @@ const DroppableGroup = ({
 const NewGroupArea = ({ createNewGroup }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
-    drop: (item, monitor) => createNewGroup(item.index),
+    drop: (item, monitor) => {
+      console.log("New group with:", item);
+      createNewGroup(item.index);
+    }
   }));
 
   return (
@@ -118,6 +118,46 @@ const NewGroupArea = ({ createNewGroup }) => {
     </div>
   );
 };
+
+const UnmatchedMembersArea = ({
+  unmatchedMembers,
+  moveMember,
+  setCurrentlyDragging,
+  currentlyDragging,
+  isProfessor,
+  removeMemberFromGroup,
+  memberNames
+}) => {
+  const [, drop] = useDrop(() => ({
+    accept: ItemTypes.MEMBER,
+    drop: (item, monitor) => {
+      console.log("Dropping item into unmatched:", item);
+      moveMember(item.index, -1);
+    }
+  }));
+
+  return (
+    <div ref={drop} id="UnmatchedGroups">
+      <h3>Unmatched Members</h3>
+      <ul>
+        {unmatchedMembers.map((member, index) => (
+          <DraggableMember
+            key={index}
+            name={memberNames.find((mem) => mem.id === member)?.name}
+            index={{ groupIndex: -1, memberIndex: index }}
+            moveMember={moveMember}
+            setCurrentlyDragging={setCurrentlyDragging}
+            currentlyDragging={currentlyDragging}
+            isProfessor={isProfessor}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+
+
 
 const Classroom = () => {
   const location = useLocation();
@@ -139,6 +179,62 @@ const Classroom = () => {
   const toggleMembers = () => {
     setShowMembers(!showMembers);
   };
+
+  const [unmatchedMembers, setUnmatchedMembers] = useState([]);
+  useEffect(() => {
+    console.log("UNMATCH MEMBERS:", unmatchedMembers);
+  }, [unmatchedMembers]);
+
+  const moveMember = useCallback((fromIndexes, toGroupIndex) => {
+    setClassroom(prevClassroom => {
+      // Logic inside here has access to the most current 'prevClassroom'
+      const newGroups = { ...prevClassroom.groups };
+
+      let member;
+      if (fromIndexes.groupIndex === -1) {
+        // Correct approach to access the current unmatchedMembers state safely
+        setUnmatchedMembers(prevUnmatched => {
+          const updatedUnmatched = [...prevUnmatched];
+          member = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
+          return updatedUnmatched; // Return the updated state
+        });
+      } else {
+        member = newGroups[fromIndexes.groupIndex].splice(fromIndexes.memberIndex, 1)[0];
+      }
+
+      if (toGroupIndex !== -1) {
+        newGroups[toGroupIndex] = newGroups[toGroupIndex] || [];
+        newGroups[toGroupIndex].push(member);
+      } else {
+        setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
+      }
+
+      return { ...prevClassroom, groups: newGroups };
+    });
+  }, []);
+
+
+
+  const removeMemberFromGroup = (fromIndexes) => {
+    console.log("Removing member from group, received indexes:", fromIndexes);
+    setClassroom(prevClassroom => {
+      // Extract the group index and member index from fromIndexes
+      const { groupIndex, memberIndex } = fromIndexes;
+      if (groupIndex === -1) {
+        // Handle error or unexpected index
+        console.error("Invalid groupIndex for removal from group:", groupIndex);
+        return prevClassroom;
+      }
+
+      const newGroups = { ...prevClassroom.groups };
+      const member = newGroups[groupIndex].splice(memberIndex, 1)[0];
+      console.log("Member removed:", member);
+
+      setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
+      return { ...prevClassroom, groups: newGroups };
+    });
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -197,10 +293,33 @@ const Classroom = () => {
   }, [roomId]);
 
   const handleDeleteMember = async (userId, roomId) => {
-    await removeMemberFromClassroom(roomId, userId);
-    // Refresh your member list or handle UI updates here
-    setMemberNames(prevMembers => prevMembers.filter(member => member.id !== userId));
-  }
+    try {
+      // Remove the member from the Firestore database
+      await removeMemberFromClassroom(roomId, userId);
+
+      // Update state to reflect these changes
+      setClassroom(prevClassroom => {
+        const newGroups = { ...prevClassroom.groups };
+
+        // Iterate over each group and filter out the deleted member
+        Object.keys(newGroups).forEach(groupKey => {
+          newGroups[groupKey] = newGroups[groupKey].filter(memberId => memberId !== userId);
+        });
+
+        // Return the updated classroom with the member removed from all groups
+        return { ...prevClassroom, groups: newGroups };
+      });
+
+      // Update the memberNames state to remove the member entirely from the classroom
+      setMemberNames(prevMembers => prevMembers.filter(member => member.id !== userId));
+
+      // If using unmatched members, update that list too
+      setUnmatchedMembers(prevUnmatched => prevUnmatched.filter(member => member.id !== userId));
+    } catch (error) {
+      console.error("Failed to delete member from classroom:", error);
+    }
+  };
+
 
 
   function calculateMatchScore(student1, student2) {
@@ -261,6 +380,8 @@ const Classroom = () => {
 
     return matchedGroups;
   };
+
+
 
 
   const findBestMatchForGroup = (group) => {
@@ -329,26 +450,6 @@ const Classroom = () => {
     });
   };
 
-  const moveMember = (fromIndexes, toGroupIndex) => {
-    setClassroom((prevClassroom) => {
-      // Deep cloning the groups to avoid direct state mutation
-      const newGroups = { ...prevClassroom.groups };
-
-      // Extracting the member's name from the source group
-      const fromGroupIndex = fromIndexes.groupIndex;
-      const fromMemberIndex = fromIndexes.memberIndex;
-      const memberName = newGroups[fromGroupIndex][fromMemberIndex];
-
-      // Remove the member from the original group
-      newGroups[fromGroupIndex].splice(fromMemberIndex, 1);
-
-      // Add the member to the destination group
-      newGroups[toGroupIndex].push(memberName);
-
-      // Return the updated classroom object with new groups
-      return { ...prevClassroom, groups: newGroups };
-    });
-  };
 
   const createNewGroup = (memberIndex) => {
     setClassroom((prevClassroom) => {
@@ -509,7 +610,6 @@ const Classroom = () => {
             </div>
           )}
           <div className="grid-container">
-            {/* <div className="groups"> */}
             {classroom.groups &&
               Object.entries(classroom.groups).map(([key, group], index) => (
                 <DroppableGroup
@@ -526,8 +626,18 @@ const Classroom = () => {
             {currentlyDragging !== null && (
               <NewGroupArea createNewGroup={createNewGroup} />
             )}
-            {/* </div> */}
           </div>
+          {isProfessor && (
+            <UnmatchedMembersArea
+              unmatchedMembers={unmatchedMembers}
+              moveMember={moveMember}
+              setCurrentlyDragging={setCurrentlyDragging}
+              currentlyDragging={currentlyDragging}
+              isProfessor={isProfessor}
+              removeMemberFromGroup={removeMemberFromGroup}
+              memberNames={memberNames}
+            />
+          )}
           <div>
             <button
               onClick={toggleMembers}
@@ -557,7 +667,6 @@ const Classroom = () => {
                   </li>
                 ))}
               </ul>
-              <h1>Be sure to click save after removing a student!</h1>
             </div>
           </div>
         </div>

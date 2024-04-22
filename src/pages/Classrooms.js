@@ -55,7 +55,7 @@ const Classrooms = () => {
 
     const userGroupNames = await Promise.all(
       groupsArray.map(async (group) => {
-        const user = await getUser(group[0]); // Assuming group is an array of user IDs
+        const user = await getUser(group[0]);
         return `${user?.firstName || ""} ${user?.lastName || ""}`;
       })
     );

@@ -35,11 +35,11 @@ function Home() {
   return (
     <div>
       <PhotoBanner />
-      <div className="banner-text-container">
+      {/* <div className="banner-text-container">
         <Typography className="welcome-text" variant="h2">
           Welcome to Gruuper!
         </Typography>
-      </div>
+      </div> */}
 
       <div className="form-container">
         {localStorage.getItem("userType") === "Professor" ? (

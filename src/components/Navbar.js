@@ -43,7 +43,7 @@ function Navbar() {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ backgroundColor: '#1e5799' }}>
       <Container maxWidth="false">
         <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
           <Box sx={{ display: { xs: "none", md: "block" } }}>
@@ -140,13 +140,13 @@ function Navbar() {
                     height: "40px",
                     width: "40px",
                     borderRadius: "50%", // Make it circular
-                    backgroundColor: "#2196f3", // Add a background color
+                    backgroundColor: "#6db3f2", // Add a background color
                     color: "#ffffff", // Text color
                     fontSize: "24px", // Adjust the font size
                   }}
                 >
                   {localStorage.getItem("firstName") &&
-                  localStorage.getItem("firstName").length > 0
+                    localStorage.getItem("firstName").length > 0
                     ? localStorage.getItem("firstName")[0]
                     : "?"}
                 </Avatar>
