@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useLocation, redirect } from "react-router-dom";
+import { useLocation, Redirect } from "react-router-dom";
 import {
   getDocument,
   getGroups,
@@ -13,6 +13,8 @@ import "./styles/classroom.css";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useDrag, useDrop } from "react-dnd";
+import { useNavigate } from "react-router-dom";
+
 
 import { IconButton, TextField } from "@mui/material";
 import CreateIcon from "@mui/icons-material/Create";
@@ -180,6 +182,7 @@ const Classroom = () => {
   const [className, setClassName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isProfessor, setIsProfessor] = useState(false);
+  const navigate = useNavigate();
 
   const [isMatching, setIsMatching] = useState(false);
   const [lockedGroups, setLockedGroups] = useState({});
@@ -320,7 +323,7 @@ const Classroom = () => {
 
         if (!isProfessor) {
           const code = query.get("roomId");
-          return <redirect to={`/student-view?roomId=${code}`} />;
+          navigate(`/student-view?roomId=${code}`);
         }
 
         // Fetch and set member names
