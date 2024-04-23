@@ -43,7 +43,7 @@ function Navbar() {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#1e5799' }}>
+    <AppBar position="static" sx={{ backgroundColor: "#1e5799" }}>
       <Container maxWidth="false">
         <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
           <Box sx={{ display: { xs: "none", md: "block" } }}>
@@ -129,7 +129,6 @@ function Navbar() {
               </Button>
             ))}
           </Box>
-          {user ? <SignOut /> : <div />}
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open profile">
@@ -146,7 +145,7 @@ function Navbar() {
                   }}
                 >
                   {localStorage.getItem("firstName") &&
-                    localStorage.getItem("firstName").length > 0
+                  localStorage.getItem("firstName").length > 0
                     ? localStorage.getItem("firstName")[0]
                     : "?"}
                 </Avatar>

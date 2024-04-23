@@ -23,7 +23,7 @@ const AuthPage = () => {
       <h1 className="title">Welcome to Gruuper!</h1>
       <div className="auth-buttons">
         <button className="sign-in" onClick={openSignInModal}>
-          Sign In
+          Log In
         </button>
         <button className="sign-up" onClick={openSignUpModal}>
           Sign Up

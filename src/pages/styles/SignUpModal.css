@@ -1,0 +1,83 @@
+/* SignUpModal.css */
+.transition-fade {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.transition-fade-exit {
+  opacity: 1;
+}
+
+.transition-fade-exit-active {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.next-step {
+  margin-top: 1rem;
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 10px 20px;
+  margin: 10px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.next-step:hover {
+  background-color: #154362;
+  transform: scale(0.9);
+}
+
+.prev-step {
+  margin-top: 1rem;
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 10px 20px;
+  margin: 10px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.prev-step:hover {
+  background-color: #154362;
+  transform: scale(0.9);
+}
+
+div.user-type-button-container {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.slide-title {
+  margin-top: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+/* .modal-content {
+  background-color: white;
+  max-width: 25rem;
+  margin: auto;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  height: fit-content;
+  border-radius: 10px;
+}
+
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+} */
