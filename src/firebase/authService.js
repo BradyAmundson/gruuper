@@ -111,14 +111,43 @@ export function SignUpPhone() {
   );
 }
 
+// export const handleSignUp = async (
+//   firstName,
+//   lastName,
+//   userType,
+//   email,
+//   password
+// ) => {
+//   try {
+//     // Proceed with sign-up
+//     const userCredential = await createUserWithEmailAndPassword(
+//       auth,
+//       email,
+//       password
+//     );
+//     setLoading(true);
+//     await sendEmailVerification(userCredential.user).then(() => {
+//       alert("Email sent (Check Spam folder)");
+//       setLoading(false);
+//     });
+
+//     // auth.currentUser.emailVerified
+//     createUser(firstName, lastName, auth.currentUser.uid, userType);
+//     signOut(auth);
+//     localStorage.clear();
+//     navigate("/");
+//   } catch (error) {
+//     console.error("Error signing up:", error.message);
+//     setError(error.message);
+//   }
+// };
+
 export function SignUpEmail({
   firstName,
   lastName,
   userType,
   email,
-  secondEmail,
   password,
-  secondPassword,
 }) {
   const [error, setError] = useState(null);
 
@@ -127,24 +156,6 @@ export function SignUpEmail({
 
   const handleSignUp = async () => {
     try {
-      // Check for blank fields
-      if (!email || !secondEmail || !password || !secondPassword) {
-        setError("All fields are required.");
-        return;
-      }
-
-      // Check if emails match
-      if (email !== secondEmail) {
-        setError("Emails do not match.");
-        return;
-      }
-
-      // Check if passwords match
-      if (password !== secondPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
-
       // Proceed with sign-up
       const userCredential = await createUserWithEmailAndPassword(
         auth,

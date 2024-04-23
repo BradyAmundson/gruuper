@@ -66,8 +66,27 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
   };
 
   const handleDone = () => {
+    // Check for blank fields
+    if (!email || !secondEmail || !password || !secondPassword) {
+      setError("All fields are required.");
+      return;
+    }
+
+    // Check if emails match
+    if (email !== secondEmail) {
+      setError("Emails do not match.");
+      return;
+    }
+
+    // Check if passwords match
+    if (password !== secondPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     // You can now use firstName, lastName, and userType to create the account
     console.log("Account created:", { firstName, lastName, userType });
+
+    // SignUpEmail(firstName, lastName, userType, email, password);
 
     // Close the modal or perform any other necessary actions
     onRequestClose();
@@ -336,6 +355,18 @@ const Step3 = ({
           password={password}
           secondPassword={secondPassword}
         />
+        <button
+          class="next-step"
+          onClick={onDone}
+          style={{
+            margin: "20px 0px 0px 0px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#1f618d",
+          }}
+        >
+          Sign Up NEW
+        </button>
       </div>
     </div>
   );
