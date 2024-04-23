@@ -3,12 +3,18 @@ import React, { useState } from "react";
 import Modal from "react-modal";
 import { SignUpEmail } from "../firebase/authService";
 import Button from "@mui/material/Button";
+import "../pages/styles/SignUpModal.css";
+import { TextField } from "@mui/material";
 
 const SignUpModal = ({ isOpen, onRequestClose }) => {
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userType, setUserType] = useState("");
+  const [email, setEmail] = useState("");
+  const [secondEmail, setSecondEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [secondPassword, setSecondPassword] = useState("");
   const [error, setError] = useState("");
 
   const customStyles = {
@@ -22,7 +28,9 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
       bottom: "auto",
       transform: "translate(-50%, -50%)",
       height: "fit-content",
-      borderRadius: "10px",
+      borderRadius: "20px",
+      border: "5px solid #6db3f2",
+      padding: "30px",
     },
     overlay: {
       backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -66,7 +74,12 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose} style={customStyles}>
+    <Modal
+      class="signUpModal"
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      style={customStyles}
+    >
       {step === 1 && (
         <Step1
           userType={userType}
@@ -91,6 +104,14 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
           firstName={firstName}
           lastName={lastName}
           userType={userType}
+          email={email}
+          setEmail={setEmail}
+          secondEmail={secondEmail}
+          setSecondEmail={setSecondEmail}
+          password={password}
+          setPassword={setPassword}
+          secondPassword={secondPassword}
+          setSecondPassword={setSecondPassword}
           onBack={handleBack}
           onDone={handleDone}
         />
@@ -100,22 +121,18 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
   );
 };
 
-const Step1 = ({ userType, setUserType, onNext, error }) => {
+const Step1 = ({ userType, setUserType, onNext }) => {
   return (
     <div>
-      <h2>Step 1: User Type</h2>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-evenly",
-          marginTop: "2rem",
-          marginBottom: "2rem",
-        }}
-      >
+      <h2 class="slide-title">Step 1: User Type</h2>
+      <div class="user-type-button-container">
         <Button
           variant={userType === "Student" ? "contained" : "outlined"}
           onClick={() => setUserType("Student")}
-          style={{ marginRight: "1.50rem", width: "10rem" }}
+          style={{
+            marginRight: "1.50rem",
+            width: "10rem",
+          }}
         >
           Student
         </Button>
@@ -123,22 +140,17 @@ const Step1 = ({ userType, setUserType, onNext, error }) => {
         <Button
           variant={userType === "Professor" ? "contained" : "outlined"}
           onClick={() => setUserType("Professor")}
-          style={{ marginLeft: "1.50rem", width: "10rem" }}
+          style={{
+            marginLeft: "1.50rem",
+            width: "10rem",
+          }}
         >
           Professor
         </Button>
       </div>
       <div style={{ display: "flex", justifyContent: "space-around" }}>
         <span style={{ margin: "20px 0px 20px 30px" }}> </span>
-        <button
-          onClick={onNext}
-          style={{
-            margin: "20px 0px 20px 0px",
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#1f618d",
-          }}
-        >
+        <button class="next-step" onClick={onNext}>
           Next &gt;
         </button>
       </div>
@@ -153,46 +165,42 @@ const Step2 = ({
   setLastName,
   onNext,
   onBack,
-  error,
 }) => {
   return (
     <div style={{ marginBottom: "15px" }}>
-      <h2>Step 2: Personal Information</h2>
+      <h2 class="slide-title">Step 2: Your Name</h2>
       <div style={{ display: "grid" }}>
         <label style={{ display: "block", marginBottom: "5px" }}>
-          First Name:
-          <input
-            type="text"
+          <TextField
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
+            id="roomId"
+            label="First Name"
+            type="search"
+            variant="standard"
+            fullWidth
+            margin="normal"
           />
         </label>
         <label style={{ display: "block", marginBottom: "5px" }}>
-          Last Name:
-          <input
-            type="text"
+          <TextField
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
+            id="last-name"
+            label="Last Name"
+            type="search"
+            variant="standard"
+            fullWidth
+            margin="large"
           />
         </label>
       </div>
       <div style={{ display: "flex", justifyContent: "space-around" }}>
         <button
+          class="prev-step"
           onClick={onBack}
           style={{
-            margin: "20px 0px 20px 0px",
+            margin: "20px 0px 0px 0px",
             padding: "10px 20px",
             fontSize: "16px",
             backgroundColor: "#1f618d",
@@ -201,9 +209,10 @@ const Step2 = ({
           &lt; Back
         </button>
         <button
+          class="next-step"
           onClick={onNext}
           style={{
-            margin: "20px 0px 20px 0px",
+            margin: "20px 0px 0px 0px",
             padding: "10px 20px",
             fontSize: "16px",
             backgroundColor: "#1f618d",
@@ -216,29 +225,100 @@ const Step2 = ({
   );
 };
 
-const Step3 = ({ firstName, lastName, userType, onDone, onBack }) => {
+const Step3 = ({
+  firstName,
+  lastName,
+  userType,
+  email,
+  setEmail,
+  secondEmail,
+  setSecondEmail,
+  password,
+  setPassword,
+  secondPassword,
+  setSecondPassword,
+  onDone,
+  onBack,
+}) => {
   return (
     <div>
-      <h2>Step 3: Create Account</h2>
+      <h2 class="slide-title">Step 3: Create Account</h2>
       <p>
         {firstName} {lastName}, {userType}
       </p>
-      <SignUpEmail
-        firstName={firstName}
-        lastName={lastName}
-        userType={userType}
-      />
-      <button
-        onClick={onBack}
-        style={{
-          margin: "20px 0px 20px 0px",
-          padding: "10px 20px",
-          fontSize: "16px",
-          backgroundColor: "#1f618d",
-        }}
-      >
-        &lt; Back
-      </button>
+      <div style={{ marginBottom: "15px" }}>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          <TextField
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            id="email"
+            label="Email"
+            type="search"
+            variant="standard"
+            fullWidth
+            margin="large"
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          <TextField
+            value={secondEmail}
+            onChange={(e) => setSecondEmail(e.target.value)}
+            id="second-email"
+            label="Confirm Email"
+            type="search"
+            variant="standard"
+            fullWidth
+            margin="large"
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          <TextField
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            id="password"
+            label="Password"
+            type="password"
+            variant="standard"
+            fullWidth
+            margin="large"
+          />
+        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          <TextField
+            value={secondPassword}
+            onChange={(e) => setSecondPassword(e.target.value)}
+            id="second-password"
+            label="Confirm Password"
+            type="password"
+            variant="standard"
+            fullWidth
+            margin="large"
+          />
+        </label>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-around" }}>
+        <button
+          class="prev-step"
+          onClick={onBack}
+          style={{
+            margin: "20px 0px 0px 0px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#1f618d",
+          }}
+        >
+          &lt; Back
+        </button>
+        <SignUpEmail
+          firstName={firstName}
+          lastName={lastName}
+          userType={userType}
+          email={email}
+          secondEmail={secondEmail}
+          password={password}
+          secondPassword={secondPassword}
+        />
+      </div>
     </div>
   );
 };

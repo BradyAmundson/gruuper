@@ -21,15 +21,15 @@ const SignInModal = ({ isOpen, onRequestClose }) => {
   };
 
   const headingStyle = {
-    margin: '10px',
-    padding: '10px',
-    borderRadius: '8px',
-    fontSize: '28px',
-    color: 'transparent',
-    WebkitBackgroundClip: 'text',
-    backgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundImage: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+    margin: "10px",
+    padding: "10px",
+    borderRadius: "8px",
+    fontSize: "28px",
+    color: "transparent",
+    WebkitBackgroundClip: "text",
+    backgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
   };
 
   return (

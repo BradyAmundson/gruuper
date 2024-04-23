@@ -22,15 +22,14 @@ const StyledButton = ({ onClick, children }) => (
     variant="contained"
     onClick={onClick}
     style={{
-      marginTop: "1rem",
-      transition: "transform 0.2s",
+      fontFamily: "Arial",
+      margin: "20px 0rem 0rem 0rem",
       background: "linear-gradient(145deg, #6db3f2, #1e5799)",
       color: "white",
       borderRadius: "12px",
       cursor: "pointer",
       fontSize: "16px",
-      padding: "12px 36px",
-      margin: "10px",
+      padding: "10px 20px",
       alignItems: "center",
       justifyContent: "center",
     }}
@@ -43,9 +42,7 @@ export function SignIn() {
   const handleSignIn = () => {
     signInWithPopup(auth, new GoogleAuthProvider());
   };
-  return (
-    <StyledButton onClick={handleSignIn}>Sign In</StyledButton>
-  );
+  return <StyledButton onClick={handleSignIn}>Sign In</StyledButton>;
 }
 
 export function SignUpPhone() {
@@ -96,7 +93,9 @@ export function SignUpPhone() {
         />
       </label>
       <div id="recaptcha-container"></div>
-      <StyledButton onClick={handleSendCode}>Send Verification Code</StyledButton>
+      <StyledButton onClick={handleSendCode}>
+        Send Verification Code
+      </StyledButton>
 
       <label>
         Verification Code:
@@ -112,11 +111,15 @@ export function SignUpPhone() {
   );
 }
 
-export function SignUpEmail({ firstName, lastName, userType }) {
-  const [email, setEmail] = useState("");
-  const [secondEmail, setSecondEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [secondPassword, setSecondPassword] = useState("");
+export function SignUpEmail({
+  firstName,
+  lastName,
+  userType,
+  email,
+  secondEmail,
+  password,
+  secondPassword,
+}) {
   const [error, setError] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -167,71 +170,12 @@ export function SignUpEmail({ firstName, lastName, userType }) {
 
   return (
     <div>
-      {/* <h2>Sign Up</h2> */}
-      <p style={{ color: "red" }}>{error}</p>
-      <div style={{ marginBottom: "15px" }}>
-        <label style={{ display: "block", marginBottom: "5px" }}>
-          Email:
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
-          />
-        </label>
-        <label style={{ display: "block", marginBottom: "5px" }}>
-          Confirm Email:
-          <input
-            type="email"
-            value={secondEmail}
-            onChange={(e) => setSecondEmail(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
-          />
-        </label>
-        <label style={{ display: "block", marginBottom: "5px" }}>
-          Password:
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
-          />
-        </label>
-        <label style={{ display: "block", marginBottom: "5px" }}>
-          Confirm Password:
-          <input
-            type="password"
-            value={secondPassword}
-            onChange={(e) => setSecondPassword(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
-          />
-        </label>
-      </div>
       {loading ? (
         <div>Loading</div>
       ) : (
         <StyledButton onClick={handleSignUp}>Sign Up</StyledButton>
       )}
+      <p style={{ color: "red" }}>{error}</p>
     </div>
   );
 }
@@ -300,8 +244,12 @@ export function SignInWithEmail() {
           />
         </label>
       </div>
-
-      <StyledButton onClick={handleSignIn}>Sign In</StyledButton>
+      <div
+        className="sign-in-button-div"
+        style={{ display: "flex", justifyContent: "center" }}
+      >
+        <StyledButton onClick={handleSignIn}>Sign In</StyledButton>
+      </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
@@ -366,39 +314,87 @@ export function ResetPassword() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto", padding: "20px", borderRadius: "8px", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)" }}>
-      <h2 style={{ textAlign: "center", marginBottom: "20px", fontSize: "28px", color: "transparent", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)", display: "inline" }}>Reset Password</h2>
+    <div
+      style={{
+        maxWidth: "400px",
+        margin: "auto",
+        padding: "20px",
+        borderRadius: "8px",
+        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <h2
+        style={{
+          textAlign: "center",
+          marginBottom: "20px",
+          fontSize: "28px",
+          color: "transparent",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
+          display: "inline",
+        }}
+      >
+        Reset Password
+      </h2>
       <form onSubmit={handleResetPassword}>
         <div style={{ marginBottom: "20px", marginTop: "20px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>Old Password:</label>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Old Password:
+          </label>
           <input
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
-            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }}
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              boxSizing: "border-box",
+            }}
           />
         </div>
         <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>New Password:</label>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            New Password:
+          </label>
           <input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }}
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              boxSizing: "border-box",
+            }}
           />
         </div>
         <button
           type="submit"
-          style={{ width: "100%", padding: "12px 36px", borderRadius: "12px", border: "none", background: "linear-gradient(145deg, #6db3f2, #1e5799)", color: "white", fontSize: "16px", cursor: "pointer" }}
+          style={{
+            width: "100%",
+            padding: "12px 36px",
+            borderRadius: "12px",
+            border: "none",
+            background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+            color: "white",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
         >
           Reset Password
         </button>
-        {error && <div style={{ marginTop: "10px", color: "red" }}>{error}</div>}
+        {error && (
+          <div style={{ marginTop: "10px", color: "red" }}>{error}</div>
+        )}
       </form>
     </div>
   );
 }
-
 
 export function useAuthentication() {
   const [user, setUser] = useState(null);

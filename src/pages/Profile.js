@@ -4,13 +4,20 @@ import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import { ResetPassword } from "../firebase/authService";
 import { getUser } from "../firebase/firestoreService";
+import { SignOut } from "../firebase/authService";
 
-import { Container, Typography, Paper, Avatar, Button, Grid, Divider } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Paper,
+  Avatar,
+  Button,
+  Grid,
+  Divider,
+} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import EditIcon from "@mui/icons-material/Edit";
 import LockIcon from "@mui/icons-material/LockReset";
-
-
 
 function Profile() {
   const navigate = useNavigate();
@@ -102,15 +109,19 @@ function Profile() {
 
   return (
     <Container maxWidth="md">
-      <Grid container sx={{ marginTop: '0rem' }}>
-        <Grid item xs={12} sx={{ marginBottom: '-2rem' }}>
+      <Grid container sx={{ marginTop: "0rem" }}>
+        <Grid item xs={12} sx={{ marginBottom: "-2rem" }}>
           <Paper elevation={3} style={paperStyle}>
             <div style={avatarContainerStyle}>
               <Avatar
                 alt="Profile Picture"
                 src={profileImage ? URL.createObjectURL(profileImage) : ""}
-                style={{ width: "100px", height: "100px", marginBottom: "1rem" }}
-                onClick={() => { }}
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  marginBottom: "1rem",
+                }}
+                onClick={() => {}}
               />
               <label htmlFor="profile-image-input" style={editIconStyle}>
                 <EditIcon />
@@ -123,22 +134,28 @@ function Profile() {
                 />
               </label>
             </div>
-            <Typography variant="h4" gutterBottom style={{
-              margin: "10px",
-              padding: "10px",
-              borderRadius: "8px",
-              fontSize: "28px",
-              color: "transparent",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
-              display: "inline",
-            }}>
-              Hello, {localStorage.getItem("firstName")} {localStorage.getItem("lastName")}!
+            <Typography
+              variant="h4"
+              gutterBottom
+              style={{
+                margin: "10px",
+                padding: "10px",
+                borderRadius: "8px",
+                fontSize: "28px",
+                color: "transparent",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
+                display: "inline",
+              }}
+            >
+              Hello, {localStorage.getItem("firstName")}{" "}
+              {localStorage.getItem("lastName")}!
             </Typography>
             <Typography variant="body1" paragraph>
-              You are currently registered as a {localStorage.getItem("userType")}.
+              You are currently registered as a{" "}
+              {localStorage.getItem("userType")}.
             </Typography>
             <Button
               variant="contained"
@@ -149,6 +166,7 @@ function Profile() {
             >
               Reset Password
             </Button>
+            <SignOut />
           </Paper>
         </Grid>
         <Grid item xs={12}>
@@ -156,18 +174,23 @@ function Profile() {
             {userData ? (
               <>
                 <Divider style={{ margin: "1rem 0" }} />
-                <Typography variant="h4" gutterBottom style={{
-                  margin: "10px",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  fontSize: "28px",
-                  color: "transparent",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
-                  display: "inline",
-                }}>
+                <Typography
+                  variant="h4"
+                  gutterBottom
+                  style={{
+                    margin: "10px",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    fontSize: "28px",
+                    color: "transparent",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundImage:
+                      "linear-gradient(145deg, #6db3f2, #1e5799)",
+                    display: "inline",
+                  }}
+                >
                   Profile Details:
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -180,18 +203,23 @@ function Profile() {
                   Time Preference: {userData.nightOrMorning || "Not specified"}
                 </Typography>
                 <Typography variant="body1" paragraph>
-                  Social Preference: {userData.socialPreference || "Not specified"}
+                  Social Preference:{" "}
+                  {userData.socialPreference || "Not specified"}
                 </Typography>
                 <Typography variant="body1" paragraph>
-                  Deadline Behavior: {userData.deadlineBehavior || "Not specified"}
+                  Deadline Behavior:{" "}
+                  {userData.deadlineBehavior || "Not specified"}
                 </Typography>
                 <Typography variant="body1" paragraph>
-                  Unavailable Times: {userData.unavailableTimes?.join(", ") || "None"}
+                  Unavailable Times:{" "}
+                  {userData.unavailableTimes?.join(", ") || "None"}
                 </Typography>
                 <Divider style={{ margin: "1rem 0" }} />
               </>
             ) : (
-              <Typography variant="body1" paragraph>Loading...</Typography>
+              <Typography variant="body1" paragraph>
+                Loading...
+              </Typography>
             )}
             <Button
               variant="contained"
@@ -211,7 +239,11 @@ function Profile() {
           </Paper>
         </Grid>
       </Grid>
-      <Modal isOpen={isModalOpen} onRequestClose={closeModal} style={modalStyle}>
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        style={modalStyle}
+      >
         <ResetPassword />
       </Modal>
     </Container>
