@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, redirect } from "react-router-dom";
 import {
   getDocument,
   getGroups,
@@ -9,19 +9,20 @@ import {
   removeMemberFromClassroom,
 } from "../firebase/firestoreService";
 import "./styles/classroom.css";
+// import { increment } from "firebase/firestore";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useDrag, useDrop } from "react-dnd";
 
 import { IconButton, TextField } from "@mui/material";
 import CreateIcon from "@mui/icons-material/Create";
-import { increment } from "firebase/firestore";
-
 import SaveIcon from "@mui/icons-material/Save";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import SmartMatchIcon from "@mui/icons-material/Group";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockIcon from '@mui/icons-material/Lock';
 
 
 
@@ -76,6 +77,8 @@ const DroppableGroup = ({
   currentlyDragging,
   memberNames,
   isProfessor,
+  locked,
+  toggleLockGroup
 }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
@@ -83,7 +86,9 @@ const DroppableGroup = ({
   }));
   return (
     <div ref={drop} id="Groups">
-      <h3>Group {index + 1}</h3>
+      <h3>Group {index + 1} <IconButton onClick={() => toggleLockGroup(index)}>
+        {locked ? <LockIcon /> : <LockOpenIcon />}
+      </IconButton></h3>
       <ul>
         {group.map((user, idx) => (
           <DraggableMember
@@ -177,12 +182,30 @@ const Classroom = () => {
   const [isProfessor, setIsProfessor] = useState(false);
 
   const [isMatching, setIsMatching] = useState(false);
-
+  const [lockedGroups, setLockedGroups] = useState({});
   const [showMembers, setShowMembers] = useState(false);
+
+  // Show/Hide Members button position
   const buttonRightPosition = showMembers ? '400px' : '50px';
   const toggleMembers = () => {
     setShowMembers(!showMembers);
   };
+
+  // Group Locking
+  const toggleLockGroup = (index) => {
+    setLockedGroups(prevState => {
+      // Create a copy of the previous state
+      const newState = { ...prevState };
+      // Toggle the lock status of the specified group index
+      newState[index] = !prevState[index];
+      // Return the updated state
+      return newState;
+    });
+  };
+
+  useEffect(() => {
+    console.log("Locked Groups:", lockedGroups);
+  }, [lockedGroups]);
 
   const [unmatchedMembers, setUnmatchedMembers] = useState([]);
   useEffect(() => {
@@ -294,6 +317,11 @@ const Classroom = () => {
         // Check if the current user is the professor
         const isProfessor = localStorage.getItem("userType") === "Professor" && localStorage.getItem("userId") === fetchedClassroom?.instructor;
         setIsProfessor(isProfessor);
+
+        if (!isProfessor) {
+          const code = query.get("roomId");
+          return <redirect to={`/student-view?roomId=${code}`} />;
+        }
 
         // Fetch and set member names
         const members = fetchedClassroom?.members || [];
@@ -433,36 +461,53 @@ const Classroom = () => {
 
 
   const handleRandomizeGroups = async () => {
-    console.log("Triggering randomization process...");
-    const fetchedClassroom = await getDocument("classrooms", roomId);
-    console.log("Fetched classroom:", fetchedClassroom);
-    const allMembers = fetchedClassroom?.members || [];
-    console.log("All members:", allMembers);
-    const matchedMembers = allMembers.filter(member => !unmatchedMembers.includes(member));
-    console.log("Matched members:", matchedMembers);
+    setClassroom(prevClassroom => {
+      console.log("Triggering randomization process...");
+      console.log("Previous classroom state:", prevClassroom);
 
-    // Use the matchedMembers in getGroups instead of memberNames
-    await getGroups(roomId, setGroups, matchedMembers, groupSize);
+      // Get the most recent lockedGroups state
+      const lockedGroups = prevClassroom.lockedGroups || {};
+      console.log("Locked groups:", lockedGroups);
 
-    // Update the classroom state immediately after setting the groups
-    setClassroom(prevClassroom => ({
-      ...prevClassroom,
-      groups: groups // Update with the new groups state
-    }));
+      const fetchData = async () => {
+        try {
+          const fetchedClassroom = await getDocument("classrooms", roomId);
+          console.log("Fetched classroom:", fetchedClassroom);
+          const allMembers = fetchedClassroom?.members || [];
+          console.log("All members:", allMembers);
 
-    // Update memberNames state based on the new groups
-    const newMemberNames = await Promise.all(
-      allMembers.map(async (member) => {
-        const fetchedUser = await getUser(member);
-        return {
-          id: member,
-          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}`,
-        };
-      })
-    );
-    console.log("New member names:", newMemberNames);
-    setMemberNames(newMemberNames);
+          // Filter out the locked members
+          const unlockedMembers = allMembers.filter(member => !lockedGroups[member]);
+          console.log("Unlocked members:", unlockedMembers);
+
+          await getGroups(roomId, setGroups, unlockedMembers, groupSize);
+
+          const newMemberNames = await Promise.all(
+            allMembers.map(async (member) => {
+              const fetchedUser = await getUser(member);
+              return {
+                id: member,
+                name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}`,
+              };
+            })
+          );
+          console.log("New member names:", newMemberNames);
+          setMemberNames(newMemberNames);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+
+      fetchData();
+
+      // Return the updated classroom state
+      return prevClassroom;
+    });
   };
+
+
+
+
 
 
 
@@ -473,10 +518,6 @@ const Classroom = () => {
       ...prevClassroom,
       groups: groups // Update with the new groups state
     }));
-  }, [groups]);
-
-  useEffect(() => {
-    console.log("groups", groups);
   }, [groups]);
 
   const saveGroupsToFirestore = () => {
@@ -672,6 +713,8 @@ const Classroom = () => {
                   currentlyDragging={currentlyDragging}
                   memberNames={memberNames}
                   isProfessor={isProfessor}
+                  locked={lockedGroups[index]}
+                  toggleLockGroup={toggleLockGroup}
                 />
               ))}
             {currentlyDragging !== null && (
