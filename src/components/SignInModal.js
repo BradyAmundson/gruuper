@@ -13,7 +13,8 @@ const SignInModal = ({ isOpen, onRequestClose }) => {
       bottom: "auto",
       transform: "translate(-50%, -50%)",
       height: "fit-content",
-      borderRadius: "10px",
+      borderRadius: "20px",
+      border: "5px solid #6db3f2",
     },
     overlay: {
       backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -21,20 +22,20 @@ const SignInModal = ({ isOpen, onRequestClose }) => {
   };
 
   const headingStyle = {
-    margin: "10px",
-    padding: "10px",
+    margin: "00px",
+    padding: "0px",
     borderRadius: "8px",
     fontSize: "28px",
-    color: "transparent",
+    color: "black",
     WebkitBackgroundClip: "text",
     backgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
+    backgroundImage: "linear-gradient(145deg, #000, #000)",
   };
 
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose} style={customStyles}>
-      <h2 style={headingStyle}>Sign-In</h2>
+      {/* <h2 style={headingStyle}>Log In</h2> */}
       <SignInWithEmail />
     </Modal>
   );

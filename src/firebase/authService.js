@@ -12,7 +12,7 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { createUser, getUser } from "./firestoreService";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 auth.useDeviceLanguage();
@@ -29,7 +29,7 @@ const StyledButton = ({ onClick, children }) => (
       borderRadius: "12px",
       cursor: "pointer",
       fontSize: "16px",
-      padding: "10px 20px",
+      padding: "5px 20px",
       alignItems: "center",
       justifyContent: "center",
     }}
@@ -214,41 +214,40 @@ export function SignInWithEmail() {
     <div>
       <div className="input-group" style={{ marginBottom: "15px" }}>
         <label style={{ display: "block", marginBottom: "5px" }}>
-          Email:
-          <input
-            type="email"
+          <TextField
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            id="email"
+            label="Email"
+            type="search"
+            variant="standard"
+            fullWidth
+            margin="large"
             style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
+              minWidth: "19rem",
             }}
           />
         </label>
       </div>
       <div className="input-group">
         <label style={{ display: "block", marginBottom: "5px" }}>
-          Password:
-          <input
-            type="password"
+          <TextField
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "95%",
-              padding: "8px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-            }}
+            id="password"
+            label="Password"
+            type="password"
+            variant="standard"
+            fullWidth
+            margin="large"
           />
         </label>
       </div>
       <div
         className="sign-in-button-div"
-        style={{ display: "flex", justifyContent: "center" }}
+        style={{ display: "flex", justifyContent: "flex-end" }}
       >
-        <StyledButton onClick={handleSignIn}>Sign In</StyledButton>
+        <StyledButton onClick={handleSignIn}>Log In</StyledButton>
       </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>

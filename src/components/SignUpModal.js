@@ -180,6 +180,9 @@ const Step2 = ({
             variant="standard"
             fullWidth
             margin="normal"
+            style={{
+              minWidth: "24rem",
+            }}
           />
         </label>
         <label style={{ display: "block", marginBottom: "5px" }}>
@@ -192,6 +195,9 @@ const Step2 = ({
             variant="standard"
             fullWidth
             margin="large"
+            style={{
+              minWidth: "24rem",
+            }}
           />
         </label>
       </div>
@@ -257,6 +263,9 @@ const Step3 = ({
             variant="standard"
             fullWidth
             margin="large"
+            style={{
+              minWidth: "24rem",
+            }}
           />
         </label>
         <label style={{ display: "block", marginBottom: "5px" }}>
@@ -269,6 +278,9 @@ const Step3 = ({
             variant="standard"
             fullWidth
             margin="large"
+            style={{
+              minWidth: "24rem",
+            }}
           />
         </label>
         <label style={{ display: "block", marginBottom: "5px" }}>
@@ -281,6 +293,9 @@ const Step3 = ({
             variant="standard"
             fullWidth
             margin="large"
+            style={{
+              minWidth: "24rem",
+            }}
           />
         </label>
         <label style={{ display: "block", marginBottom: "5px" }}>
@@ -293,6 +308,9 @@ const Step3 = ({
             variant="standard"
             fullWidth
             margin="large"
+            style={{
+              minWidth: "24rem",
+            }}
           />
         </label>
       </div>
