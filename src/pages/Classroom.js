@@ -40,30 +40,31 @@ const DraggableMember = ({
   currentlyDragging,
   isProfessor,
 }) => {
-  // Wrap the drag spec in useCallback to ensure it captures the latest state and props
-  const dragSpec = useCallback(() => ({
-    type: "member",  // Assuming 'member' is the type used for your DnD setup
-    item: { name, index },  // Data being transferred
-    canDrag: isProfessor,  // Only allow dragging if the user is a professor
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
-    end: (item, monitor) => {
-      if (monitor.didDrop()) {
-        console.log(`Dropped: ${item.name} at new position`);
-      } else {
-        console.log(`Drop cancelled: ${item.name}`);
+  const [, drag] = useDrag(() => ({
+    type: ItemTypes.MEMBER,
+    canDrag: isProfessor,
+    item: { name, index },
+    collect: (monitor) => {
+      const isDragging = monitor.isDragging();
+      if (isDragging) {
+        setCurrentlyDragging(index);
+      } else if (currentlyDragging === index) {
+        setCurrentlyDragging(null);
       }
+      return {
+        isDragging: isDragging,
+      };
+    },
+    end: (item, monitor) => {
       setCurrentlyDragging(null);
     },
-  }), [name, index, isProfessor, setCurrentlyDragging]);  // Dependencies
-
-  const [, drag, preview] = useDrag(dragSpec);
-
+  }));
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item ${isCurrentlyBeingDragged ? "dragging-item" : ""}`;
-  className += isProfessor ? " professor" : " student";
-
+  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
+    }`;
+  if (!isProfessor) {
+    className = "draggable-item-student";
+  }
   return (
     <li ref={drag} className={className}>
       {name}
@@ -184,9 +185,9 @@ const Classroom = () => {
   const [isProfessor, setIsProfessor] = useState(false);
   const navigate = useNavigate();
 
-  const [isMatching, setIsMatching] = useState(false);
   const [lockedGroups, setLockedGroups] = useState({});
   const [showMembers, setShowMembers] = useState(false);
+  const [unmatchedMembers, setUnmatchedMembers] = useState([]);
 
   // Show/Hide Members button position
   const buttonRightPosition = showMembers ? '400px' : '50px';
@@ -210,7 +211,6 @@ const Classroom = () => {
     console.log("Locked Groups:", lockedGroups);
   }, [lockedGroups]);
 
-  const [unmatchedMembers, setUnmatchedMembers] = useState([]);
   useEffect(() => {
     console.log("UNMATCH MEMBERS:", unmatchedMembers);
   }, [unmatchedMembers]);
@@ -226,7 +226,7 @@ const Classroom = () => {
         setUnmatchedMembers(prevUnmatched => {
           const updatedUnmatched = [...prevUnmatched];
           member = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
-          return updatedUnmatched; // Return the updated state
+          return updatedUnmatched;
         });
       } else {
         member = newGroups[fromIndexes.groupIndex].splice(fromIndexes.memberIndex, 1)[0];
@@ -343,7 +343,7 @@ const Classroom = () => {
     };
 
     fetchData();
-  }, [roomId]);   // Dependency on roomId ensures this runs only when roomId changes
+  }, [roomId]);
 
 
 
@@ -388,7 +388,6 @@ const Classroom = () => {
   }
 
   const handleSmartMatch = async () => {
-    setIsMatching(true);
     await getGroups(roomId, setGroups, memberNames, groupSize);
     const fetchedClassroom = await getDocument("classrooms", roomId);
 
@@ -406,7 +405,6 @@ const Classroom = () => {
     console.log("Matched Groups:", matchedGroups);
 
     setClassroom(fetchedClassroom);
-    setIsMatching(false);
   };
 
   const findBestMatchingGroups = (students, groupSize) => {
@@ -464,54 +462,64 @@ const Classroom = () => {
 
 
   const handleRandomizeGroups = async () => {
-    setClassroom(prevClassroom => {
-      console.log("Triggering randomization process...");
-      console.log("Previous classroom state:", prevClassroom);
+    console.log("Triggering randomization process...");
 
-      // Get the most recent lockedGroups state
-      const lockedGroups = prevClassroom.lockedGroups || {};
-      console.log("Locked groups:", lockedGroups);
+    // Fetch the latest classroom state
+    const fetchedClassroom = await getDocument("classrooms", roomId);
+    console.log("Fetched classroom:", fetchedClassroom);
 
-      const fetchData = async () => {
-        try {
-          const fetchedClassroom = await getDocument("classrooms", roomId);
-          console.log("Fetched classroom:", fetchedClassroom);
-          const allMembers = fetchedClassroom?.members || [];
-          console.log("All members:", allMembers);
+    const allMembers = fetchedClassroom?.members || [];
+    console.log("All members:", allMembers);
 
-          // Filter out the locked members
-          const unlockedMembers = allMembers.filter(member => !lockedGroups[member]);
-          console.log("Unlocked members:", unlockedMembers);
+    // Load the current state of locked groups
+    const currentLockedGroups = fetchedClassroom?.lockedGroups || {};
 
-          await getGroups(roomId, setGroups, unlockedMembers, groupSize);
-
-          const newMemberNames = await Promise.all(
-            allMembers.map(async (member) => {
-              const fetchedUser = await getUser(member);
-              return {
-                id: member,
-                name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}`,
-              };
-            })
-          );
-          console.log("New member names:", newMemberNames);
-          setMemberNames(newMemberNames);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
-
-      fetchData();
-
-      // Return the updated classroom state
-      return prevClassroom;
+    // Collect IDs of members in locked groups
+    const lockedMembers = new Set();
+    Object.entries(currentLockedGroups).forEach(([groupIndex, group]) => {
+      if (group.isLocked) {
+        group.forEach(member => lockedMembers.add(member));
+      }
     });
+
+    // Filter out members in locked groups and already matched members
+    const unlockedAndUnmatchedMembers = allMembers.filter(member =>
+      !lockedMembers.has(member) && !unmatchedMembers.includes(member)
+    );
+
+    console.log("Unlocked and unmatched members:", unlockedAndUnmatchedMembers);
+
+    // Get new groups with only unlocked and unmatched members
+    await getGroups(roomId, setGroups, unlockedAndUnmatchedMembers, groupSize);
+
+    // Update the classroom state
+    setClassroom(prevClassroom => {
+      // Update only the unlocked groups with new group data
+      const newGroups = { ...prevClassroom.groups };
+      unlockedAndUnmatchedMembers.forEach((member, index) => {
+        const groupIndex = Math.floor(index / groupSize);
+        if (!newGroups[groupIndex]) {
+          newGroups[groupIndex] = [];
+        }
+        newGroups[groupIndex].push(member);
+      });
+
+      return { ...prevClassroom, groups: newGroups };
+    });
+
+    // Update member names based on new groups
+    const newMemberNames = await Promise.all(
+      allMembers.map(async (member) => {
+        const fetchedUser = await getUser(member);
+        return {
+          id: member,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}`,
+        };
+      })
+    );
+    console.log("New member names:", newMemberNames);
+    setMemberNames(newMemberNames);
   };
-
-
-
-
-
 
 
   useEffect(() => {
@@ -522,6 +530,27 @@ const Classroom = () => {
       groups: groups // Update with the new groups state
     }));
   }, [groups]);
+
+  useEffect(() => {
+    console.log("Locked Groups updated:", lockedGroups);
+    // Ensure the UI reflects the updated state immediately
+    setClassroom(prevClassroom => ({
+      ...prevClassroom,
+      lockedGroups: lockedGroups // Update with the new lockedGroups state
+    }));
+  }, [lockedGroups]);
+
+  useEffect(() => {
+    // Initialize lockedGroups when classroom.groups changes
+    if (classroom.groups) {
+      const numGroups = Object.keys(classroom.groups).length;
+      const initialLockedGroups = {};
+      for (let i = 0; i < numGroups; i++) {
+        initialLockedGroups[i] = false;
+      }
+      setLockedGroups(initialLockedGroups);
+    }
+  }, [classroom.groups]);
 
   const saveGroupsToFirestore = () => {
     setClassroom((prevClassroom) => {
@@ -546,23 +575,33 @@ const Classroom = () => {
   };
 
 
-  const createNewGroup = (memberIndex) => {
-    setClassroom((prevClassroom) => {
-      const newGroups = { ...prevClassroom.groups };
-      const fromGroupIndex = memberIndex.groupIndex;
-      const fromMemberIndex = memberIndex.memberIndex;
-      const memberName = newGroups[fromGroupIndex][fromMemberIndex];
+  const createNewGroup = (fromIndexes) => {
+    setClassroom(prevClassroom => {
+      const { groups: currentGroups, unmatchedMembers: currentUnmatched } = prevClassroom;
+      const newGroups = { ...currentGroups };
+      let member;
 
-      // Remove member from the original group
-      newGroups[fromGroupIndex].splice(fromMemberIndex, 1);
+      if (fromIndexes.groupIndex === -1) {
+        // Member is coming from the unmatched members list
+        setUnmatchedMembers(prevUnmatched => {
+          const updatedUnmatched = [...prevUnmatched];
+          member = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
+          return updatedUnmatched;
+        });
+      } else {
+        // Member is coming from an existing group
+        member = newGroups[fromIndexes.groupIndex][fromIndexes.memberIndex][0];
+        newGroups[fromIndexes.groupIndex].splice(fromIndexes.memberIndex, 1);
+      }
 
-      // Create a new group with the member
+      // Create a new group and add the member
       const newGroupIndex = Object.keys(newGroups).length;
-      newGroups[newGroupIndex] = [memberName];
+      newGroups[newGroupIndex] = [member];
 
       return { ...prevClassroom, groups: newGroups };
     });
   };
+
 
   const handleEditClick = () => {
     setIsEditing(true);

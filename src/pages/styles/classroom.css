@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px;
+  margin: 1.25rem;
   max-width: 100%;
 }
 
@@ -13,7 +13,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-around;
-  margin: 20px;
+  margin: 1.25rem;
   width: 80%;
   flex-wrap: wrap;
 }
@@ -22,12 +22,12 @@
 h1,
 h2 {
   text-align: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  font-size: 24px;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #232323;
-  padding: 15px;
+  padding: 0.9375rem;
 }
 
 /* Styled buttons */
@@ -37,11 +37,11 @@ h2 {
 .counter-button {
   background: linear-gradient(145deg, #6db3f2, #1e5799);
   color: white;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   cursor: pointer;
-  font-size: 16px;
-  padding: 12px 36px;
-  margin: 10px;
+  font-size: 1rem;
+  padding: 0.75rem 2.25rem;
+  margin: 0.625rem;
   align-items: center;
   justify-content: center;
   transition: transform 0.3s, background-color 0.3s;
@@ -59,36 +59,36 @@ h2 {
 /* Members section */
 #Members {
   background-color: #f8f8f8;
-  border-radius: 10px;
-  margin: 20px;
-  border: 2px solid #ccc;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  width: 300px;
+  border-radius: 0.625rem;
+  margin: 1.25rem;
+  border: 0.125rem solid #ccc;
+  padding: 1.25rem;
+  box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.3);
+  width: 18.75rem;
   flex-shrink: 0;
-  height: calc(75vh - 40px);
+  height: calc(75vh - 2.5rem);
   overflow-y: auto;
   position: fixed;
-  right: 20px;
+  right: 1.25rem;
   top: 25vh;
-  right: -320px;
+  right: -20rem;
   transition: right 0.5s, box-shadow 0.3s;
 }
 
 /* Members section headers */
 #Members h1 {
   color: #888;
-  font-size: 14px;
-  margin-top: 5px;
+  font-size: 0.875rem;
+  margin-top: 0.3125rem;
   font-style: italic;
 }
 
 /* Members section titles */
 #Members h3 {
-  margin: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 22px;
+  margin: 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 1.375rem;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
@@ -106,11 +106,11 @@ h2 {
 /* Members section list items */
 #Members li {
   background-color: #ffffff;
-  border: 1px solid #ddd;
-  margin: 8px 0;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 0.0625rem solid #ddd;
+  margin: 0.5rem 0;
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -119,14 +119,14 @@ h2 {
 /* Button to show/hide Members section */
 .show-members-btn {
   position: fixed;
-  bottom: 20px;
-  right: 350px;
+  bottom: 1.25rem;
+  right: 21.875rem;
   background: linear-gradient(145deg, #6db3f2, #1e5799);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 15px 35px;
-  font-size: 18px;
+  border-radius: 0.75rem;
+  padding: 0.9375rem 2.1875rem;
+  font-size: 1.125rem;
   cursor: pointer;
   transition: background-color 0.3s, right 0.5s;
 }
@@ -138,28 +138,28 @@ h2 {
 /* Grid container */
 .grid-container {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 20px;
-  padding: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  padding: 0.625rem;
   margin: 0 auto;
 }
 
 /* Groups section */
 #Groups {
   background-color: #f8f8f8;
-  border: 1px solid #abd0e4;
-  border-radius: 10px;
-  margin-top: 26px;
-  padding: 26px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 0.0625rem solid #abd0e4;
+  border-radius: 0.625rem;
+  margin-top: 1.625rem;
+  padding: 1.625rem;
+  box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
 }
 
 /* Groups section headers */
 #Groups h3 {
-  margin: 13px;
-  padding: 13px;
-  border-radius: 8px;
-  font-size: 36px;
+  margin: 0.8125rem;
+  padding: 0.8125rem;
+  border-radius: 0.5rem;
+  font-size: 2.25rem;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
@@ -177,31 +177,31 @@ h2 {
 /* Groups section list items */
 #Groups li {
   background-color: #fff;
-  margin: 13px;
-  padding: 13px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(7, 47, 65, 0.1);
-  font-size: 21px;
+  margin: 0.8125rem;
+  padding: 0.8125rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(7, 47, 65, 0.1);
+  font-size: 1.3125rem;
   color: #333;
 }
 
 /* Unmatched Groups section */
 #UnmatchedGroups {
   background-color: #fff5f5;
-  border: 2px dashed #db6d6d;
-  border-radius: 10px;
-  margin-top: 30px;
-  padding: 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 0.125rem dashed #db6d6d;
+  border-radius: 0.625rem;
+  margin-top: 1.875rem;
+  padding: 1.875rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
   transition: filter 0.5s ease;
 }
 
 /* Unmatched Groups section headers */
 #UnmatchedGroups h3 {
-  margin: 15px;
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 36px;
+  margin: 0.9375rem;
+  padding: 0.9375rem;
+  border-radius: 0.5rem;
+  font-size: 2.25rem;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
@@ -219,11 +219,11 @@ h2 {
 /* Unmatched Groups section list items */
 #UnmatchedGroups li {
   background-color: #fff;
-  margin: 15px;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(217, 83, 79, 0.2);
-  font-size: 21px;
+  margin: 0.9375rem;
+  padding: 0.9375rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(217, 83, 79, 0.2);
+  font-size: 1.3125rem;
   color: #333;
 }
 
@@ -231,9 +231,9 @@ h2 {
 .new-group-area,
 .unmatched-members-area {
   background-color: #fff;
-  border: 2px solid #ccc;
-  border-radius: 10px;
-  padding: 10px;
+  border: 0.125rem solid #ccc;
+  border-radius: 0.625rem;
+  padding: 0.625rem;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -244,29 +244,29 @@ h2 {
 /* New group caption */
 .new-group-caption {
   color: #888;
-  font-size: 14px;
-  margin-top: 5px;
+  font-size: 0.875rem;
+  margin-top: 0.3125rem;
   font-style: italic;
 }
 
 /* New group plus icon */
 .new-group-plus {
   display: inline-block;
-  padding: 20px;
-  margin-bottom: 10px;
+  padding: 1.25rem;
+  margin-bottom: 0.625rem;
   transition: transform 0.3s, background-color 0.3s, border-color 0.3s;
   position: relative;
 }
 
 .new-group-plus svg {
   fill: #727477;
-  width: 80px;
-  height: 80px;
+  width: 5rem;
+  height: 5rem;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  filter: drop-shadow(1px 2px 4px #acbbc3);
+  filter: drop-shadow(0.0625rem 0.125rem 0.25rem #acbbc3);
 }
 
 /* Draggable items */
@@ -290,10 +290,10 @@ h2 {
 /* Group controls */
 .group-controls {
   background-color: #f8f8f8;
-  border: 2px solid #b1bdc8;
-  border-radius: 10px;
-  margin: 10px;
-  padding: 10px;
+  border: 0.125rem solid #b1bdc8;
+  border-radius: 0.625rem;
+  margin: 0.625rem;
+  padding: 0.625rem;
   flex-grow: 1;
   display: flex;
   justify-content: space-around;
@@ -307,12 +307,12 @@ h2 {
   grid-template-columns: 1fr 1fr;
   align-items: center;
   justify-content: space-between;
-  margin: 10px 0px 10px 3%;
-  border: 2px solid #b1bdc8;
-  padding: 10px;
-  border-radius: 8px;
-  margin: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  margin: 0.625rem 0px 0.625rem 3%;
+  border: 0.125rem solid #b1bdc8;
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  margin: 0.625rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
 }
 
 /* Delete button hover effect */
@@ -324,22 +324,22 @@ h2 {
 .counter-value {
   background-color: #ffffff;
   color: #0e3057;
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: bold;
-  padding: 8px 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 10px;
+  margin: 0 0.625rem;
   transition: background-color 0.3s, color 0.3s;
 }
 
 /* Counter title */
 .counter-title {
   color: #303c48;
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: bold;
   display: block;
   text-align: center;
@@ -348,10 +348,10 @@ h2 {
 
 /* Class info */
 .class-info {
-  margin: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 28px;
+  margin: 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 1.75rem;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
