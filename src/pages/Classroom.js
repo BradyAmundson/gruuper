@@ -136,8 +136,12 @@ const UnmatchedMembersArea = ({
     }
   }));
 
+  const style = {
+    filter: unmatchedMembers.length === 0 ? 'grayscale(1)' : 'none'
+  };
+
   return (
-    <div ref={drop} id="UnmatchedGroups">
+    <div ref={drop} id="UnmatchedGroups" style={style}>
       <h3>Unmatched Members</h3>
       <ul>
         {unmatchedMembers.map((member, index) => (
@@ -164,7 +168,7 @@ const Classroom = () => {
   const query = new URLSearchParams(location.search);
   const roomId = query.get("roomId");
   const [classroom, setClassroom] = useState([]);
-  const [groups, setGroups] = useState(Object);
+  const [groups, setGroups] = useState({});
   const [memberNames, setMemberNames] = useState([]);
   const [groupSize, setGroupSize] = useState(1);
   const [currentlyDragging, setCurrentlyDragging] = useState(null);
@@ -213,6 +217,17 @@ const Classroom = () => {
     });
   }, []);
 
+  const updateUnmatchedMembers = (allMembers, groups) => {
+    const groupedMembers = new Set();
+    Object.values(groups).forEach(group => {
+      group.forEach(member => {
+        groupedMembers.add(member);
+      });
+    });
+
+    const unmatched = allMembers.filter(member => !groupedMembers.has(member));
+    setUnmatchedMembers(unmatched);
+  };
 
 
   const removeMemberFromGroup = (fromIndexes) => {
@@ -259,38 +274,47 @@ const Classroom = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch the classroom details
         const fetchedClassroom = await getDocument("classrooms", roomId);
+        if (!fetchedClassroom) {
+          console.error("Failed to fetch classroom data");
+          return;
+        }
         setClassroom(fetchedClassroom);
-        const fetchedUser = await getUser(fetchedClassroom?.instructor);
-        setClassName(
-          fetchedClassroom?.className ||
-          `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
-          }'s Class`
-        );
-        setIsProfessor(
-          localStorage.getItem("userType") === "Professor" &&
-          localStorage.getItem("userId") === fetchedClassroom?.instructor
-        );
 
+        // Fetch and set groups
+        const fetchedGroups = fetchedClassroom.groups || {};
+        setGroups(fetchedGroups);
+
+        // Set up classroom name
+        const fetchedUser = await getUser(fetchedClassroom?.instructor);
+        const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Class`;
+        setClassName(className);
+
+        // Check if the current user is the professor
+        const isProfessor = localStorage.getItem("userType") === "Professor" && localStorage.getItem("userId") === fetchedClassroom?.instructor;
+        setIsProfessor(isProfessor);
+
+        // Fetch and set member names
         const members = fetchedClassroom?.members || [];
-        const newMemberNames = await Promise.all(
-          members.map(async (member) => {
-            const fetchedUser = await getUser(member);
-            return {
-              id: member,
-              name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
-                }`,
-            };
-          })
-        );
+        const newMemberNames = await Promise.all(members.map(async (member) => {
+          const user = await getUser(member);
+          return { id: member, name: `${user?.firstName || ""} ${user?.lastName || ""}` };
+        }));
         setMemberNames(newMemberNames);
+
+        // Update unmatched members based on the current groups
+        updateUnmatchedMembers(members, fetchedGroups);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [roomId]);
+  }, [roomId]);   // Dependency on roomId ensures this runs only when roomId changes
+
+
 
   const handleDeleteMember = async (userId, roomId) => {
     try {
@@ -409,24 +433,51 @@ const Classroom = () => {
 
 
   const handleRandomizeGroups = async () => {
-    await getGroups(roomId, setGroups, memberNames, groupSize);
+    console.log("Triggering randomization process...");
     const fetchedClassroom = await getDocument("classrooms", roomId);
+    console.log("Fetched classroom:", fetchedClassroom);
+    const allMembers = fetchedClassroom?.members || [];
+    console.log("All members:", allMembers);
+    const matchedMembers = allMembers.filter(member => !unmatchedMembers.includes(member));
+    console.log("Matched members:", matchedMembers);
 
-    const members = fetchedClassroom?.members || [];
+    // Use the matchedMembers in getGroups instead of memberNames
+    await getGroups(roomId, setGroups, matchedMembers, groupSize);
+
+    // Update the classroom state immediately after setting the groups
+    setClassroom(prevClassroom => ({
+      ...prevClassroom,
+      groups: groups // Update with the new groups state
+    }));
+
+    // Update memberNames state based on the new groups
     const newMemberNames = await Promise.all(
-      members.map(async (member) => {
+      allMembers.map(async (member) => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
-            }`,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}`,
         };
       })
     );
-
+    console.log("New member names:", newMemberNames);
     setMemberNames(newMemberNames);
-    setClassroom(fetchedClassroom);
   };
+
+
+
+  useEffect(() => {
+    console.log("Groups updated:", groups);
+    // Ensure the UI reflects the updated state immediately
+    setClassroom(prevClassroom => ({
+      ...prevClassroom,
+      groups: groups // Update with the new groups state
+    }));
+  }, [groups]);
+
+  useEffect(() => {
+    console.log("groups", groups);
+  }, [groups]);
 
   const saveGroupsToFirestore = () => {
     setClassroom((prevClassroom) => {

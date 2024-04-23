@@ -7,17 +7,18 @@
   max-width: 100%;
 }
 
+/* Control center for buttons */
 .control-center {
   display: flex;
-  flex-direction: row; /* Change flex-direction to row for horizontal alignment */
-  align-items: center; /* Keeps items aligned at their center line */
-  justify-content: space-around; /* Distributes space around items for even spacing */
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
   margin: 20px;
   width: 80%;
   flex-wrap: wrap;
 }
 
-/* Lobby and RoomID headers */
+/* Headers */
 h1,
 h2 {
   text-align: center;
@@ -29,7 +30,7 @@ h2 {
   padding: 15px;
 }
 
-/* Randomize Groups button and other buttons styled uniformly */
+/* Styled buttons */
 .randomize-groups-button,
 .save-groups-button,
 .smart-match-button,
@@ -46,6 +47,7 @@ h2 {
   transition: transform 0.3s, background-color 0.3s;
 }
 
+/* Button hover effect */
 .randomize-groups-button:hover,
 .save-groups-button:hover,
 .smart-match-button:hover,
@@ -54,7 +56,7 @@ h2 {
   transform: scale(0.9);
 }
 
-/* Members section styling */
+/* Members section */
 #Members {
   background-color: #f8f8f8;
   border-radius: 10px;
@@ -62,28 +64,28 @@ h2 {
   border: 2px solid #ccc;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  width: 300px; /* Fixed width */
-  flex-shrink: 0; /* Prevents the box from shrinking */
-  height: calc(
-    75vh - 40px
-  ); /* Height adjusted to start from 1/4 top and end with a margin of 20px */
-  overflow-y: auto; /* Allows scrolling if content is too long */
-  position: fixed; /* Fixed position on the right */
-  right: 20px; /* Right edge alignment */
-  top: 25vh; /* Starts 1/4 down from the top of the viewport */
-  right: -320px; /* Hide by default by shifting it off-screen */
+  width: 300px;
+  flex-shrink: 0;
+  height: calc(75vh - 40px);
+  overflow-y: auto;
+  position: fixed;
+  right: 20px;
+  top: 25vh;
+  right: -320px;
   transition: right 0.5s, box-shadow 0.3s;
 }
 
+/* Members section headers */
 #Members h1 {
-  color: #888; /* Light gray color for the caption */
-  font-size: 14px; /* Smaller font size for the caption */
-  margin-top: 5px; /* Add some margin space between the button and caption */
+  color: #888;
+  font-size: 14px;
+  margin-top: 5px;
   font-style: italic;
 }
 
+/* Members section titles */
 #Members h3 {
-  margin: 10px; /* Increased margin for spacing */
+  margin: 10px;
   padding: 10px;
   border-radius: 8px;
   font-size: 22px;
@@ -95,11 +97,13 @@ h2 {
   display: inline;
 }
 
+/* Members section list */
 #Members ul {
   padding: 0;
   list-style-type: none;
 }
 
+/* Members section list items */
 #Members li {
   background-color: #ffffff;
   border: 1px solid #ddd;
@@ -116,116 +120,114 @@ h2 {
 .show-members-btn {
   position: fixed;
   bottom: 20px;
-  right: 350px; /* Increase the right distance to prevent overlap */
-  background: linear-gradient(
-    145deg,
-    #6db3f2,
-    #1e5799
-  ); /* Styling to match group control buttons */
+  right: 350px;
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
   color: white;
   border: none;
   border-radius: 12px;
-  padding: 15px 35px; /* Bigger button */
-  font-size: 18px; /* Larger font size for better visibility */
+  padding: 15px 35px;
+  font-size: 18px;
   cursor: pointer;
-  transition: background-color 0.3s, right 0.5s; /* Smooth transitions for background color and right property */
+  transition: background-color 0.3s, right 0.5s;
 }
 
 .show-members-btn:hover {
-  background-color: #154362; /* Darker shade on hover */
+  background-color: #154362;
 }
 
+/* Grid container */
 .grid-container {
   display: grid;
-  /* grid-template-columns: repeat(
-    auto-fill,
-    minmax(175px, 1fr)
-  );*/
-  grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 columns */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 20px;
   padding: 10px;
-  /* width: 10%; Set width to 75% of the page */
-  margin: 0 auto; /* Center the grid container */
+  margin: 0 auto;
 }
 
+/* Groups section */
 #Groups {
-  background-color: #f8f8f8; /* Soft gray background */
-  border: 1px solid #abd0e4; /* Light gray border */
+  background-color: #f8f8f8;
+  border: 1px solid #abd0e4;
   border-radius: 10px;
-  margin-top: 26px; /* Increased from 20px */
-  padding: 26px; /* Increased from 20px */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  margin-top: 26px;
+  padding: 26px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Groups section headers */
 #Groups h3 {
-  margin: 13px; /* Increased from 10px */
-  padding: 13px; /* Increased from 10px */
+  margin: 13px;
+  padding: 13px;
   border-radius: 8px;
-  font-size: 36px; /* Increased from 28px */
-  color: transparent; /* Transparent text color */
-  -webkit-background-clip: text; /* Apply background to text */
+  font-size: 36px;
+  color: transparent;
+  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);
   display: inline;
 }
 
+/* Groups section list */
 #Groups ul {
   list-style: none;
   padding-left: 0;
 }
 
+/* Groups section list items */
 #Groups li {
-  background-color: #fff; /* White background */
-  margin: 13px; /* Increased from 10px */
-  padding: 13px; /* Increased from 10px */
+  background-color: #fff;
+  margin: 13px;
+  padding: 13px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(7, 47, 65, 0.1); /* Subtle shadow for depth */
-  font-size: 21px; /* Increased from 16px */
-  color: #333; /* Darker text color */
+  box-shadow: 0 2px 4px rgba(7, 47, 65, 0.1);
+  font-size: 21px;
+  color: #333;
 }
 
+/* Unmatched Groups section */
 #UnmatchedGroups {
-  background-color: #fff5f5; /* Light red background for distinction */
-  border: 2px dashed #db6d6d; /* Dashed red border for emphasis */
+  background-color: #fff5f5;
+  border: 2px dashed #db6d6d;
   border-radius: 10px;
-  margin-top: 30px; /* Slightly more margin for clear separation */
-  padding: 30px; /* Generous padding for better layout */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
+  margin-top: 30px;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: filter 0.5s ease;
 }
 
+/* Unmatched Groups section headers */
 #UnmatchedGroups h3 {
-  margin: 15px; /* Adjusted margin for visual balance */
-  padding: 15px; /* More padding for emphasis */
+  margin: 15px;
+  padding: 15px;
   border-radius: 8px;
-  font-size: 36px; /* Large font size for headers */
-  color: transparent; /* Transparent text to apply gradient */
+  font-size: 36px;
+  color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(
-    145deg,
-    #f29d9d,
-    #db6d6d
-  ); /* Reddish gradient for visual impact */
+  background-image: linear-gradient(145deg, #f29d9d, #db6d6d);
   display: inline;
 }
 
+/* Unmatched Groups section list */
 #UnmatchedGroups ul {
   list-style: none;
   padding-left: 0;
 }
 
+/* Unmatched Groups section list items */
 #UnmatchedGroups li {
-  background-color: #fff; /* White background to maintain readability */
-  margin: 15px; /* Increased margin for distinct look */
-  padding: 15px; /* Increased padding for comfort */
+  background-color: #fff;
+  margin: 15px;
+  padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(217, 83, 79, 0.2); /* Soft red shadow for depth */
-  font-size: 21px; /* Comfortable font size for readability */
-  color: #333; /* Standard text color for consistency */
+  box-shadow: 0 2px 4px rgba(217, 83, 79, 0.2);
+  font-size: 21px;
+  color: #333;
 }
 
+/* New group area */
 .new-group-area,
 .unmatched-members-area {
   background-color: #fff;
@@ -239,13 +241,15 @@ h2 {
   justify-content: center;
 }
 
+/* New group caption */
 .new-group-caption {
-  color: #888; /* Light gray color for the caption */
-  font-size: 14px; /* Smaller font size for the caption */
-  margin-top: 5px; /* Add some margin space between the button and caption */
+  color: #888;
+  font-size: 14px;
+  margin-top: 5px;
   font-style: italic;
 }
 
+/* New group plus icon */
 .new-group-plus {
   display: inline-block;
   padding: 20px;
@@ -255,9 +259,9 @@ h2 {
 }
 
 .new-group-plus svg {
-  fill: #727477; /* This sets the color of the SVG */
-  width: 80px; /* Set the size of the icon */
-  height: 80px; /* Set the size of the icon */
+  fill: #727477;
+  width: 80px;
+  height: 80px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -265,31 +269,25 @@ h2 {
   filter: drop-shadow(1px 2px 4px #acbbc3);
 }
 
-/* Draggable items and special areas */
+/* Draggable items */
 .draggable-item-professor,
 .draggable-item-student {
   cursor: grab;
   transition: transform 0.3s;
 }
 
+/* Draggable item hover effect */
 .draggable-item-professor:hover,
 .draggable-item-student:hover {
   transform: scale(1.1);
 }
 
+/* Dragging item opacity */
 .dragging-item {
   opacity: 0.25;
 }
 
-.group-controls,
-.size-counter {
-  height: 100px; /* Replace with the actual height of the .size-counter */
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-/* Counter and control group styling to match the unified aesthetic */
+/* Group controls */
 .group-controls {
   background-color: #f8f8f8;
   border: 2px solid #b1bdc8;
@@ -302,6 +300,7 @@ h2 {
   align-items: center;
 }
 
+/* Size counter */
 .size-counter {
   display: flex;
   grid-template-areas: 'title title' 'value buttons';
@@ -309,41 +308,45 @@ h2 {
   align-items: center;
   justify-content: space-between;
   margin: 10px 0px 10px 3%;
-  border: 2px solid #b1bdc8; /* Highlight with a soft blue outline */
+  border: 2px solid #b1bdc8;
   padding: 10px;
-  border-radius: 8px; /* Rounded corners for the outline */
-  margin: 10px; /* Spacing around the box */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* Subtle shadow for 3D effect */
+  border-radius: 8px;
+  margin: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
+/* Delete button hover effect */
 .delete-button:hover {
   color: red;
 }
 
+/* Counter value */
 .counter-value {
-  background-color: #ffffff; /* White background for clarity */
-  color: #0e3057; /* Dark blue text for contrast */
-  font-size: 24px; /* Larger font size for easy reading */
-  font-weight: bold; /* Bold font to highlight importance */
-  padding: 8px 16px; /* Padding for visual space around the text */
-  border-radius: 8px; /* Rounded corners for a smoother look */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  display: inline-flex; /* Flex display to center content */
-  align-items: center; /* Vertical center alignment */
-  justify-content: center; /* Horizontal center alignment */
-  margin: 0 10px; /* Margins to separate from other elements */
-  transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
+  background-color: #ffffff;
+  color: #0e3057;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
+/* Counter title */
 .counter-title {
-  color: #303c48; /* Harmonizing the text color with the theme */
-  font-size: 24px; /* Appropriate font size for headings */
-  font-weight: bold; /* Bold to make it stand out as a heading */
-  display: block; /* Ensures the element is treated as a block for layout purposes */
-  text-align: center; /* Centering the text to align with the centered design of counter elements */
-  width: 100%; /* Ensuring the title spans the full width of its container for better alignment */
+  color: #303c48;
+  font-size: 24px;
+  font-weight: bold;
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
+/* Class info */
 .class-info {
   margin: 10px;
   padding: 10px;

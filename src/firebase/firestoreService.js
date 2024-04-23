@@ -72,24 +72,59 @@ export async function joinClassroom(roomId, userId, setError) {
   }
 }
 
-export async function getGroups(roomId, setGroups, memberNames, groupSize) {
+// export async function getGroups(roomId, setGroups, passedMembers, groupSize) {
+//   const documentRef = doc(db, "classrooms", roomId);
+//   const documentSnapshot = await getDoc(documentRef);
+//   if (documentSnapshot.exists()) {
+//     const classroom = documentSnapshot.data();
+//     const members = classroom.members;
+//     // const randomGroups = randomizeGroups(members, groupSize);
+//     const randomGroups = randomizeGroups(passedMembers, groupSize);
+//     await updateDoc(documentRef, { groups: randomGroups });
+//     setGroups(randomGroups);
+//   } else {
+//     return null;
+//   }
+// }
+
+
+// export async function saveGroups(roomId, groups, className) {
+//   const documentRef = doc(db, "classrooms", roomId);
+//   await updateDoc(documentRef, { groups: groups, className: className });
+// }
+
+export async function saveGroups(roomId, groups, className) {
   const documentRef = doc(db, "classrooms", roomId);
-  const documentSnapshot = await getDoc(documentRef);
-  if (documentSnapshot.exists()) {
-    const classroom = documentSnapshot.data();
-    const members = classroom.members;
-    const randomGroups = randomizeGroups(members, groupSize);
-    await updateDoc(documentRef, { groups: randomGroups });
-    setGroups(randomGroups);
-  } else {
+  try {
+    await updateDoc(documentRef, { groups: groups, className: className });
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving groups:", error);
+    return { success: false, error };
+  }
+}
+
+export async function getGroups(roomId, setGroups, passedMembers, groupSize) {
+  const documentRef = doc(db, "classrooms", roomId);
+  try {
+    const documentSnapshot = await getDoc(documentRef);
+    if (documentSnapshot.exists()) {
+      const classroom = documentSnapshot.data();
+      const members = classroom.members;
+      const randomGroups = randomizeGroups(passedMembers, groupSize);
+      await saveGroups(roomId, randomGroups, classroom.className); // Save groups immediately
+      setGroups(randomGroups); // Update UI immediately
+      return randomGroups;
+    } else {
+      console.error("Classroom document does not exist");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting groups:", error);
     return null;
   }
 }
 
-export async function saveGroups(roomId, groups, className) {
-  const documentRef = doc(db, "classrooms", roomId);
-  await updateDoc(documentRef, { groups: groups, className: className });
-}
 
 export async function saveClassname(roomId, className) {
   const documentRef = doc(db, "classrooms", roomId);
