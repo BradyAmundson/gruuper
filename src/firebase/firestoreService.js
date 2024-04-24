@@ -112,11 +112,7 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize, loc
       const classroom = documentSnapshot.data();
       const members = classroom.members;
       const randomGroups = randomizeGroups(passedMembers, groupSize);
-      console.log("getGroups passedLocked Groups", lockedGroups);
-      console.log("getGroups Random Groups", randomGroups);
-
       const combinedGroups = { ...lockedGroups };
-      console.log("getGroups Locked Groups", combinedGroups);
 
       let availableIndices = new Set([...Array(Object.keys(randomGroups).length + Object.keys(lockedGroups).length).keys()]);
       Object.keys(lockedGroups).forEach(index => availableIndices.delete(parseInt(index)));
@@ -125,7 +121,8 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize, loc
       // Place random groups in the first available indices not occupied by locked groups
       Object.entries(randomGroups).forEach(([key, group]) => {
         if (group && group.length > 0 && availableIndexArray.length > 0) {
-          combinedGroups[availableIndexArray.shift()] = group;
+          const index = availableIndexArray.shift();
+          combinedGroups[index] = group;
         }
       });
 
@@ -133,6 +130,7 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize, loc
       await saveGroups(roomId, combinedGroups, classroom.className);
       // Update the groups state in the UI
       setGroups(combinedGroups);
+
       return randomGroups;
     } else {
       console.error("Classroom document does not exist");
@@ -143,6 +141,7 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize, loc
     return null;
   }
 }
+
 
 
 export async function saveClassname(roomId, className) {

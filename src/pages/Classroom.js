@@ -9,7 +9,6 @@ import {
   removeMemberFromClassroom,
 } from "../firebase/firestoreService";
 import "./styles/classroom.css";
-// import { increment } from "firebase/firestore";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useDrag, useDrop } from "react-dnd";
@@ -201,34 +200,21 @@ const Classroom = () => {
     setShowMembers(!showMembers);
   };
 
-  // Group Locking
   const toggleLockGroup = (index) => {
     setLockedGroups(prevState => {
-      // Create a copy of the previous state
       const newState = { ...prevState };
-      // Toggle the lock status of the specified group index
       newState[index] = !prevState[index];
-      // Return the updated state
       return newState;
     });
   };
 
-  useEffect(() => {
-    console.log("Locked Groups:", lockedGroups);
-  }, [lockedGroups]);
-
-  useEffect(() => {
-    console.log("UNMATCH MEMBERS:", unmatchedMembers);
-  }, [unmatchedMembers]);
 
   const moveMember = useCallback((fromIndexes, toGroupIndex) => {
     setClassroom(prevClassroom => {
-      // Logic inside here has access to the most current 'prevClassroom'
       const newGroups = { ...prevClassroom.groups };
 
       let member;
       if (fromIndexes.groupIndex === -1) {
-        // Correct approach to access the current unmatchedMembers state safely
         setUnmatchedMembers(prevUnmatched => {
           const updatedUnmatched = [...prevUnmatched];
           member = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
@@ -264,25 +250,20 @@ const Classroom = () => {
 
 
   const removeMemberFromGroup = (fromIndexes) => {
-    console.log("Removing member from group, received indexes:", fromIndexes);
     setClassroom(prevClassroom => {
-      // Extract the group index and member index from fromIndexes
       const { groupIndex, memberIndex } = fromIndexes;
       if (groupIndex === -1) {
-        // Handle error or unexpected index
         console.error("Invalid groupIndex for removal from group:", groupIndex);
         return prevClassroom;
       }
 
       const newGroups = { ...prevClassroom.groups };
       const member = newGroups[groupIndex].splice(memberIndex, 1)[0];
-      console.log("Member removed:", member);
 
       setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
       return { ...prevClassroom, groups: newGroups };
     });
   };
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -307,7 +288,6 @@ const Classroom = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch the classroom details
         const fetchedClassroom = await getDocument("classrooms", roomId);
         if (!fetchedClassroom) {
           console.error("Failed to fetch classroom data");
@@ -315,16 +295,13 @@ const Classroom = () => {
         }
         setClassroom(fetchedClassroom);
 
-        // Fetch and set groups
         const fetchedGroups = fetchedClassroom.groups || {};
         setGroups(fetchedGroups);
 
-        // Set up classroom name
         const fetchedUser = await getUser(fetchedClassroom?.instructor);
         const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Class`;
         setClassName(className);
 
-        // Check if the current user is the professor
         const isProfessor = localStorage.getItem("userType") === "Professor" && localStorage.getItem("userId") === fetchedClassroom?.instructor;
         setIsProfessor(isProfessor);
 
@@ -333,7 +310,6 @@ const Classroom = () => {
           navigate(`/student-view?roomId=${code}`);
         }
 
-        // Fetch and set member names
         const members = fetchedClassroom?.members || [];
         const newMemberNames = await Promise.all(members.map(async (member) => {
           const user = await getUser(member);
@@ -341,7 +317,6 @@ const Classroom = () => {
         }));
         setMemberNames(newMemberNames);
 
-        // Update unmatched members based on the current groups
         updateUnmatchedMembers(members, fetchedGroups);
 
       } catch (error) {
@@ -356,26 +331,20 @@ const Classroom = () => {
 
   const handleDeleteMember = async (userId, roomId) => {
     try {
-      // Remove the member from the Firestore database
       await removeMemberFromClassroom(roomId, userId);
 
-      // Update state to reflect these changes
       setClassroom(prevClassroom => {
         const newGroups = { ...prevClassroom.groups };
 
-        // Iterate over each group and filter out the deleted member
         Object.keys(newGroups).forEach(groupKey => {
           newGroups[groupKey] = newGroups[groupKey].filter(memberId => memberId !== userId);
         });
 
-        // Return the updated classroom with the member removed from all groups
         return { ...prevClassroom, groups: newGroups };
       });
 
-      // Update the memberNames state to remove the member entirely from the classroom
       setMemberNames(prevMembers => prevMembers.filter(member => member.id !== userId));
 
-      // If using unmatched members, update that list too
       setUnmatchedMembers(prevUnmatched => prevUnmatched.filter(member => member.id !== userId));
     } catch (error) {
       console.error("Failed to delete member from classroom:", error);
@@ -400,15 +369,10 @@ const Classroom = () => {
 
     const members = fetchedClassroom?.members || [];
 
-    // Fetch students and their preferences
-    // For demonstration, let's assume `memberNames` includes all necessary info
-    const membersWithPreferences = [...memberNames]; // Assume this array has all the data
+    const membersWithPreferences = [...memberNames];
 
     const matchedGroups = findBestMatchingGroups(members, groupSize);
 
-    // Example: Update your state with these new groups
-    // This step will depend on how your groups are structured and stored
-    // For now, we'll log the results to demonstrate output
     console.log("Matched Groups:", matchedGroups);
 
     setClassroom(fetchedClassroom);
@@ -419,20 +383,15 @@ const Classroom = () => {
     const matchedGroups = [];
 
     while (remainingStudents.length >= groupSize) {
-      // Take a slice of students for the current group
       const currentGroup = remainingStudents.slice(0, groupSize);
 
-      // Find the best matching group based on the current group members' profiles
       const bestMatchingGroup = findBestMatchForGroup(currentGroup);
 
-      // Add the best matching group to the result
       matchedGroups.push(bestMatchingGroup);
 
-      // Remove the students assigned to the current group from the remaining students
       remainingStudents = remainingStudents.filter(student => !currentGroup.includes(student));
     }
 
-    // If there are remaining students, create a group with them
     if (remainingStudents.length > 0) {
       matchedGroups.push(remainingStudents);
     }
@@ -445,13 +404,11 @@ const Classroom = () => {
 
 
   const findBestMatchForGroup = (group) => {
-    // Sort students randomly to vary pairings each time the function is called
     group.sort(() => 0.5 - Math.random());
 
     let bestMatchScore = -1;
     let bestMatchGroup = [];
 
-    // Compare each student with every other student in the group
     for (let i = 0; i < group.length; i++) {
       for (let j = i + 1; j < group.length; j++) {
         const score = calculateMatchScore(group[i], group[j]);
@@ -469,54 +426,32 @@ const Classroom = () => {
 
 
   const handleRandomizeGroups = async () => {
-    console.log("Triggering randomization process...");
-
-    // Fetch the latest classroom state
     const fetchedClassroom = await getDocument("classrooms", roomId);
-    console.log("Fetched classroom:", fetchedClassroom);
-
     const allMembers = fetchedClassroom?.members || [];
-    console.log("All members:", allMembers);
-
     const groups = fetchedClassroom?.groups || {};
-    console.log("Current groups:", groups);
-
-    // Load the current state of locked groups
     const currentLockedGroups = lockedGroups || {};
-    console.log("Current locked groups:", lockedGroups);
 
-    // Collect IDs of members in locked groups
     const lockedMembers = new Set();
     const passedLockedGroups = {};
     Object.entries(currentLockedGroups).forEach(([groupIndex, isLocked]) => {
       if (isLocked) {
-        console.log("Locked group?", isLocked);
-        console.log("Locked group index:", groupIndex);
         if (!passedLockedGroups[groupIndex]) {
-          passedLockedGroups[groupIndex] = []; // Initialize the array if it doesn't exist
+          passedLockedGroups[groupIndex] = [];
         }
         groups[groupIndex].forEach(member => {
           lockedMembers.add(member);
-          passedLockedGroups[groupIndex].push(member); // Now safe to push members
+          passedLockedGroups[groupIndex].push(member);
         });
       }
     });
-    console.log("NEW Locked members:", lockedMembers);
-    console.log("Passed locked groups:", passedLockedGroups);
 
-    // Filter out members in locked groups and already matched members
     const unlockedAndUnmatchedMembers = allMembers.filter(member =>
       !lockedMembers.has(member) && !unmatchedMembers.includes(member)
     );
 
-    console.log("Unlocked and unmatched members:", unlockedAndUnmatchedMembers);
-
-    // Get new groups with only unlocked and unmatched members
     await getGroups(roomId, setGroups, unlockedAndUnmatchedMembers, groupSize, passedLockedGroups);
 
-    // Update the classroom state
     setClassroom(prevClassroom => {
-      // Update only the unlocked groups with new group data
       const newGroups = { ...prevClassroom.groups };
       unlockedAndUnmatchedMembers.forEach((member, index) => {
         const groupIndex = Math.floor(index / groupSize);
@@ -529,7 +464,6 @@ const Classroom = () => {
       return { ...prevClassroom, groups: newGroups };
     });
 
-    // Update member names based on new groups
     const newMemberNames = await Promise.all(
       allMembers.map(async (member) => {
         const fetchedUser = await getUser(member);
@@ -539,40 +473,46 @@ const Classroom = () => {
         };
       })
     );
-    console.log("New member names:", newMemberNames);
     setMemberNames(newMemberNames);
   };
 
 
   useEffect(() => {
-    console.log("Groups updated:", groups);
-    // Ensure the UI reflects the updated state immediately
+    // console.log("Groups updated:", groups);
+
+    // Ensures that groups state is up to date
     setClassroom(prevClassroom => ({
       ...prevClassroom,
-      groups: groups // Update with the new groups state
+      groups: groups
     }));
+
+    if (groups) {
+      const initialLockState = {};
+      Object.keys(groups).forEach(key => {
+        initialLockState[key] = false;
+      });
+      setLockedGroups(initialLockState);
+    }
   }, [groups]);
 
+
   useEffect(() => {
-    console.log("Locked Groups updated:", lockedGroups);
-    // Ensure the UI reflects the updated state immediately
+    // console.log("Locked Groups updated:", lockedGroups);
+
+    // Ensures that lockedGroups state is up to date
     setClassroom(prevClassroom => ({
       ...prevClassroom,
-      lockedGroups: lockedGroups // Update with the new lockedGroups state
+      lockedGroups: lockedGroups
     }));
   }, [lockedGroups]);
 
   // useEffect(() => {
-  //   // Initialize lockedGroups when classroom.groups changes
-  //   if (classroom.groups) {
-  //     const numGroups = Object.keys(classroom.groups).length;
-  //     const initialLockedGroups = {};
-  //     for (let i = 0; i < numGroups; i++) {
-  //       initialLockedGroups[i] = false;
-  //     }
-  //     setLockedGroups(initialLockedGroups);
-  //   }
-  // }, [classroom.groups]);
+  //   console.log("Locked Groups:", lockedGroups);
+  // }, [lockedGroups]);
+
+  // useEffect(() => {
+  //   console.log("UNMATCH MEMBERS:", unmatchedMembers);
+  // }, [unmatchedMembers]);
 
   const saveGroupsToFirestore = () => {
     setClassroom((prevClassroom) => {
@@ -604,26 +544,22 @@ const Classroom = () => {
       let member;
 
       if (fromIndexes.groupIndex === -1) {
-        // Member is coming from the unmatched members list
         setUnmatchedMembers(prevUnmatched => {
           const updatedUnmatched = [...prevUnmatched];
           member = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
           return updatedUnmatched;
         });
       } else {
-        // Member is coming from an existing group
         member = newGroups[fromIndexes.groupIndex][fromIndexes.memberIndex];
-        console.log("Member to move:", member);
         newGroups[fromIndexes.groupIndex].splice(fromIndexes.memberIndex, 1);
       }
 
-      // Create a new group and add the member
       const newGroupIndex = Object.keys(newGroups).length;
       newGroups[newGroupIndex] = [member];
 
       setLockedGroups(prevLocked => ({
         ...prevLocked,
-        [newGroupIndex]: false // New groups start as unlocked
+        [newGroupIndex]: false
       }));
 
       setGroups(newGroups)
@@ -631,17 +567,6 @@ const Classroom = () => {
     });
 
   };
-
-  useEffect(() => {
-    if (groups) {
-      const initialLockState = {};
-      Object.keys(groups).forEach(key => {
-        initialLockState[key] = false;
-      });
-      setLockedGroups(initialLockState);
-    }
-  }, [groups]);
-
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -741,7 +666,7 @@ const Classroom = () => {
           {isProfessor && (
             <div className="control-center">
               <div className="size-counter">
-                <h3 className="counter-title">Group Size</h3>
+                <h3 className="counter-title">Max. Group Size</h3>
                 <span className="counter-value">
                   {groupSize < 10 ? "0" + groupSize : groupSize}
                 </span>

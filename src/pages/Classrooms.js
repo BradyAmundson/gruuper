@@ -69,16 +69,16 @@ const Classrooms = () => {
         variant="h4"
         gutterBottom
         style={{
-          margin: '20px', // Increased margin for more spacing around the title
-          padding: '15px', // Increased padding for a softer appearance
-          borderRadius: '10px', // Rounded corners
-          fontSize: '40px', // Larger font size for headings
-          color: 'transparent', // Transparent text color
-          WebkitBackgroundClip: 'text', // Apply background to text
+          margin: '20px',
+          padding: '15px',
+          borderRadius: '10px',
+          fontSize: '40px',
+          color: 'transparent',
+          WebkitBackgroundClip: 'text',
           backgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundImage: 'linear-gradient(145deg, #6db3f2, #1e5799)',
-          display: 'inline-block', // Display as inline block to control spacing
+          display: 'inline-block',
         }}
       >
         Your Classrooms
@@ -96,31 +96,30 @@ const Classrooms = () => {
             <ListItem key={code} disablePadding>
               <Button
                 variant="contained"
-                color="primary" // Change the color to primary for the blue theme
+                color="primary"
                 fullWidth
                 onClick={() => {
-                  // Check the user type and navigate accordingly
                   const userType = localStorage.getItem("userType");
                   if (userType === "Student") {
-                    navigate(`/student-view?roomId=${code}`);  // Path for the StudentView
+                    navigate(`/student-view?roomId=${code}`);
                   } else {
-                    navigate(`/classroom?roomId=${code}`);  // Existing path for professors
+                    navigate(`/classroom?roomId=${code}`);
                   }
                 }}
                 onMouseEnter={(event) => {
                   event.target.style.transform = "scale(.95)";
-                  event.target.style.backgroundColor = "#1e5799"; // Change background color on hover
+                  event.target.style.backgroundColor = "#1e5799";
                 }}
                 onMouseLeave={(event) => {
                   event.target.style.transform = "scale(1)";
-                  event.target.style.backgroundColor = "#6db3f2"; // Restore default background color on hover out
+                  event.target.style.backgroundColor = "#6db3f2";
                 }}
                 style={{
                   borderRadius: 5,
                   marginBottom: "1rem",
-                  transition: "transform 0.3s, background-color 0.3s", // Add background-color transition
-                  background: 'linear-gradient(145deg, #6db3f2, #1e5799)', // Apply gradient background
-                  color: 'white', // Set text color to white
+                  transition: "transform 0.3s, background-color 0.3s",
+                  background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+                  color: 'white',
                 }}
               >
                 <ListItemText
