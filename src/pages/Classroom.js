@@ -87,11 +87,10 @@ const DroppableGroup = ({
     accept: ItemTypes.MEMBER,
     drop: (item, monitor) => moveMember(item.index, index),
   }));
+
   return (
-    <div ref={drop} id="Groups">
-      <h3>Group {index + 1} <IconButton onClick={() => toggleLockGroup(index)}>
-        {locked ? <LockIcon /> : <LockOpenIcon />}
-      </IconButton></h3>
+    <div ref={drop} id="Groups" className="group-container">
+      <h3>Group {index + 1}</h3>
       <ul>
         {group.map((user, idx) => (
           <DraggableMember
@@ -105,9 +104,16 @@ const DroppableGroup = ({
           />
         ))}
       </ul>
+      <IconButton
+        onClick={() => toggleLockGroup(index)}
+        className={`lock-button ${locked ? 'locked' : 'unlocked'}`}
+        style={{ position: 'absolute', top: '10px', right: '5px' }}>
+        {locked ? <LockIcon /> : <LockOpenIcon />}
+      </IconButton>
     </div>
   );
 };
+
 
 
 const NewGroupArea = ({ createNewGroup }) => {
@@ -615,11 +621,26 @@ const Classroom = () => {
       const newGroupIndex = Object.keys(newGroups).length;
       newGroups[newGroupIndex] = [member];
 
+      setLockedGroups(prevLocked => ({
+        ...prevLocked,
+        [newGroupIndex]: false // New groups start as unlocked
+      }));
+
       setGroups(newGroups)
       return { ...prevClassroom, groups: newGroups };
     });
 
   };
+
+  useEffect(() => {
+    if (groups) {
+      const initialLockState = {};
+      Object.keys(groups).forEach(key => {
+        initialLockState[key] = false;
+      });
+      setLockedGroups(initialLockState);
+    }
+  }, [groups]);
 
 
   const handleEditClick = () => {

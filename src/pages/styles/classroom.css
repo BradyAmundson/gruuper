@@ -156,8 +156,8 @@ h2 {
 
 /* Groups section headers */
 #Groups h3 {
-  margin: 0.8125rem;
-  padding: 0.8125rem;
+  /* margin: 0.8125rem;
+  padding: 0.8125rem; */
   border-radius: 0.5rem;
   font-size: 2.25rem;
   color: transparent;
@@ -166,6 +166,55 @@ h2 {
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);
   display: inline;
+
+  flex: 1; /* Allows the heading to take up the full width, pushing the lock icon to the edge */
+  margin: 0;
+  padding: 0;
+  /* font-size: 18px; */
+}
+
+.group-container {
+  background-color: #f8f8f8;
+  border: 1px solid #abd0e4;
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+  margin-top: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative; /* Keeps the lock icon within the header */
+}
+
+.lock-button {
+  position: absolute; /* Position it at the top-right corner of the group container */
+  top: 5px; /* Margin from the top */
+  right: 5px; /* Margin from the right */
+  padding: 5px; /* Smaller touch area */
+  color: #666; /* Subtle color */
+  min-width: 24px; /* Ensures the button does not stretch */
+  height: 24px; /* Fixed height for consistency */
+  z-index: 10; /* Ensures it's above other elements */
+}
+
+.lock-button.locked {
+  color: #973c3c; /* Dark red color when locked */
+}
+
+.lock-button.unlocked {
+  color: #666; /* Inherits the color from parent or defaults */
+}
+
+.lock-button.locked:hover {
+  color: #666; /* Darker color on hover for better visibility */
+}
+
+.lock-button.unlocked:hover {
+  color: #973c3c; /* Darker color on hover for better visibility */
 }
 
 /* Groups section list */
