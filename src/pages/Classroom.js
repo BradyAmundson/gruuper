@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useLocation, Redirect } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   getDocument,
   getGroups,
@@ -200,6 +200,7 @@ const Classroom = () => {
   const [unmatchedMembers, setUnmatchedMembers] = useState([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   // Show/Hide Members button position
@@ -360,80 +361,11 @@ const Classroom = () => {
   };
 
 
-
-  function calculateMatchScore(student1, student2) {
-    let score = 0;
-    if (student1.major === student2.major) score += 1;
-    if (student1.classYear === student2.classYear) score += 1;
-    if (student1.nightOrMorning === student2.nightOrMorning) score += 1;
-    if (student1.socialPreference === student2.socialPreference) score += 1;
-    if (student1.deadlineBehavior === student2.deadlineBehavior) score += 1;
-    return score;
-  }
-
-  const handleSmartMatch = async () => {
-    await getGroups(roomId, setGroups, memberNames, groupSize, false);
-    const fetchedClassroom = await getDocument("classrooms", roomId);
-
-    const members = fetchedClassroom?.members || [];
-
-    const membersWithPreferences = [...memberNames];
-
-    const matchedGroups = findBestMatchingGroups(members, groupSize);
-
-    console.log("Matched Groups:", matchedGroups);
-
-    setClassroom(fetchedClassroom);
-  };
-
-  const findBestMatchingGroups = (students, groupSize) => {
-    let remainingStudents = [...students];
-    const matchedGroups = [];
-
-    while (remainingStudents.length >= groupSize) {
-      const currentGroup = remainingStudents.slice(0, groupSize);
-
-      const bestMatchingGroup = findBestMatchForGroup(currentGroup);
-
-      matchedGroups.push(bestMatchingGroup);
-
-      remainingStudents = remainingStudents.filter(student => !currentGroup.includes(student));
+  const handleRandomizeGroups = async (smartMatch) => {
+    if (smartMatch) {
+      setIsLoading(true);
     }
 
-    if (remainingStudents.length > 0) {
-      matchedGroups.push(remainingStudents);
-    }
-
-
-    return matchedGroups;
-  };
-
-
-
-
-  const findBestMatchForGroup = (group) => {
-    group.sort(() => 0.5 - Math.random());
-
-    let bestMatchScore = -1;
-    let bestMatchGroup = [];
-
-    for (let i = 0; i < group.length; i++) {
-      for (let j = i + 1; j < group.length; j++) {
-        const score = calculateMatchScore(group[i], group[j]);
-        if (score > bestMatchScore) {
-          bestMatchScore = score;
-          bestMatchGroup = [group[i], group[j]];
-        }
-      }
-    }
-
-    console.log("Best Match Score:", bestMatchScore);
-    console.log("Best Match Group:", bestMatchGroup);
-    return bestMatchGroup;
-  };
-
-
-  const handleRandomizeGroups = async () => {
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
     const groups = fetchedClassroom?.groups || {};
@@ -457,8 +389,8 @@ const Classroom = () => {
       !lockedMembers.has(member) && !unmatchedMembers.includes(member)
     );
 
-    await getGroups(roomId, setGroups, unlockedAndUnmatchedMembers, groupSize, passedLockedGroups);
-
+    await getGroups(roomId, setGroups, unlockedAndUnmatchedMembers, groupSize, passedLockedGroups, smartMatch);
+    setIsLoading(false);
     setClassroom(prevClassroom => {
       const newGroups = { ...prevClassroom.groups };
       unlockedAndUnmatchedMembers.forEach((member, index) => {
@@ -635,6 +567,11 @@ const Classroom = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <div>
         <div
           style={{
@@ -737,14 +674,14 @@ const Classroom = () => {
                 <Tooltip title="Shuffle">
                   <ShuffleIcon
                     className="randomize-groups-button"
-                    onClick={handleRandomizeGroups}
+                    onClick={() => handleRandomizeGroups(false)}
                     sx={{ fontSize: "30px", transition: "transform 0.3s" }}
                   />
                 </Tooltip>
                 <Tooltip title="Maatcher">
                   <SmartMatchIcon
                     className="smart-match-button"
-                    onClick={handleSmartMatch}
+                    onClick={() => handleRandomizeGroups(true)}
                     sx={{ fontSize: "30px", transition: "transform 0.3s" }}
                   />
                 </Tooltip>

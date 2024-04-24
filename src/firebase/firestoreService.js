@@ -12,6 +12,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { randomizeGroups } from "../components/GroupRandomizer.js";
+import { optimizeGroups } from "../components/SmartMatch.js";
 
 export async function createClassroom(roomId, creatorId) {
   console.log(roomId);
@@ -104,22 +105,30 @@ export async function saveGroups(roomId, groups, className) {
   }
 }
 
-export async function getGroups(roomId, setGroups, passedMembers, groupSize, lockedGroups) {
+export async function getGroups(roomId, setGroups, passedMembers, groupSize, lockedGroups, smartMatch = false) {
   const documentRef = doc(db, "classrooms", roomId);
   try {
     const documentSnapshot = await getDoc(documentRef);
     if (documentSnapshot.exists()) {
       const classroom = documentSnapshot.data();
       const members = classroom.members;
-      const randomGroups = randomizeGroups(passedMembers, groupSize);
+
+      let shuffledGroups = await randomizeGroups(passedMembers, groupSize);
+      if (smartMatch) {
+        console.log("Optimizing groups with SmartMatch...");
+        shuffledGroups = await optimizeGroups(passedMembers, groupSize);
+      }
+
+      console.log("Shuffled groups:", shuffledGroups);
+
       const combinedGroups = { ...lockedGroups };
 
-      let availableIndices = new Set([...Array(Object.keys(randomGroups).length + Object.keys(lockedGroups).length).keys()]);
+      let availableIndices = new Set([...Array(Object.keys(shuffledGroups).length + Object.keys(lockedGroups).length).keys()]);
       Object.keys(lockedGroups).forEach(index => availableIndices.delete(parseInt(index)));
       let availableIndexArray = Array.from(availableIndices).sort((a, b) => a - b);
 
       // Place random groups in the first available indices not occupied by locked groups
-      Object.entries(randomGroups).forEach(([key, group]) => {
+      Object.entries(shuffledGroups).forEach(([key, group]) => {
         if (group && group.length > 0 && availableIndexArray.length > 0) {
           const index = availableIndexArray.shift();
           combinedGroups[index] = group;
@@ -131,7 +140,7 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize, loc
       // Update the groups state in the UI
       setGroups(combinedGroups);
 
-      return randomGroups;
+      return shuffledGroups;
     } else {
       console.error("Classroom document does not exist");
       return null;

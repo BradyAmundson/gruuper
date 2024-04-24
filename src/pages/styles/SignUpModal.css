@@ -38,7 +38,7 @@
   color: white;
   border-radius: 12px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 20x;
   padding: 10px 20px;
   margin: 10px;
   align-items: center;
@@ -47,7 +47,7 @@
 }
 
 .prev-step:hover {
-  background-color: #154362;
+  background-color: #2b1562;
   transform: scale(0.9);
 }
 

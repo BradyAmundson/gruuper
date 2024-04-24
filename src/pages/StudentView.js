@@ -112,6 +112,7 @@ const StudentView = () => {
 
     return (
         <div>
+            <h1></h1>
             <h1 className="classroom-header">{classroom?.className || "Classroom Name"}</h1>
             <div className="student-view-container">
                 <div className="group-box">

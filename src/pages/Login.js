@@ -5,7 +5,7 @@ const Login = () => {
   return (
     <div className="container">
       <div className="phone">
-        <header>Grupeer</header>
+        <header>Gruuper</header>
         <div className="options">
           <div className="option">Create Room</div>
           <button>Create</button>

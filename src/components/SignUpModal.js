@@ -268,7 +268,7 @@ const Step3 = ({
   return (
     <div>
       <h2 class="slide-title">Step 3: Create Account</h2>
-      <p>
+      <p style={{ fontStyle: "italic", color: "#ccc" }}>
         {firstName} {lastName}, {userType}
       </p>
       <div style={{ marginBottom: "15px" }}>
@@ -333,19 +333,7 @@ const Step3 = ({
           />
         </label>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
-        <button
-          class="prev-step"
-          onClick={onBack}
-          style={{
-            margin: "20px 0px 0px 0px",
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#1f618d",
-          }}
-        >
-          &lt; Back
-        </button>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <SignUpEmail
           firstName={firstName}
           lastName={lastName}
@@ -356,6 +344,25 @@ const Step3 = ({
           secondPassword={secondPassword}
         />
         <button
+          onClick={onBack}
+          class="prev-step"
+          style={{
+            color: "white",
+            borderRadius: "0.75rem",
+            cursor: "pointer",
+            fontSize: "2rem",
+            padding: "0.5rem 2rem",
+            margin: "0.625rem",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "transform 0.3s, background-color 0.3s",
+            display: "inline-flex"
+          }}
+        >
+          &lt; Back
+        </button>
+
+        {/* <button
           class="next-step"
           onClick={onDone}
           style={{
@@ -366,7 +373,7 @@ const Step3 = ({
           }}
         >
           Sign Up NEW
-        </button>
+        </button> */}
       </div>
     </div>
   );

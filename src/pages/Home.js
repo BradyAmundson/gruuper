@@ -43,9 +43,19 @@ function Home() {
 
       <div className="form-container">
         {localStorage.getItem("userType") === "Professor" ? (
-          <Typography variant="h4">Join or Create a Class</Typography>
+          <Typography
+            className="title-header"
+            variant="h4"
+          >
+            Join or Create a Class
+          </Typography>
         ) : (
-          <Typography variant="h4">Join a Class</Typography>
+          <Typography
+            className="title-header"
+            variant="h4"
+          >
+            Join a Class
+          </Typography>
         )}
         <Typography className="error-text" variant="body1">
           {error}
@@ -74,11 +84,10 @@ function Home() {
             <Typography variant="h6" className="separator-text">
               or
             </Typography>
-
             <Button
               className="create-class-button"
               variant="contained"
-              color="lightBlue"
+              color="primary"
               onClick={createClass}
               fullWidth
             >

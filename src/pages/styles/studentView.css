@@ -10,6 +10,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);
+  display: inline;
 }
 
 .student-view-container {
@@ -39,6 +40,7 @@
   font-size: 24px;
   font-weight: bold;
   margin-top: 20px;
+  color: #1e5799;
 }
 
 .group-member-list {

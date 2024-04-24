@@ -181,12 +181,32 @@ export function SignUpEmail({
 
   return (
     <div>
+      <div style={{ marginTop: "10px", width: "100%", textAlign: "center" }}>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </div>
       {loading ? (
         <div>Loading</div>
       ) : (
-        <StyledButton onClick={handleSignUp}>Sign Up</StyledButton>
+        <button
+          onClick={handleSignUp}
+          style={{
+            background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+            color: "white",
+            borderRadius: "0.75rem",
+            cursor: "pointer",
+            fontSize: "2.85rem",
+            padding: "0.75rem 2.25rem",
+            margin: "0.8rem",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "transform 0.3s, background-color 0.3s",
+            display: "inline-flex"
+          }}
+        >
+          Sign Up
+        </button>
       )}
-      <p style={{ color: "red" }}>{error}</p>
+
     </div>
   );
 }

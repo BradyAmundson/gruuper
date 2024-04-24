@@ -26,6 +26,8 @@ export const randomizeGroups = (members, groupSize) => {
     console.log(`Members in group ${i}:`, groupMembers);
   }
 
+  console.log("Group divisions:", dividedGroups);
+
   const groupEntries = Object.fromEntries(dividedGroups);
   console.log("Final group divisions:", groupEntries);
 
