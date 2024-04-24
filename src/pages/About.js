@@ -12,10 +12,24 @@ function About() {
   return (
     <Container maxWidth="md">
       <Paper elevation={3} style={paperStyle}>
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          style={{
+            fontSize: "28px",
+            fontWeight: 600,
+            color: "transparent",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundImage:
+              "linear-gradient(145deg, #6db3f2, #1e5799)",
+            display: "inline",
+          }}
+          gutterBottom
+        >
           About
         </Typography>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" style={{ marginTop: "2rem" }} gutterBottom>
           What is Gruuper?
         </Typography>
         <Typography variant="body1" paragraph>
@@ -44,7 +58,7 @@ function About() {
           within your virtual classroom. Gruuping has never been this easy!
         </Typography>
       </Paper>
-    </Container>
+    </Container >
   );
 }
 

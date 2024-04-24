@@ -14,7 +14,6 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { useDrag, useDrop } from "react-dnd";
 import { useNavigate } from "react-router-dom";
 
-
 import { IconButton, TextField } from "@mui/material";
 import CreateIcon from "@mui/icons-material/Create";
 import SaveIcon from "@mui/icons-material/Save";
@@ -25,6 +24,7 @@ import AddIcon from '@mui/icons-material/Add';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
 import Tooltip from "@mui/material/Tooltip";
+import { Dialog, DialogActions, DialogContent, DialogContentText, Button } from "@mui/material";
 
 
 
@@ -198,6 +198,9 @@ const Classroom = () => {
   const [lockedGroups, setLockedGroups] = useState({});
   const [showMembers, setShowMembers] = useState(false);
   const [unmatchedMembers, setUnmatchedMembers] = useState([]);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+
 
   // Show/Hide Members button position
   const buttonRightPosition = showMembers ? '400px' : '50px';
@@ -586,13 +589,47 @@ const Classroom = () => {
     }
   };
 
+  const handleDeleteClick = (student) => {
+    setStudentToDelete(student);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+  };
+
+  const confirmDelete = async () => {
+    if (studentToDelete) {
+      await handleDeleteMember(studentToDelete.id, roomId);
+      setOpenDeleteDialog(false);
+      setStudentToDelete(null);
+    }
+  };
+
   const incrementSize = () => {
+    const element = document.querySelector('.counter-value');
+
     setGroupSize(groupSize + 1);
+    element.classList.add('counter-value-change');
+
+    // Remove the animation class after the animation completes
+    setTimeout(() => {
+      element.classList.remove('counter-value-change');
+    }, 200);
+
   };
 
   const DecrementSize = () => {
     if (groupSize > 1) {
+      const element = document.querySelector('.counter-value');
+
       setGroupSize(groupSize - 1);
+      element.classList.add('counter-value-change');
+
+      // Remove the animation class after the animation completes
+      setTimeout(() => {
+        element.classList.remove('counter-value-change');
+      }, 200);
     }
   };
 
@@ -670,7 +707,11 @@ const Classroom = () => {
           {isProfessor && (
             <div className="control-center">
               <div className="size-counter">
-                <h3 className="counter-title">Max. Group Size</h3>
+                <div className="counter-title">
+                  <span>Maximum</span>
+                  <br />
+                  <span>Group Size:</span>
+                </div>
                 <span className="counter-value">
                   {groupSize < 10 ? "0" + groupSize : groupSize}
                 </span>
@@ -767,7 +808,7 @@ const Classroom = () => {
                   <li key={member.id}>
                     {member.name}
                     <IconButton
-                      onClick={() => handleDeleteMember(member.id, roomId)}
+                      onClick={() => handleDeleteClick(member)}
                       aria-label="delete member"
                       size="small"
                       className="delete-button"
@@ -780,6 +821,60 @@ const Classroom = () => {
             </div>
           </div>
         </div>
+        <Dialog
+          open={openDeleteDialog}
+          onClose={handleCloseDeleteDialog}
+          PaperProps={{
+            style: {
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.25)', // Enhanced shadow for a more modern look
+              backgroundColor: '#fff', // Ensure background is white or fits your design
+            },
+          }}
+        >
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description" style={{ color: '#333', fontSize: '1.2rem', textAlign: "center" }}>
+              Are you sure you want to delete {studentToDelete?.name}? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions style={{ justifyContent: 'center' }}>
+            <Button
+              onClick={handleCloseDeleteDialog}
+              style={{
+                // background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+                color: 'red',
+                borderRadius: '0.75rem',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                padding: '0.75rem 2.25rem',
+                margin: '0.625rem',
+                transition: 'transform 0.3s, background-color 0.3s',
+                textTransform: 'none' // Prevents uppercase letters
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              style={{
+                background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+                color: 'white',
+                borderRadius: '0.75rem',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                padding: '0.75rem 2.25rem',
+                margin: '0.625rem',
+                transition: 'transform 0.3s, background-color 0.3s',
+                textTransform: 'none' // Maintains font casing
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+
       </div>
     </DndProvider >
   );

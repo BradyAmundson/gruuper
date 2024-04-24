@@ -39,7 +39,7 @@ h2 {
   color: white;
   border-radius: 0.75rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 2rem;
   padding: 0.75rem 2.25rem;
   margin: 0.625rem;
   align-items: center;
@@ -376,12 +376,18 @@ h2 {
   font-weight: bold;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
-  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
+  box-shadow: 0.3125rem 0.3125rem 0.3125rem 0.125rem rgba(0, 0, 0, 0.1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 0.625rem;
-  transition: background-color 0.3s, color 0.3s;
+  margin: 0 1rem 0 0.75rem;
+  transition: transform 0.3s ease-out, background-color 0.3s, color 0.3s,
+    box-shadow 0.3s;
+  transform: scale(1);
+}
+
+.counter-value-change {
+  animation: scaleAndShadow 0.3s ease-out forwards;
 }
 
 /* Counter title */
@@ -392,6 +398,7 @@ h2 {
   display: block;
   text-align: center;
   width: 100%;
+  padding: 0.5rem;
 }
 
 /* Class info */
@@ -414,5 +421,20 @@ h2 {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes scaleAndShadow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0.3125rem 0.3125rem 0.3125rem 0.125rem rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0.3125rem 0.3125rem 0.3125rem 0.125rem rgba(171, 208, 228, 0.8); /* Custom color during scale up */
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0.3125rem 0.3125rem 0.3125rem 0.125rem rgba(0, 0, 0, 0.1); /* Return to default */
   }
 }

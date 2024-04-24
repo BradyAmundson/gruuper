@@ -73,6 +73,7 @@ const Classrooms = () => {
           padding: '15px',
           borderRadius: '10px',
           fontSize: '40px',
+          fontWeight: 'bold',
           color: 'transparent',
           WebkitBackgroundClip: 'text',
           backgroundClip: 'text',
@@ -115,7 +116,7 @@ const Classrooms = () => {
                   event.target.style.backgroundColor = "#6db3f2";
                 }}
                 style={{
-                  borderRadius: 5,
+                  borderRadius: 20,
                   marginBottom: "1rem",
                   transition: "transform 0.3s, background-color 0.3s",
                   background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
