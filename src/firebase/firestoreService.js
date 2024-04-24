@@ -104,7 +104,7 @@ export async function saveGroups(roomId, groups, className) {
   }
 }
 
-export async function getGroups(roomId, setGroups, passedMembers, groupSize) {
+export async function getGroups(roomId, setGroups, passedMembers, groupSize, lockedGroups) {
   const documentRef = doc(db, "classrooms", roomId);
   try {
     const documentSnapshot = await getDoc(documentRef);
@@ -112,8 +112,27 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize) {
       const classroom = documentSnapshot.data();
       const members = classroom.members;
       const randomGroups = randomizeGroups(passedMembers, groupSize);
-      await saveGroups(roomId, randomGroups, classroom.className); // Save groups immediately
-      setGroups(randomGroups); // Update UI immediately
+      console.log("getGroups passedLocked Groups", lockedGroups);
+      console.log("getGroups Random Groups", randomGroups);
+
+      const combinedGroups = { ...lockedGroups };
+      console.log("getGroups Locked Groups", combinedGroups);
+
+      let availableIndices = new Set([...Array(Object.keys(randomGroups).length + Object.keys(lockedGroups).length).keys()]);
+      Object.keys(lockedGroups).forEach(index => availableIndices.delete(parseInt(index)));
+      let availableIndexArray = Array.from(availableIndices).sort((a, b) => a - b);
+
+      // Place random groups in the first available indices not occupied by locked groups
+      Object.entries(randomGroups).forEach(([key, group]) => {
+        if (group && group.length > 0 && availableIndexArray.length > 0) {
+          combinedGroups[availableIndexArray.shift()] = group;
+        }
+      });
+
+      // Save the new groups structure to the database
+      await saveGroups(roomId, combinedGroups, classroom.className);
+      // Update the groups state in the UI
+      setGroups(combinedGroups);
       return randomGroups;
     } else {
       console.error("Classroom document does not exist");

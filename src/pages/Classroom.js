@@ -239,6 +239,7 @@ const Classroom = () => {
         setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
       }
 
+
       return { ...prevClassroom, groups: newGroups };
     });
   }, []);
@@ -388,7 +389,7 @@ const Classroom = () => {
   }
 
   const handleSmartMatch = async () => {
-    await getGroups(roomId, setGroups, memberNames, groupSize);
+    await getGroups(roomId, setGroups, memberNames, groupSize, false);
     const fetchedClassroom = await getDocument("classrooms", roomId);
 
     const members = fetchedClassroom?.members || [];
@@ -471,16 +472,31 @@ const Classroom = () => {
     const allMembers = fetchedClassroom?.members || [];
     console.log("All members:", allMembers);
 
+    const groups = fetchedClassroom?.groups || {};
+    console.log("Current groups:", groups);
+
     // Load the current state of locked groups
-    const currentLockedGroups = fetchedClassroom?.lockedGroups || {};
+    const currentLockedGroups = lockedGroups || {};
+    console.log("Current locked groups:", lockedGroups);
 
     // Collect IDs of members in locked groups
     const lockedMembers = new Set();
-    Object.entries(currentLockedGroups).forEach(([groupIndex, group]) => {
-      if (group.isLocked) {
-        group.forEach(member => lockedMembers.add(member));
+    const passedLockedGroups = {};
+    Object.entries(currentLockedGroups).forEach(([groupIndex, isLocked]) => {
+      if (isLocked) {
+        console.log("Locked group?", isLocked);
+        console.log("Locked group index:", groupIndex);
+        if (!passedLockedGroups[groupIndex]) {
+          passedLockedGroups[groupIndex] = []; // Initialize the array if it doesn't exist
+        }
+        groups[groupIndex].forEach(member => {
+          lockedMembers.add(member);
+          passedLockedGroups[groupIndex].push(member); // Now safe to push members
+        });
       }
     });
+    console.log("NEW Locked members:", lockedMembers);
+    console.log("Passed locked groups:", passedLockedGroups);
 
     // Filter out members in locked groups and already matched members
     const unlockedAndUnmatchedMembers = allMembers.filter(member =>
@@ -490,7 +506,7 @@ const Classroom = () => {
     console.log("Unlocked and unmatched members:", unlockedAndUnmatchedMembers);
 
     // Get new groups with only unlocked and unmatched members
-    await getGroups(roomId, setGroups, unlockedAndUnmatchedMembers, groupSize);
+    await getGroups(roomId, setGroups, unlockedAndUnmatchedMembers, groupSize, passedLockedGroups);
 
     // Update the classroom state
     setClassroom(prevClassroom => {
@@ -540,17 +556,17 @@ const Classroom = () => {
     }));
   }, [lockedGroups]);
 
-  useEffect(() => {
-    // Initialize lockedGroups when classroom.groups changes
-    if (classroom.groups) {
-      const numGroups = Object.keys(classroom.groups).length;
-      const initialLockedGroups = {};
-      for (let i = 0; i < numGroups; i++) {
-        initialLockedGroups[i] = false;
-      }
-      setLockedGroups(initialLockedGroups);
-    }
-  }, [classroom.groups]);
+  // useEffect(() => {
+  //   // Initialize lockedGroups when classroom.groups changes
+  //   if (classroom.groups) {
+  //     const numGroups = Object.keys(classroom.groups).length;
+  //     const initialLockedGroups = {};
+  //     for (let i = 0; i < numGroups; i++) {
+  //       initialLockedGroups[i] = false;
+  //     }
+  //     setLockedGroups(initialLockedGroups);
+  //   }
+  // }, [classroom.groups]);
 
   const saveGroupsToFirestore = () => {
     setClassroom((prevClassroom) => {
@@ -575,7 +591,7 @@ const Classroom = () => {
   };
 
 
-  const createNewGroup = (fromIndexes) => {
+  const createNewGroup = async (fromIndexes) => {
     setClassroom(prevClassroom => {
       const { groups: currentGroups, unmatchedMembers: currentUnmatched } = prevClassroom;
       const newGroups = { ...currentGroups };
@@ -590,7 +606,8 @@ const Classroom = () => {
         });
       } else {
         // Member is coming from an existing group
-        member = newGroups[fromIndexes.groupIndex][fromIndexes.memberIndex][0];
+        member = newGroups[fromIndexes.groupIndex][fromIndexes.memberIndex];
+        console.log("Member to move:", member);
         newGroups[fromIndexes.groupIndex].splice(fromIndexes.memberIndex, 1);
       }
 
@@ -598,8 +615,10 @@ const Classroom = () => {
       const newGroupIndex = Object.keys(newGroups).length;
       newGroups[newGroupIndex] = [member];
 
+      setGroups(newGroups)
       return { ...prevClassroom, groups: newGroups };
     });
+
   };
 
 
