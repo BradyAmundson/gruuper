@@ -1,11 +1,9 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
-import { ResetPassword } from "../firebase/authService";
+import { ResetPassword, SignOut } from "../firebase/authService";
 import { getUser } from "../firebase/firestoreService";
-import { SignOut } from "../firebase/authService";
-
+import { uploadProfileImage } from "../firebase/firebaseStorage";
 import {
   Container,
   Typography,
@@ -18,26 +16,15 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import EditIcon from "@mui/icons-material/Edit";
 import LockIcon from "@mui/icons-material/LockReset";
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 function Profile() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const currentUser = localStorage.getItem("userId");
-        const userDataFromFirebase = await getUser(currentUser);
-        setUserData(userDataFromFirebase);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   const paperStyle = {
     padding: "2rem",
@@ -102,9 +89,39 @@ function Profile() {
     setIsModalOpen(false);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setProfileImage(file);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = localStorage.getItem("userId");
+        if (currentUser) {
+          const userDataFromFirebase = await getUser(currentUser);
+          setUserData(userDataFromFirebase);
+          if (userDataFromFirebase && userDataFromFirebase.profileImageUrl) {
+            setProfileImage(userDataFromFirebase.profileImageUrl);
+          }
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+
+  const handleImageUpload = async (event) => {
+    setIsLoading(true);
+    const file = event.target.files[0];
+    if (file) {
+      const userId = localStorage.getItem("userId");
+      const downloadURL = await uploadProfileImage(file, userId);
+      if (downloadURL) {
+        setProfileImage(downloadURL);
+      }
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -113,15 +130,21 @@ function Profile() {
         <Grid item xs={12} sx={{ marginBottom: "-2rem" }}>
           <Paper elevation={3} style={paperStyle}>
             <div style={avatarContainerStyle}>
+              {(isLoading || !profileImage) && (
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                  <CircularProgress color="primary" />
+                </div>
+              )}
               <Avatar
                 alt="Profile Picture"
-                src={profileImage ? URL.createObjectURL(profileImage) : ""}
+                src={profileImage || ""}
                 style={{
                   width: "100px",
                   height: "100px",
                   marginBottom: "1rem",
+                  opacity: isLoading ? 0 : 1, // Hide the Avatar if loading
                 }}
-                onClick={() => {}}
+                onClick={() => { }}
               />
               <label htmlFor="profile-image-input" style={editIconStyle}>
                 <EditIcon />
@@ -130,7 +153,7 @@ function Profile() {
                   accept="image/*"
                   id="profile-image-input"
                   style={{ display: "none" }}
-                  onChange={handleImageChange}
+                  onChange={handleImageUpload}
                 />
               </label>
             </div>

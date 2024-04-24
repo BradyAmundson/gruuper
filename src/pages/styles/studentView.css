@@ -1,5 +1,17 @@
 /* studentView.css */
 
+.classroom-header {
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-size: 1.75rem;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(145deg, #6db3f2, #1e5799);
+}
+
 .student-view-container {
   max-width: 1200px;
   margin: 20px auto;
@@ -13,13 +25,26 @@
   flex: 1;
   padding: 20px;
   border-radius: 12px;
-  background: linear-gradient(145deg, #6db3f2, #1e5799);
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  background-color: #cfe8fc; /* Light blue background */
+  color: #333; /* Dark gray text color */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1), 0 6px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  position: relative; /* Enable absolute positioning for shapes */
+}
+
+.group-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.group-member-list {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 20px;
 }
 
 .classroom-box {
@@ -45,6 +70,13 @@ h2 {
   color: #232323;
 }
 
+.group-member-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
 .member-list {
   list-style-type: none;
   width: 100%;
@@ -57,9 +89,65 @@ h2 {
   margin: 5px 0;
 }
 
+.member-item-group {
+  padding: 10px;
+  margin: 20px 10px; /* Adjust vertical spacing here */
+  animation-name: floatAnimation;
+  animation-duration: 5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
 .member-name {
   font-weight: bold;
-  color: inherit;
+}
+
+.member-item:last-child {
+  border-bottom: none; /* Remove border for last item */
+}
+
+.cloud {
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* min-width: calc(var(--beforeWidth) + var(--afterWidth) + 10px + 40px); */
+  text-align: center;
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background-color: rgba(255, 255, 255);
+  z-index: -1;
+}
+
+.cloud::before {
+  width: var(--beforeWidth);
+  height: var(--beforeHeight);
+  top: calc(var(--beforeHeight) * -1);
+  /* top: -20px; */
+  /* left: 50px; */
+  left: calc(65% - (var(--beforeWidth) + var(--afterWidth) + 10px) / 2);
+  border-top-left-radius: calc(var(--beforeHeight));
+  border-top-right-radius: calc(var(--beforeHeight));
+}
+
+.cloud::after {
+  width: var(--afterWidth);
+  height: var(--afterHeight);
+  top: calc(var(--afterHeight) * -1);
+  /* top: -30px; */
+  /* left: calc(var(--beforeWidth) + -30px); */
+  left: calc(
+    35% - (var(--beforeWidth) + var(--afterWidth) + 10px) / 2 +
+      var(--beforeWidth) + 10px
+  );
+  border-top-left-radius: calc(var(--afterHeight));
+  border-top-right-radius: calc(var(--afterHeight));
 }
 
 @media (max-width: 768px) {
@@ -70,5 +158,16 @@ h2 {
   .classroom-box {
     width: 100%;
     margin-right: 0;
+  }
+}
+
+/* Animations */
+@keyframes floatAnimation {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
