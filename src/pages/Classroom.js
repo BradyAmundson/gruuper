@@ -157,19 +157,23 @@ const UnmatchedMembersArea = ({
   return (
     <div ref={drop} id="UnmatchedGroups" style={style}>
       <h3>Unmatched Members</h3>
-      <ul>
-        {unmatchedMembers.map((member, index) => (
-          <DraggableMember
-            key={index}
-            name={memberNames.find((mem) => mem.id === member)?.name}
-            index={{ groupIndex: -1, memberIndex: index }}
-            moveMember={moveMember}
-            setCurrentlyDragging={setCurrentlyDragging}
-            currentlyDragging={currentlyDragging}
-            isProfessor={isProfessor}
-          />
-        ))}
-      </ul>
+      {unmatchedMembers.length === 0 ? (
+        <p>Drop student here</p>
+      ) : (
+        <ul>
+          {unmatchedMembers.map((member, index) => (
+            <DraggableMember
+              key={index}
+              name={memberNames.find((mem) => mem.id === member)?.name}
+              index={{ groupIndex: -1, memberIndex: index }}
+              moveMember={moveMember}
+              setCurrentlyDragging={setCurrentlyDragging}
+              currentlyDragging={currentlyDragging}
+              isProfessor={isProfessor}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
@@ -520,7 +524,6 @@ const Classroom = () => {
       const currentGroups = prevClassroom.groups;
       const newGroups = {};
 
-      // Filter out empty groups and reassign keys
       let newGroupIndex = 0;
       Object.keys(currentGroups).forEach((groupKey) => {
         if (currentGroups[groupKey].length > 0) {
@@ -528,11 +531,9 @@ const Classroom = () => {
           newGroupIndex++;
         }
       });
-      console.log("classname2", className);
-      // Now newGroups contains only non-empty groups
-      // Perform your save operation here (e.g., saving to a backend)
+
       saveGroups(roomId, newGroups, className);
-      // Return the updated classroom object without empty groups
+
       return { ...prevClassroom, groups: newGroups };
     });
   };
@@ -608,22 +609,24 @@ const Classroom = () => {
           <h2 className="class-info" style={{ marginLeft: "1rem" }}>
             Classroom: {roomId}
           </h2>
-          <div style={{ display: "flex" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
             {isEditing ? (
               <TextField
                 variant="standard"
                 InputProps={{
                   disableUnderline: true,
-                  inputProps: { maxLength: 35 },
-                  style: {
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
+                  inputProps: {
+                    maxLength: 35,
+                    style: {
+                      fontSize: "1.5rem",
+                      fontWeight: "bold",
+                      width: "40rem",
+                      color: "#666",
+                      animation: "fade 0.75s infinite alternate",
+                      textAlign: "right",
+                      marginRight: "2rem",
+                    }
                   },
-                }}
-                style={{
-                  marginRight: "1.5rem",
-                  marginTop: "1rem",
-                  width: "100%",
                 }}
                 className="class-name-input"
                 value={className}

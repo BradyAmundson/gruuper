@@ -157,8 +157,6 @@ h2 {
 
 /* Groups section headers */
 #Groups h3 {
-  /* margin: 0.8125rem;
-  padding: 0.8125rem; */
   border-radius: 0.5rem;
   font-size: 2.25rem;
   color: transparent;
@@ -168,10 +166,9 @@ h2 {
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);
   display: inline;
 
-  flex: 1; /* Allows the heading to take up the full width, pushing the lock icon to the edge */
+  flex: 1;
   margin: 0;
   padding: 0;
-  /* font-size: 18px; */
 }
 
 .group-container {
@@ -185,30 +182,30 @@ h2 {
 }
 
 .lock-button {
-  position: absolute; /* Position it at the top-right corner of the group container */
-  top: 5px; /* Margin from the top */
-  right: 5px; /* Margin from the right */
-  padding: 5px; /* Smaller touch area */
-  color: #666; /* Subtle color */
-  min-width: 24px; /* Ensures the button does not stretch */
-  height: 24px; /* Fixed height for consistency */
-  z-index: 1; /* Ensures it's above other elements */
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 5px;
+  color: #666;
+  min-width: 24px;
+  height: 24px;
+  z-index: 1;
 }
 
 .lock-button.locked {
-  color: #973c3c; /* Dark red color when locked */
+  color: #973c3c;
 }
 
 .lock-button.unlocked {
-  color: #666; /* Inherits the color from parent or defaults */
+  color: #666;
 }
 
 .lock-button.locked:hover {
-  color: #666; /* Darker color on hover for better visibility */
+  color: #666;
 }
 
 .lock-button.unlocked:hover {
-  color: #973c3c; /* Darker color on hover for better visibility */
+  color: #973c3c;
 }
 
 /* Groups section list */
@@ -237,6 +234,13 @@ h2 {
   padding: 1.875rem;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
   transition: filter 0.5s ease;
+}
+
+#UnmatchedGroups p {
+  margin-top: 2rem;
+  font-style: italic;
+  color: #888;
+  opacity: 0.7;
 }
 
 /* Unmatched Groups section headers */
@@ -274,7 +278,7 @@ h2 {
 .new-group-area,
 .unmatched-members-area {
   background-color: #fff;
-  border: 0.125rem solid #ccc;
+  border: 0.125rem dotted #ccc;
   border-radius: 0.625rem;
   padding: 0.625rem;
   text-align: center;
@@ -282,6 +286,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  animation: fade 0.5s infinite alternate;
 }
 
 /* New group caption */
@@ -401,4 +406,13 @@ h2 {
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);
   display: inline;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
 }
