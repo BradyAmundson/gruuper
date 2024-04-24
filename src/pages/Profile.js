@@ -240,9 +240,9 @@ function Profile() {
                 <Divider style={{ margin: "1rem 0" }} />
               </>
             ) : (
-              <Typography variant="body1" paragraph>
-                Loading...
-              </Typography>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                <CircularProgress color="primary" />
+              </div>
             )}
             <Button
               variant="contained"

@@ -24,6 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
+import Tooltip from "@mui/material/Tooltip";
 
 
 
@@ -689,22 +690,27 @@ const Classroom = () => {
                 </div>
               </div>
               <div className="group-controls">
-
-                <ShuffleIcon
-                  className="randomize-groups-button"
-                  onClick={handleRandomizeGroups}
-                  sx={{ fontSize: "30px", transition: "transform 0.3s" }}
-                />
-                <SmartMatchIcon
-                  className="smart-match-button"
-                  onClick={handleSmartMatch}
-                  sx={{ fontSize: "30px", transition: "transform 0.3s" }}
-                />
-                <SaveIcon
-                  className="save-groups-button"
-                  onClick={saveGroupsToFirestore}
-                  sx={{ fontSize: "30px", transition: "transform 0.3s" }}
-                />
+                <Tooltip title="Shuffle">
+                  <ShuffleIcon
+                    className="randomize-groups-button"
+                    onClick={handleRandomizeGroups}
+                    sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                  />
+                </Tooltip>
+                <Tooltip title="Maatcher">
+                  <SmartMatchIcon
+                    className="smart-match-button"
+                    onClick={handleSmartMatch}
+                    sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                  />
+                </Tooltip>
+                <Tooltip title="Save">
+                  <SaveIcon
+                    className="save-groups-button"
+                    onClick={saveGroupsToFirestore}
+                    sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                  />
+                </Tooltip>
               </div>
             </div>
           )}
@@ -772,7 +778,7 @@ const Classroom = () => {
           </div>
         </div>
       </div>
-    </DndProvider>
+    </DndProvider >
   );
 };
 

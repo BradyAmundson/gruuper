@@ -73,6 +73,7 @@ h2 {
   top: 25vh;
   right: -20rem;
   transition: right 0.5s, box-shadow 0.3s;
+  z-index: 1;
 }
 
 /* Members section headers */
@@ -183,13 +184,6 @@ h2 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative; /* Keeps the lock icon within the header */
-}
-
 .lock-button {
   position: absolute; /* Position it at the top-right corner of the group container */
   top: 5px; /* Margin from the top */
@@ -198,7 +192,7 @@ h2 {
   color: #666; /* Subtle color */
   min-width: 24px; /* Ensures the button does not stretch */
   height: 24px; /* Fixed height for consistency */
-  z-index: 10; /* Ensures it's above other elements */
+  z-index: 1; /* Ensures it's above other elements */
 }
 
 .lock-button.locked {
