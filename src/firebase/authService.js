@@ -74,7 +74,7 @@ export function SignUpPhone() {
       }
 
       const credential = await confirmationResult.confirm(code);
-      console.log("Phone number authenticated:", credential.user);
+      return credential;
     } catch (error) {
       console.error("Error verifying code:", error.message);
       setError(error.message);
@@ -111,37 +111,6 @@ export function SignUpPhone() {
   );
 }
 
-// export const handleSignUp = async (
-//   firstName,
-//   lastName,
-//   userType,
-//   email,
-//   password
-// ) => {
-//   try {
-//     // Proceed with sign-up
-//     const userCredential = await createUserWithEmailAndPassword(
-//       auth,
-//       email,
-//       password
-//     );
-//     setLoading(true);
-//     await sendEmailVerification(userCredential.user).then(() => {
-//       alert("Email sent (Check Spam folder)");
-//       setLoading(false);
-//     });
-
-//     // auth.currentUser.emailVerified
-//     createUser(firstName, lastName, auth.currentUser.uid, userType);
-//     signOut(auth);
-//     localStorage.clear();
-//     navigate("/");
-//   } catch (error) {
-//     console.error("Error signing up:", error.message);
-//     setError(error.message);
-//   }
-// };
-
 export function SignUpEmail({
   firstName,
   lastName,
@@ -168,7 +137,6 @@ export function SignUpEmail({
         setLoading(false);
       });
 
-      // auth.currentUser.emailVerified
       createUser(firstName, lastName, auth.currentUser.uid, userType);
       signOut(auth);
       localStorage.clear();
@@ -200,13 +168,12 @@ export function SignUpEmail({
             alignItems: "center",
             justifyContent: "center",
             transition: "transform 0.3s, background-color 0.3s",
-            display: "inline-flex"
+            display: "inline-flex",
           }}
         >
           Sign Up
         </button>
       )}
-
     </div>
   );
 }
@@ -292,7 +259,6 @@ export function SignOut() {
   };
   return (
     <div style={{ paddingRight: "10px" }}>
-      {/* Hello, {localStorage.getItem("firstName")} &nbsp; */}
       <Button
         variant="contained"
         onClick={handleSignOut}
@@ -333,7 +299,7 @@ export function ResetPassword() {
       await signInWithEmailAndPassword(auth, user.email, oldPassword);
 
       updatePassword(user, newPassword).then(() => {
-        console.log("Password Updated");
+        alert("Password updated successfully!");
       });
       setOldPassword("");
       setNewPassword("");

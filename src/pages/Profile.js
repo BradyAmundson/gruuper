@@ -13,11 +13,9 @@ import {
   Grid,
   Divider,
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
 import EditIcon from "@mui/icons-material/Edit";
 import LockIcon from "@mui/icons-material/LockReset";
-import CircularProgress from '@mui/material/CircularProgress';
-
+import CircularProgress from "@mui/material/CircularProgress";
 
 function Profile() {
   const navigate = useNavigate();
@@ -110,7 +108,6 @@ function Profile() {
     fetchUserData();
   }, []);
 
-
   const handleImageUpload = async (event) => {
     setIsLoading(true);
     const file = event.target.files[0];
@@ -131,7 +128,14 @@ function Profile() {
           <Paper elevation={3} style={paperStyle}>
             <div style={avatarContainerStyle}>
               {(isLoading || !profileImage) && (
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                >
                   <CircularProgress color="primary" />
                 </div>
               )}
@@ -144,7 +148,7 @@ function Profile() {
                   marginBottom: "1rem",
                   opacity: isLoading ? 0 : 1, // Hide the Avatar if loading
                 }}
-                onClick={() => { }}
+                onClick={() => {}}
               />
               <label htmlFor="profile-image-input" style={editIconStyle}>
                 <EditIcon />
@@ -240,7 +244,14 @@ function Profile() {
                 <Divider style={{ margin: "1rem 0" }} />
               </>
             ) : (
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
                 <CircularProgress color="primary" />
               </div>
             )}

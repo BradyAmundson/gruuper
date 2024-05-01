@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Typography,
-  Paper,
   List,
   ListItem,
   ListItemText,
@@ -69,17 +68,17 @@ const Classrooms = () => {
         variant="h4"
         gutterBottom
         style={{
-          margin: '20px',
-          padding: '15px',
-          borderRadius: '10px',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          color: 'transparent',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundImage: 'linear-gradient(145deg, #6db3f2, #1e5799)',
-          display: 'inline-block',
+          margin: "20px",
+          padding: "15px",
+          borderRadius: "10px",
+          fontSize: "40px",
+          fontWeight: "bold",
+          color: "transparent",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
+          display: "inline-block",
         }}
       >
         Your Classrooms
@@ -119,8 +118,8 @@ const Classrooms = () => {
                   borderRadius: 20,
                   marginBottom: "1rem",
                   transition: "transform 0.3s, background-color 0.3s",
-                  background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
-                  color: 'white',
+                  background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+                  color: "white",
                 }}
               >
                 <ListItemText
@@ -128,13 +127,12 @@ const Classrooms = () => {
                   secondary={
                     userGroup.length > 0 && userType === "Student"
                       ? `Your Group: ${userGroup.join(", ")}`
-                      : userType != "Student"
-                        ? "Click to view classroom"
-                        : "No group assigned"
+                      : userType !== "Student"
+                      ? "Click to view classroom"
+                      : "No group assigned"
                   }
                 />
               </Button>
-
             </ListItem>
           ))}
         </List>

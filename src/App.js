@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./pages/styles/App.css";
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -8,22 +7,13 @@ import About from "./pages/About";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import Classroom from "./pages/Classroom";
-import SignUp from "./pages/Signup";
 import AuthPage from "./pages/AuthPage";
 import Classrooms from "./pages/Classrooms";
 import StudentView from "./pages/StudentView";
-import {
-  SignIn,
-  SignOut,
-  useAuthentication,
-  SignInPhone,
-  SignInEmail,
-} from "./firebase/authService";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useAuthentication } from "./firebase/authService";
 
 function App() {
   const user = useAuthentication();
-  console.log(user);
   return (
     <Router>
       <div className="App">

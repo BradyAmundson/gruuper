@@ -84,9 +84,6 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
       return;
     }
     // You can now use firstName, lastName, and userType to create the account
-    console.log("Account created:", { firstName, lastName, userType });
-
-    // SignUpEmail(firstName, lastName, userType, email, password);
 
     // Close the modal or perform any other necessary actions
     onRequestClose();
@@ -333,7 +330,14 @@ const Step3 = ({
           />
         </label>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <SignUpEmail
           firstName={firstName}
           lastName={lastName}
@@ -356,24 +360,11 @@ const Step3 = ({
             alignItems: "center",
             justifyContent: "center",
             transition: "transform 0.3s, background-color 0.3s",
-            display: "inline-flex"
+            display: "inline-flex",
           }}
         >
           &lt; Back
         </button>
-
-        {/* <button
-          class="next-step"
-          onClick={onDone}
-          style={{
-            margin: "20px 0px 0px 0px",
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#1f618d",
-          }}
-        >
-          Sign Up NEW
-        </button> */}
       </div>
     </div>
   );

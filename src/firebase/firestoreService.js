@@ -1,13 +1,7 @@
 import { db } from "./firebase";
 import {
-  collection,
-  query,
   getDoc,
-  addDoc,
   setDoc,
-  orderBy,
-  limit,
-  Timestamp,
   doc,
   updateDoc,
 } from "firebase/firestore";
@@ -15,7 +9,6 @@ import { randomizeGroups } from "../components/GroupRandomizer.js";
 import { optimizeGroups } from "../components/SmartMatch.js";
 
 export async function createClassroom(roomId, creatorId) {
-  console.log(roomId);
   await setDoc(doc(db, "classrooms", roomId), {
     members: [],
     instructor: creatorId,
@@ -73,27 +66,6 @@ export async function joinClassroom(roomId, userId, setError) {
   }
 }
 
-// export async function getGroups(roomId, setGroups, passedMembers, groupSize) {
-//   const documentRef = doc(db, "classrooms", roomId);
-//   const documentSnapshot = await getDoc(documentRef);
-//   if (documentSnapshot.exists()) {
-//     const classroom = documentSnapshot.data();
-//     const members = classroom.members;
-//     // const randomGroups = randomizeGroups(members, groupSize);
-//     const randomGroups = randomizeGroups(passedMembers, groupSize);
-//     await updateDoc(documentRef, { groups: randomGroups });
-//     setGroups(randomGroups);
-//   } else {
-//     return null;
-//   }
-// }
-
-
-// export async function saveGroups(roomId, groups, className) {
-//   const documentRef = doc(db, "classrooms", roomId);
-//   await updateDoc(documentRef, { groups: groups, className: className });
-// }
-
 export async function saveGroups(roomId, groups, className) {
   const documentRef = doc(db, "classrooms", roomId);
   try {
@@ -105,27 +77,38 @@ export async function saveGroups(roomId, groups, className) {
   }
 }
 
-export async function getGroups(roomId, setGroups, passedMembers, groupSize, lockedGroups, smartMatch = false) {
+export async function getGroups(
+  roomId,
+  setGroups,
+  passedMembers,
+  groupSize,
+  lockedGroups,
+  smartMatch = false
+) {
   const documentRef = doc(db, "classrooms", roomId);
   try {
     const documentSnapshot = await getDoc(documentRef);
     if (documentSnapshot.exists()) {
       const classroom = documentSnapshot.data();
-      const members = classroom.members;
 
       let shuffledGroups = await randomizeGroups(passedMembers, groupSize);
       if (smartMatch) {
-        console.log("Optimizing groups with SmartMatch...");
         shuffledGroups = await optimizeGroups(passedMembers, groupSize);
       }
 
-      console.log("Shuffled groups:", shuffledGroups);
-
       const combinedGroups = { ...lockedGroups };
 
-      let availableIndices = new Set([...Array(Object.keys(shuffledGroups).length + Object.keys(lockedGroups).length).keys()]);
-      Object.keys(lockedGroups).forEach(index => availableIndices.delete(parseInt(index)));
-      let availableIndexArray = Array.from(availableIndices).sort((a, b) => a - b);
+      let availableIndices = new Set([
+        ...Array(
+          Object.keys(shuffledGroups).length + Object.keys(lockedGroups).length
+        ).keys(),
+      ]);
+      Object.keys(lockedGroups).forEach((index) =>
+        availableIndices.delete(parseInt(index))
+      );
+      let availableIndexArray = Array.from(availableIndices).sort(
+        (a, b) => a - b
+      );
 
       // Place random groups in the first available indices not occupied by locked groups
       Object.entries(shuffledGroups).forEach(([key, group]) => {
@@ -151,8 +134,6 @@ export async function getGroups(roomId, setGroups, passedMembers, groupSize, loc
   }
 }
 
-
-
 export async function saveClassname(roomId, className) {
   const documentRef = doc(db, "classrooms", roomId);
   await updateDoc(documentRef, { className: className });
@@ -163,11 +144,11 @@ export async function createUser(firstName, lastName, userId, userType) {
     firstName: firstName,
     lastName: lastName,
     userType: userType,
-    mayor: '',
-    classYear: '',
-    nightOrMorning: '',
-    socialPreference: '',
-    deadlineBehavior: '',
+    mayor: "",
+    classYear: "",
+    nightOrMorning: "",
+    socialPreference: "",
+    deadlineBehavior: "",
     unavailableTimes: [],
     classroomCodes: [],
   })
@@ -203,18 +184,20 @@ export async function removeMemberFromClassroom(roomId, userId) {
     const classroomSnapshot = await getDoc(documentRef);
     if (classroomSnapshot.exists()) {
       const classroomData = classroomSnapshot.data();
-      const updatedMembers = classroomData.members.filter(member => member !== userId);
+      const updatedMembers = classroomData.members.filter(
+        (member) => member !== userId
+      );
       await updateDoc(documentRef, { members: updatedMembers });
 
       // Optionally update user's classroom codes
       const userSnapshot = await getDoc(userRef);
       if (userSnapshot.exists()) {
         const userData = userSnapshot.data();
-        const updatedClassroomCodes = userData.classroomCodes.filter(code => code !== roomId);
+        const updatedClassroomCodes = userData.classroomCodes.filter(
+          (code) => code !== roomId
+        );
         await updateDoc(userRef, { classroomCodes: updatedClassroomCodes });
       }
-
-      console.log("Member removed from classroom.");
     }
   } catch (error) {
     console.error("Error removing member: ", error);

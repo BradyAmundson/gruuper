@@ -115,13 +115,12 @@ h2 {
   border-radius: 20px;
   background-color: #fff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* min-width: calc(var(--beforeWidth) + var(--afterWidth) + 10px + 40px); */
   text-align: center;
 }
 
 .cloud::before,
 .cloud::after {
-  content: '';
+  content: "";
   position: absolute;
   background-color: rgba(255, 255, 255);
   z-index: -1;
@@ -131,8 +130,6 @@ h2 {
   width: var(--beforeWidth);
   height: var(--beforeHeight);
   top: calc(var(--beforeHeight) * -1);
-  /* top: -20px; */
-  /* left: 50px; */
   left: calc(65% - (var(--beforeWidth) + var(--afterWidth) + 10px) / 2);
   border-top-left-radius: calc(var(--beforeHeight));
   border-top-right-radius: calc(var(--beforeHeight));
@@ -142,8 +139,6 @@ h2 {
   width: var(--afterWidth);
   height: var(--afterHeight);
   top: calc(var(--afterHeight) * -1);
-  /* top: -30px; */
-  /* left: calc(var(--beforeWidth) + -30px); */
   left: calc(
     35% - (var(--beforeWidth) + var(--afterWidth) + 10px) / 2 +
       var(--beforeWidth) + 10px

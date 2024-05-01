@@ -29,7 +29,7 @@ const PhotoBanner = () => {
           <img
             key={index}
             src={photo}
-            alt={"Banner photo"}
+            alt={""}
             className={index === currentPhotoIndex ? "visible" : "hidden"}
           />
         ))}

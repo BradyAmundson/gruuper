@@ -21,8 +21,7 @@ function About() {
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            backgroundImage:
-              "linear-gradient(145deg, #6db3f2, #1e5799)",
+            backgroundImage: "linear-gradient(145deg, #6db3f2, #1e5799)",
             display: "inline",
           }}
           gutterBottom
@@ -58,7 +57,7 @@ function About() {
           within your virtual classroom. Gruuping has never been this easy!
         </Typography>
       </Paper>
-    </Container >
+    </Container>
   );
 }
 

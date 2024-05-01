@@ -10,20 +10,15 @@ import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
-import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
-import { Navigate, useNavigate } from "react-router-dom";
-import { SignOut, useAuthentication } from "../firebase/authService";
+import { useNavigate } from "react-router-dom";
+import { useAuthentication } from "../firebase/authService";
 import logo from "../images/gruuper-logo.png";
 import Stack from "@mui/material/Stack";
 
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import { getUser } from "../firebase/firestoreService";
 
-
 const pages = ["Classrooms", "About"];
-const settings = ["Profile", "Logout"];
-
 
 function Navbar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -36,18 +31,11 @@ function Navbar() {
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
 
   const navigate = useNavigate();
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = (e) => {
-    setAnchorElUser(null);
   };
 
   useEffect(() => {
@@ -71,13 +59,10 @@ function Navbar() {
     fetchUserData();
   }, [profileImage]);
 
-
-
   return (
     <AppBar position="static" sx={{ backgroundColor: "#1e5799" }}>
       <Container maxWidth="false">
         <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
-
           <Box sx={{ display: { xs: "none", md: "block" } }}>
             <Tooltip title="Home">
               <img
@@ -182,12 +167,17 @@ function Navbar() {
             ))}
           </Box>
 
-
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open profile">
               <IconButton onClick={() => navigate("/profile")} sx={{ p: 0 }}>
                 {(isLoading || !profileImage) && (
-                  <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "40px",
+                      height: "40px",
+                    }}
+                  >
                     <CircularProgress color="inherit" size={40} />
                   </div>
                 )}

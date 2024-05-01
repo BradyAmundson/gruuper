@@ -1,5 +1,4 @@
 import React from "react";
-import GroupRandomizer from "../components/GroupRandomizer";
 import PhotoBanner from "../components/PhotoBanner";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -35,25 +34,14 @@ function Home() {
   return (
     <div>
       <PhotoBanner />
-      {/* <div className="banner-text-container">
-        <Typography className="welcome-text" variant="h2">
-          Welcome to Gruuper!
-        </Typography>
-      </div> */}
 
       <div className="form-container">
         {localStorage.getItem("userType") === "Professor" ? (
-          <Typography
-            className="title-header"
-            variant="h4"
-          >
+          <Typography className="title-header" variant="h4">
             Join or Create a Class
           </Typography>
         ) : (
-          <Typography
-            className="title-header"
-            variant="h4"
-          >
+          <Typography className="title-header" variant="h4">
             Join a Class
           </Typography>
         )}
