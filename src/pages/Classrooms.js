@@ -25,41 +25,42 @@ const Classrooms = () => {
           const classroomDetails = await Promise.all(
             user.classroomCodes.map(async (code) => {
               const classroom = await getDocument("classrooms", code);
-              const userGroupNames = await getUserGroupNames(classroom, userId);
-              return {
-                code,
-                name: classroom.className,
-                userGroup: userGroupNames,
-              };
+              if (classroom) {
+                const userGroup = getUserGroup(classroom, userId);
+                return {
+                  code,
+                  name: classroom?.className || "Unnamed",
+                  userGroup,
+                };
+              }
+              return null;
             })
           );
 
-          setClassrooms(classroomDetails);
+          setClassrooms(classroomDetails.filter(Boolean));
           setLoading(false);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  const getUserGroupNames = async (classroom, userId) => {
+  const getUserGroup = (classroom, userId) => {
     if (!classroom || !classroom.groups) {
       return [];
     }
 
-    const groupsArray = Object.values(classroom.groups);
+    const userGroup = Object.values(classroom.groups).find((group) => {
+      // Check if group.members is an array, otherwise convert or handle accordingly
+      const members = Array.isArray(group?.members) ? group.members : Object.values(group?.members || {});
+      return members.includes(userId);
+    });
 
-    const userGroupNames = await Promise.all(
-      groupsArray.map(async (group) => {
-        const user = await getUser(group[0]);
-        return `${user?.firstName || ""} ${user?.lastName || ""}`;
-      })
-    );
-
-    return userGroupNames;
+    return userGroup ? userGroup.members.map((memberId) => memberId) : [];
   };
 
   return (
@@ -84,12 +85,10 @@ const Classrooms = () => {
         Your Classrooms
       </Typography>
 
-      {classrooms.length === 0 ? (
-        loading ? (
-          <Typography variant="body1">Loading...</Typography>
-        ) : (
-          <Typography variant="body1">No classrooms found.</Typography>
-        )
+      {loading ? (
+        <Typography variant="body1">Loading...</Typography>
+      ) : classrooms.length === 0 ? (
+        <Typography variant="body1">Error: No classrooms found.</Typography>
       ) : (
         <List>
           {classrooms.map(({ code, name, userGroup }) => (
@@ -99,7 +98,6 @@ const Classrooms = () => {
                 color="primary"
                 fullWidth
                 onClick={() => {
-                  const userType = localStorage.getItem("userType");
                   if (userType === "Student") {
                     navigate(`/student-view?roomId=${code}`);
                   } else {
@@ -128,8 +126,8 @@ const Classrooms = () => {
                     userGroup.length > 0 && userType === "Student"
                       ? `Your Group: ${userGroup.join(", ")}`
                       : userType !== "Student"
-                      ? "Click to view classroom"
-                      : "No group assigned"
+                        ? "Click to view classroom"
+                        : "No group assigned"
                   }
                 />
               </Button>
@@ -142,3 +140,6 @@ const Classrooms = () => {
 };
 
 export default Classrooms;
+
+
+

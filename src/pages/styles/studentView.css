@@ -120,7 +120,7 @@ h2 {
 
 .cloud::before,
 .cloud::after {
-  content: "";
+  content: '';
   position: absolute;
   background-color: rgba(255, 255, 255);
   z-index: -1;
@@ -167,4 +167,48 @@ h2 {
   50% {
     transform: translateY(-10px);
   }
+}
+
+.lobby-state {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.lobby-message {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto; /* Center the lobby message box */
+}
+
+.countdown-timer {
+  font-size: 1.5rem;
+  color: #e57373;
+  margin: 10px 0;
+}
+
+.edit-profile-button {
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.edit-profile-button:hover {
+  background-color: #154362;
+  transform: scale(0.95);
+}
+
+.edit-profile-button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 20px;
 }

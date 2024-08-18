@@ -18,6 +18,15 @@
   flex-wrap: wrap;
 }
 
+.deadline-picker {
+  margin: 1rem 0;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  max-width: 250px;
+}
+
 /* Headers */
 h1,
 h2 {
@@ -351,7 +360,7 @@ h2 {
 /* Size counter */
 .size-counter {
   display: flex;
-  grid-template-areas: "title title" "value buttons";
+  grid-template-areas: 'title title' 'value buttons';
   grid-template-columns: 1fr 1fr;
   align-items: center;
   justify-content: space-between;
@@ -394,6 +403,16 @@ h2 {
 .counter-title {
   color: #303c48;
   font-size: 1.5rem;
+  font-weight: bold;
+  display: block;
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.counter-title-live {
+  color: #303c48;
+  font-size: 1rem;
   font-weight: bold;
   display: block;
   text-align: center;
@@ -468,4 +487,158 @@ h2 {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* Lobby Container */
+.lobby-state {
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Lobby Title */
+.lobby-title {
+  font-size: 2.25rem;
+  color: #1e5799;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Countdown Container */
+.countdown-container {
+  background-color: #e9f2fb;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center align items horizontally */
+}
+
+/* Countdown Title */
+.countdown-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Countdown Timer */
+.countdown-timer {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1e5799;
+  margin-bottom: 20px;
+}
+
+/* Start Grouping Button */
+.btn-start-grouping {
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 20px; /* Add some space from the above elements */
+}
+
+.btn-start-grouping:hover {
+  background-color: #154362;
+  transform: scale(0.95);
+}
+
+/* Members Section */
+.members-list {
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Members Prompt */
+.members-prompt {
+  font-size: 1.25rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Members Title */
+.members-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1e5799;
+  margin-bottom: 10px;
+}
+
+/* Members List */
+.members-list-ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Members List Item */
+.members-list-item {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.btn-confirm-groups {
+  background: linear-gradient(145deg, #f2746d, #991e1e);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.live-grouping-indicator {
+  font-size: 1.5rem;
+  color: #1e5799;
+  padding: 10px;
+  background-color: #e0f7fa;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Add this CSS to your styles */
+.save-reminder {
+  background-color: red;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  z-index: 1000;
+}
+
+.save-reminder.show {
+  opacity: 1;
+  transform: translateY(0);
 }
