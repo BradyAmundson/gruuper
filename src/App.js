@@ -11,6 +11,7 @@ import Classroom from "./pages/Classroom";
 import AuthPage from "./pages/AuthPage";
 import Classrooms from "./pages/Classrooms";
 import StudentView from "./pages/StudentView";
+import Support from "./pages/Support";
 import { useAuthentication } from "./firebase/authService";
 import { getUser } from "./firebase/firestoreService";
 
@@ -41,6 +42,7 @@ function App() {
         ) : (
           <Routes>
             <Route path="/about" element={<About />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/classroom" element={<Classroom />} />

@@ -55,8 +55,7 @@ export async function createClassroom(roomId, creatorId, courseNumber = "", grad
 export async function getDocument(collectionName, documentId) {
   const documentRef = doc(db, collectionName, documentId);
   const documentSnapshot = await getDoc(documentRef);
-  console.log("ID: ", documentSnapshot.data())
-  console.log("Data: ", documentSnapshot.data())
+
   if (documentSnapshot.exists()) {
     return { id: documentSnapshot.id, ...documentSnapshot.data() };
   } else {
@@ -100,30 +99,46 @@ export async function joinClassroom(roomId, userId, setError) {
   }
 }
 
-// Save groups to the classroom
-export async function saveGroups(roomId, groups, className) {
+
+export async function saveGroups(roomId, newGroups, deletedGroups, className, groupedMembers, ungroupedMembers) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
+
   try {
     const classroomSnapshot = await getDoc(classroomRef);
     const classroomData = classroomSnapshot.exists() ? classroomSnapshot.data() : {};
     const existingGroups = classroomData.groups || {};
-    const deletedGroups = classroomData.deletedGroups || {};
+    const existingDeletedGroups = classroomData.deletedGroups || {};
 
-    // Identify deleted groups by comparing existing groups with the new groups
-    const currentGroupKeys = new Set(Object.keys(groups));
-    const deletedGroupEntries = Object.entries(existingGroups).filter(([key]) => !currentGroupKeys.has(key));
+    // Combine existing deleted groups with the new ones
+    const combinedDeletedGroups = { ...existingDeletedGroups };
 
-    // Move deleted groups to the 'deletedGroups' section
-    deletedGroupEntries.forEach(([key, group]) => {
-      deletedGroups[key] = {
+    // Helper function to find the next available index in combinedDeletedGroups
+    const findNextAvailableIndex = () => {
+      const existingIndexes = Object.keys(combinedDeletedGroups).map(key => parseInt(key, 10)).filter(Number.isInteger);
+      const maxIndex = existingIndexes.length > 0 ? Math.max(...existingIndexes) : -1;
+      return (maxIndex + 1).toString();
+    };
+
+    // Handle indexing for deleted groups
+    Object.entries(deletedGroups).forEach(([key, group]) => {
+      let index = key;
+
+      // If the index already exists in newGroups or combinedDeletedGroups, find a new index
+      if (newGroups[index] || combinedDeletedGroups[index]) {
+        index = findNextAvailableIndex();
+      }
+
+      combinedDeletedGroups[index] = {
         ...group,
         deletedAt: now,
         logMessages: group.logMessages ? [...group.logMessages, `Group deleted at ${now}`] : [`Group deleted at ${now}`],
       };
     });
 
-    const updatedGroups = Object.entries(groups).reduce((acc, [key, group]) => {
+    // Prepare the updated groups and update groupIdInClassroom for each user
+    const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
+      const acc = await accPromise;
       acc[key] = {
         members: group.members,
         creationMethod: group.creationMethod,
@@ -131,18 +146,38 @@ export async function saveGroups(roomId, groups, className) {
         updatedAt: now,
         logMessages: group.logMessages || [],
       };
-      // acc[key].logMessages.push(`Group updated at ${now}`);
-      return acc;
-    }, {});
 
-    const allGroupedMembers = Object.values(groups).flatMap(group => group.members);
-    const allUngroupedMembers = classroomData.members.filter(member => !allGroupedMembers.includes(member));
+      // Update groupIdInClassroom for each member of this group
+      for (const memberId of group.members) {
+        const userRef = doc(db, "users", memberId);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom, [roomId]: key };
+          await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+        }
+      }
+
+      return acc;
+    }, Promise.resolve({}));
+
+    // Update ungrouped members' groupIdInClassroom
+    for (const memberId of ungroupedMembers) {
+      const userRef = doc(db, "users", memberId);
+      const userSnapshot = await getDoc(userRef);
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+        const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
+        delete updatedGroupIdInClassroom[roomId];
+        await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+      }
+    }
 
     await updateDoc(classroomRef, {
-      groups: updatedGroups,
-      deletedGroups: deletedGroups,
-      groupedMembers: allGroupedMembers,
-      ungroupedMembers: allUngroupedMembers,
+      groups: await updatedGroups,
+      deletedGroups: combinedDeletedGroups,
+      groupedMembers: groupedMembers,
+      ungroupedMembers: ungroupedMembers,
       className,
       updatedAt: now,
     });
@@ -153,10 +188,6 @@ export async function saveGroups(roomId, groups, className) {
     return { success: false, error };
   }
 }
-
-
-
-
 
 
 // Get and possibly create groups
@@ -244,9 +275,8 @@ export async function createUser(firstName, lastName, userId, userType) {
       idealGroup: "",
       availability: [],
       classroomCodes: [],
-      groupedInClassroom: {}, // { classroomId: true/false }
-      groupIdInClassroom: {}, // { classroomId: groupId }
-      profileComplete: false, // Add this line
+      groupIdInClassroom: {},
+      profileComplete: false,
     });
     return { id: userId, data: { firstName, lastName, userType } };
   } catch (error) {

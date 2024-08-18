@@ -41,7 +41,6 @@ h2 {
 
 /* Styled buttons */
 .randomize-groups-button,
-.save-groups-button,
 .smart-match-button,
 .counter-button {
   background: linear-gradient(145deg, #6db3f2, #1e5799);
@@ -58,9 +57,26 @@ h2 {
 
 /* Button hover effect */
 .randomize-groups-button:hover,
-.save-groups-button:hover,
 .smart-match-button:hover,
 .counter-button:hover {
+  background-color: #154362;
+  transform: scale(0.9);
+}
+
+.save-groups-button {
+  background: linear-gradient(145deg, #b55151, #5a1212);
+  color: white;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-size: 2rem;
+  padding: 0.75rem 2.25rem;
+  margin: 0.625rem;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.save-groups-button:hover {
   background-color: #154362;
   transform: scale(0.9);
 }
