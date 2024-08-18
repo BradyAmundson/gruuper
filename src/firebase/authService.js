@@ -38,6 +38,41 @@ const StyledButton = ({ onClick, children }) => (
   </Button>
 );
 
+const ErrorConversion = (error) => {
+  switch (error.code) {
+    case "auth/email-already-in-use":
+      return "Email already in use.";
+    case "auth/invalid-email":
+      return "Invalid email.";
+    case "auth/weak-password":
+      return "Password is too weak.";
+    case "auth/user-not-found":
+      return "User not found.";
+    case "auth/wrong-password":
+      return "Wrong password.";
+    case "auth/invalid-verification-code":
+      return "Invalid verification code.";
+    case "auth/missing-verification-code":
+      return "Missing verification code.";
+    case "auth/invalid-verification-id":
+      return "Invalid verification ID.";
+    case "auth/missing-verification-id":
+      return "Missing verification ID.";
+    case "auth/code-expired":
+      return "Code expired.";
+    case "auth/credential-already-in-use":
+      return "Credential already in use.";
+    case "auth/operation-not-allowed":
+      return "Operation not allowed.";
+    case "auth/missing-password":
+      return "Missing password.";
+    case "auth/missing-email":
+      return "Missing email.";
+    default:
+      return error.message;
+  }
+};
+
 export function SignIn() {
   const handleSignIn = () => {
     signInWithPopup(auth, new GoogleAuthProvider());
@@ -143,7 +178,7 @@ export function SignUpEmail({
       navigate("/");
     } catch (error) {
       console.error("Error signing up:", error.message);
-      setError(error.message);
+      setError(ErrorConversion(error));
     }
   };
 
@@ -204,7 +239,7 @@ export function SignInWithEmail() {
       localStorage.setItem("userId", userCredential.user.uid);
       navigate("/");
     } catch (error) {
-      setError(error.message);
+      setError(ErrorConversion(error));
     }
   };
 

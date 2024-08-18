@@ -1,5 +1,5 @@
 // SignUpModal.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { SignUpEmail } from "../firebase/authService";
 import Button from "@mui/material/Button";
@@ -10,7 +10,7 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [userType, setUserType] = useState("");
+  const [userType, setUserType] = useState("default");
   const [email, setEmail] = useState("");
   const [secondEmail, setSecondEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +20,8 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
   const customStyles = {
     content: {
       backgroundColor: "white",
-      maxWidth: "25rem",
+      width: "25rem",
+      minHeight: "15rem",
       margin: "auto",
       top: "50%",
       left: "50%",
@@ -37,10 +38,16 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
     },
   };
 
+  useEffect(() => {
+    handleNext();
+  }, [userType]);
+
   const handleNext = () => {
     switch (step) {
       case 1:
-        if (!userType) {
+        if (userType === "default") {
+          setError("");
+        } else if (!userType) {
           setError("Please select a user type before proceeding.");
         } else {
           setError("");
@@ -83,7 +90,6 @@ const SignUpModal = ({ isOpen, onRequestClose }) => {
       setError("Passwords do not match.");
       return;
     }
-    // You can now use firstName, lastName, and userType to create the account
 
     // Close the modal or perform any other necessary actions
     onRequestClose();
@@ -144,7 +150,9 @@ const Step1 = ({ userType, setUserType, onNext }) => {
       <div class="user-type-button-container">
         <Button
           variant={userType === "Student" ? "contained" : "outlined"}
-          onClick={() => setUserType("Student")}
+          onClick={() => {
+            setUserType("Student");
+          }}
           style={{
             marginRight: "1.50rem",
             width: "10rem",
@@ -164,12 +172,14 @@ const Step1 = ({ userType, setUserType, onNext }) => {
           Professor
         </Button>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
-        <span style={{ margin: "20px 0px 20px 30px" }}> </span>
-        <button class="next-step" onClick={onNext}>
-          Next &gt;
-        </button>
-      </div>
+      {userType !== "default" && (
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          <span style={{ margin: "20px 0px 20px 30px" }}> </span>
+          <button class="next-step" onClick={onNext}>
+            Next &gt;
+          </button>
+        </div>
+      )}
     </div>
   );
 };
