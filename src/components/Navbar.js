@@ -18,7 +18,7 @@ import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
 import { getUser } from "../firebase/firestoreService";
 
-const pages = ["Classrooms", "About"];
+const pages = ["Classrooms", "About", "Support"];
 
 function Navbar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -132,15 +132,21 @@ function Navbar() {
               />
             </div>
           </Box>
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: { xs: "none", md: "flex" },
+              justifyContent: "left",
+              gap: 3,
+              marginLeft: "2rem"
+            }}
+          >
             {pages.map((page, index) => (
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
                 sx={{
-                  mx: index === 0 ? 2 : 0,
                   color: "white",
-                  display: "block",
                   textTransform: "none",
                   borderRadius: "8px",
                   fontSize: "1rem",
@@ -166,6 +172,7 @@ function Navbar() {
               </Button>
             ))}
           </Box>
+
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open profile">

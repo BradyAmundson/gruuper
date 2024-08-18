@@ -332,10 +332,8 @@ const Classroom = () => {
       } else {
         setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
 
-        console.log("Member added to unmatched members from ", fromIndexes.groupIndex);
-        // Log the addition to unmatched members
         newGroups[fromIndexes.groupIndex].logMessages.push(
-          `Member ${member.name} (ID: ${member.id}) was moved to Ungrouped Members at ${new Date().toISOString()}`
+          `Member ${member.name} (ID: ${member.id}) was added to Ungrouped Members at ${new Date().toISOString()}`
         );
         showReminder();
 
@@ -404,6 +402,15 @@ const Classroom = () => {
           console.error("Failed to fetch classroom data");
           return;
         }
+        console.log("Fetched classroom data:", fetchedClassroom.instructorId);
+        const isProfessor = localStorage.getItem("userType") === "Professor" && localStorage.getItem("userId") === fetchedClassroom?.instructorId;
+        setIsProfessor(isProfessor);
+
+        if (!isProfessor) {
+          const code = query.get("roomId");
+          navigate(`/student-view?roomId=${code}`);
+        }
+
         setClassroom(fetchedClassroom);
 
         if (!fetchedClassroom.deadline) {
@@ -420,13 +427,9 @@ const Classroom = () => {
         const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Class`;
         setClassName(className);
 
-        const isProfessor = localStorage.getItem("userType") === "Professor" && localStorage.getItem("userId") === fetchedClassroom?.instructorId;
-        setIsProfessor(isProfessor);
 
-        if (!isProfessor) {
-          const code = query.get("roomId");
-          navigate(`/student-view?roomId=${code}`);
-        }
+
+
 
         const members = fetchedClassroom?.members || [];
         const newMemberNames = await Promise.all(members.map(async (member) => {
@@ -549,6 +552,7 @@ const Classroom = () => {
   };
 
   const handleConfirmInitialGroups = () => {
+    saveGroupsToFirestore();
     handleStateChange();
   };
 
@@ -691,24 +695,38 @@ const Classroom = () => {
     setClassroom((prevClassroom) => {
       const currentGroups = prevClassroom.groups;
       const newGroups = {};
+      const deletedGroups = {};
 
       let newGroupIndex = 0;
+
+      // Identify active groups (those that have members)
       Object.keys(currentGroups).forEach((groupKey) => {
         if (currentGroups[groupKey].members.length > 0) {
           newGroups[newGroupIndex] = currentGroups[groupKey];
           newGroupIndex++;
+        } else {
+          // Groups that are empty will be marked as deleted
+          deletedGroups[groupKey] = {
+            ...currentGroups[groupKey],
+            deletedAt: new Date().toISOString(),
+            logMessages: currentGroups[groupKey].logMessages
+              ? [...currentGroups[groupKey].logMessages, `Group deleted at ${new Date().toISOString()}`]
+              : [`Group deleted at ${new Date().toISOString()}`],
+          };
         }
       });
 
       const groupedMembers = Object.values(newGroups).flatMap(group => group.members);
       const ungroupedMembers = memberNames.map(member => member.id).filter(id => !groupedMembers.includes(id));
 
-      saveGroups(roomId, newGroups, className, groupedMembers, ungroupedMembers);
+      // Pass both newGroups and deletedGroups to the saveGroups function
+      saveGroups(roomId, newGroups, deletedGroups, className, groupedMembers, ungroupedMembers);
       setShowSaveReminder(false);
 
       return { ...prevClassroom, groups: newGroups };
     });
   };
+
 
 
   const createNewGroup = async (fromIndexes) => {
@@ -749,7 +767,7 @@ const Classroom = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         creationMethod: "Hand-Picked",
-        logMessages: [`Group created with Hand-Picked method at ${new Date().toISOString()}`]
+        logMessages: [`Group created with Hand-Picked method at ${new Date().toISOString()}`, `Member ID: ${memberId} was added with group creation at ${new Date().toISOString()}`]
       };
 
       setLockedGroups(prevLocked => ({

@@ -212,7 +212,7 @@ function EditProfile() {
           variant="h6"
           style={{ ...headingStyle, margin: "2rem 0 1rem", fontSize: "1.2rem" }}
         >
-          Weekly Availability
+          Estimated Week-to-Week Availability
         </Typography>
         <div style={{ height: 400, width: "100%", marginBottom: "2rem" }}>
           <Calendar

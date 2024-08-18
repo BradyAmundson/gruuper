@@ -91,6 +91,15 @@ const StudentView = () => {
     }
   }, [classroom]);
 
+  useEffect(() => {
+    const alertShown = localStorage.getItem("profileAlertShown");
+
+    if (!alertShown) {
+      alert("Don't forget to stop by your profile settings to make sure your information is up to date!");
+      localStorage.setItem("profileAlertShown", "true");
+    }
+  }, []);
+
   const organizeMembers = async (classroom) => {
     if (!classroom.members || !classroom.groups) {
       console.error("Invalid classroom data structure:", classroom);
@@ -106,8 +115,9 @@ const StudentView = () => {
     );
     setAllMembers(allMembersList);
 
+    // Assuming each group is an object with a members array
     const userGroupKey = Object.keys(classroom.groups).find((key) =>
-      classroom.groups[key].includes(userId)
+      classroom.groups[key].members.includes(userId)
     );
 
     if (!userGroupKey) {
@@ -115,7 +125,7 @@ const StudentView = () => {
       return;
     }
 
-    const userGroupMembers = classroom.groups[userGroupKey].map((id) => {
+    const userGroupMembers = classroom.groups[userGroupKey].members.map((id) => {
       const member = membersDetails.find((member) => member.id === id);
       return member
         ? `${member.firstName} ${member.lastName}`
@@ -124,6 +134,7 @@ const StudentView = () => {
 
     setGroupMembers(userGroupMembers);
   };
+
 
   if (loading) {
     return <div className="student-view-container">Loading...</div>;
