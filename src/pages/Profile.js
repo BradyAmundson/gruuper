@@ -16,6 +16,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import LockIcon from "@mui/icons-material/LockReset";
 import CircularProgress from "@mui/material/CircularProgress";
+import moment from "moment";
 
 function Profile() {
   const navigate = useNavigate();
@@ -121,13 +122,55 @@ function Profile() {
     setIsLoading(false);
   };
 
+  const renderAvailability = (availability) => {
+    if (!availability || availability.length === 0) return "None";
+
+    return availability.map((slot, index) => {
+      if (slot.start && slot.start.seconds && slot.end && slot.end.seconds) {
+        // Handle Firebase Timestamp format
+        const startDate = new Date(slot.start.seconds * 1000);
+        const endDate = new Date(slot.end.seconds * 1000);
+
+        const dayOptions = { weekday: "long" };
+        const timeOptions = { hour: "numeric", minute: "numeric", hour12: true };
+
+        const day = startDate.toLocaleDateString(undefined, dayOptions);
+        const startTime = startDate.toLocaleTimeString(undefined, timeOptions);
+        const endTime = endDate.toLocaleTimeString(undefined, timeOptions);
+
+        return (
+          <Typography key={index} variant="body1">
+            <strong>{day}:</strong> {startTime} - {endTime}
+          </Typography>
+        );
+      } else if (slot.startTime && slot.endTime && slot.day) {
+        // Handle string format
+        const formattedDay = slot.day; // Day is already a string like 'Sunday'
+        const formattedStartTime = moment(slot.startTime, "HH:mm").format("h:mm A");
+        const formattedEndTime = moment(slot.endTime, "HH:mm").format("h:mm A");
+
+        return (
+          <Typography key={index} variant="body1">
+            <strong>{formattedDay}:</strong> {formattedStartTime} - {formattedEndTime}
+          </Typography>
+        );
+      } else {
+        // Handle invalid slot data
+        console.warn("Invalid slot data", slot);
+        return null;
+      }
+    }).filter(slot => slot !== null); // Filter out any null slots
+  };
+
+
+
   return (
     <Container maxWidth="md">
       <Grid container sx={{ marginTop: "0rem" }}>
         <Grid item xs={12} sx={{ marginBottom: "-2rem" }}>
           <Paper elevation={3} style={paperStyle}>
             <div style={avatarContainerStyle}>
-              {(isLoading || !profileImage) && (
+              {isLoading && (
                 <div
                   style={{
                     position: "absolute",
@@ -148,7 +191,6 @@ function Profile() {
                   marginBottom: "1rem",
                   opacity: isLoading ? 0 : 1, // Hide the Avatar if loading
                 }}
-                onClick={() => {}}
               />
               <label htmlFor="profile-image-input" style={editIconStyle}>
                 <EditIcon />
@@ -177,12 +219,12 @@ function Profile() {
                 display: "inline",
               }}
             >
-              Hello, {localStorage.getItem("firstName")}{" "}
-              {localStorage.getItem("lastName")}!
+              Hello, {userData?.firstName || "User"}{" "}
+              {userData?.lastName || "Name"}!
             </Typography>
             <Typography variant="body1" paragraph>
               You are currently registered as a{" "}
-              {localStorage.getItem("userType")}.
+              {userData?.userType || "user type"}.
             </Typography>
             <Button
               variant="contained"
@@ -221,25 +263,31 @@ function Profile() {
                   Profile Details:
                 </Typography>
                 <Typography variant="body1" paragraph>
+                  Age: {userData.age || "Not specified"}
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  Gender: {userData.gender || "Not specified"}
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  Ethnicity: {userData.ethnicity || "Not specified"}
+                </Typography>
+                <Typography variant="body1" paragraph>
                   Major: {userData.major || "Not specified"}
                 </Typography>
                 <Typography variant="body1" paragraph>
                   Class Year: {userData.classYear || "Not specified"}
                 </Typography>
-                <Typography variant="body1" paragraph>
-                  Time Preference: {userData.nightOrMorning || "Not specified"}
+                <Typography variant="body1">
+                  Availability:
+                </Typography>
+                {userData && userData.availability ? renderAvailability(userData.availability) : (
+                  <Typography variant="body1">None</Typography>
+                )}
+                <Typography variant="body1" style={{ marginTop: '1rem' }} paragraph>
+                  Description: {userData.description || "Not provided"}
                 </Typography>
                 <Typography variant="body1" paragraph>
-                  Social Preference:{" "}
-                  {userData.socialPreference || "Not specified"}
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  Deadline Behavior:{" "}
-                  {userData.deadlineBehavior || "Not specified"}
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  Unavailable Times:{" "}
-                  {userData.unavailableTimes?.join(", ") || "None"}
+                  Ideal Group: {userData.idealGroup || "Not provided"}
                 </Typography>
                 <Divider style={{ margin: "1rem 0" }} />
               </>
@@ -285,3 +333,5 @@ function Profile() {
 }
 
 export default Profile;
+
+

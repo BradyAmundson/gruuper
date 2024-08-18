@@ -1,0 +1,118 @@
+/* Modal Container */
+.modal-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.modal-header h6 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.modal-header .MuiIconButton-root {
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.modal-header .MuiIconButton-root:hover {
+  color: #1e5799;
+}
+
+/* Classroom Info */
+.classroom-info {
+  margin-top: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.classroom-info p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Input Fields */
+.MuiTextField-root,
+.MuiFormControl-root {
+  margin-bottom: 16px;
+}
+
+.MuiInputBase-root {
+  background-color: #f8f8f8;
+  border-radius: 8px;
+}
+
+.MuiInputLabel-root {
+  color: #666;
+}
+
+.MuiInputBase-root.Mui-focused .MuiInputLabel-root,
+.MuiInputBase-root.Mui-focused {
+  color: #1e5799;
+  border-color: #1e5799;
+}
+
+/* Save and Delete Buttons */
+.button-group {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.button-group .MuiButton-root {
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-transform: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Save Button with Gradient */
+.button-group .MuiButton-containedPrimary {
+  background: linear-gradient(
+    145deg,
+    #6db3f2,
+    #1e5799
+  ); /* Gradient from Grouping section */
+  color: #ffffff;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);
+}
+
+.button-group .MuiButton-containedPrimary:hover {
+  background: #154362;
+  transform: scale(0.98);
+}
+
+/* Delete Button with Grouping Styles */
+.button-group .MuiButton-outlinedError {
+  border: 2px solid #973c3c; /* Border color similar to locked button in Grouping */
+  color: #973c3c;
+}
+
+.button-group .MuiButton-outlinedError:hover {
+  background-color: rgba(151, 60, 60, 0.1);
+  border-color: #e57373;
+  color: #e57373;
+  transform: scale(0.98);
+}
