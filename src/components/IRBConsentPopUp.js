@@ -2,7 +2,7 @@ import React from "react";
 import Modal from "react-modal";
 import Button from "@mui/material/Button";
 import { updateUser, getUser } from "../firebase/firestoreService";
-const pdfUrl = "../../gruuperpposter.pdf";
+const pdfUrl = "/docs/Informed Consent Form Updated RCR 5.9.23.pdf";
 
 Modal.setAppElement("#root");
 
