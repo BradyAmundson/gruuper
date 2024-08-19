@@ -218,6 +218,9 @@ export function SignInWithEmail() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
+  const supportEmail = "gruuper.team@gmail.com";
+  const body = "#### Please describe your issue here. ####";
+
   const navigate = useNavigate();
 
   const handleSignIn = async () => {
@@ -249,11 +252,11 @@ export function SignInWithEmail() {
         <label style={{ display: "block", marginBottom: "5px" }}>
           <TextField
             value={email}
+            required
             onChange={(e) => setEmail(e.target.value)}
             id="email"
             label="Email"
             type="search"
-            variant="standard"
             fullWidth
             margin="large"
             style={{
@@ -265,17 +268,25 @@ export function SignInWithEmail() {
       <div className="input-group">
         <label style={{ display: "block", marginBottom: "5px" }}>
           <TextField
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             id="password"
             label="Password"
             type="password"
-            variant="standard"
             fullWidth
             margin="large"
           />
         </label>
       </div>
+      {"Support: "}
+      <a
+        href={`mailto:${supportEmail}?subject=${encodeURIComponent(
+          "I need help!"
+        )}&body=${encodeURIComponent(body)}`}
+      >
+        {supportEmail}
+      </a>
       <div
         className="sign-in-button-div"
         style={{ display: "flex", justifyContent: "flex-end" }}
