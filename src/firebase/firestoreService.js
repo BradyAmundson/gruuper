@@ -1,6 +1,3 @@
-
-
-
 import { db } from "./firebase";
 import {
   getDoc,
@@ -161,23 +158,28 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
       return acc;
     }, Promise.resolve({}));
 
-    // Update ungrouped members' groupIdInClassroom
-    for (const memberId of ungroupedMembers) {
-      const userRef = doc(db, "users", memberId);
-      const userSnapshot = await getDoc(userRef);
-      if (userSnapshot.exists()) {
-        const userData = userSnapshot.data();
-        const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
-        delete updatedGroupIdInClassroom[roomId];
-        await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+    const safeUngroupedMembers = Array.isArray(ungroupedMembers) ? ungroupedMembers : [];
+
+    // Update ungrouped members' groupIdInClassroom only if ungroupedMembers is not empty
+    if (safeUngroupedMembers.length > 0) {
+      for (const memberId of safeUngroupedMembers) {
+        const userRef = doc(db, "users", memberId);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
+          delete updatedGroupIdInClassroom[roomId];
+          await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+        }
       }
     }
+
 
     await updateDoc(classroomRef, {
       groups: await updatedGroups,
       deletedGroups: combinedDeletedGroups,
       groupedMembers: groupedMembers,
-      ungroupedMembers: ungroupedMembers,
+      ungroupedMembers: safeUngroupedMembers,
       className,
       updatedAt: now,
     });
@@ -210,30 +212,60 @@ export async function getGroups(
         shuffledGroups = await optimizeGroups(passedMembers, groupSize);
       }
 
+      console.log("Shuffled groups:", shuffledGroups);
       const combinedGroups = { ...lockedGroups };
 
+      console.log("Locked groups:", lockedGroups);
+      console.log("Combined groups 1:", combinedGroups);
       let availableIndices = new Set([
         ...Array(
           Object.keys(shuffledGroups).length + Object.keys(lockedGroups).length
         ).keys(),
       ]);
-      Object.keys(lockedGroups).forEach((index) =>
-        availableIndices.delete(parseInt(index))
-      );
-      let availableIndexArray = Array.from(availableIndices).sort(
-        (a, b) => a - b
-      );
+
+      // Print the initial set of available indices
+      console.log("Initial available indices:", Array.from(availableIndices));
+
+      // Remove indices already occupied by locked groups
+      Object.keys(lockedGroups).forEach((index) => {
+        availableIndices.delete(parseInt(index));
+        console.log(`Removed locked group index ${index}, updated available indices:`, Array.from(availableIndices));
+      });
+
+      // Convert the available indices set to a sorted array
+      let availableIndexArray = Array.from(availableIndices).sort((a, b) => a - b);
+
+      // Print the final available indices array
+      console.log("Final sorted available indices array:", availableIndexArray);
+      console.log("Combined groups 2:", combinedGroups);
 
       // Place random groups in the first available indices not occupied by locked groups
       Object.entries(shuffledGroups).forEach(([key, group]) => {
-        if (group && group.length > 0 && availableIndexArray.length > 0) {
+        console.log("Group:", group);
+        console.log("Available index array:", availableIndexArray);
+        console.log("Key:", group.length);
+        if (group && availableIndexArray.length > 0) {
+          console.log("Available index array:", availableIndexArray);
           const index = availableIndexArray.shift();
           combinedGroups[index] = group;
         }
       });
+      console.log("Combined groups 3:", combinedGroups);
+
+      const allMemberIds = classroom.members || [];
+      const groupedMembers = Object.values(combinedGroups).flatMap(group => group.members);
+
+      // Ensure ungroupedMembers is an array
+      const ungroupedMembers = Array.isArray(allMemberIds)
+        ? allMemberIds.filter(id => !groupedMembers.includes(id))
+        : [];
+
+
+      const safeUngroupedMembers = Array.isArray(ungroupedMembers) ? ungroupedMembers : [];
 
       // Save the new groups structure to the database
-      await saveGroups(roomId, combinedGroups, classroom.className);
+      await saveGroups(roomId, combinedGroups, classroom.className, groupedMembers, safeUngroupedMembers);
+
       // Update the groups state in the UI
       setGroups(combinedGroups);
 
@@ -247,6 +279,7 @@ export async function getGroups(
     return null;
   }
 }
+
 
 
 // Save class name
