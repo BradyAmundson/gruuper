@@ -7,6 +7,7 @@ import {
   deleteDoc,
   updateDoc,
 } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { randomizeGroups } from "../components/GroupRandomizer.js";
 import { optimizeGroups } from "../components/SmartMatch.js";
 
@@ -14,7 +15,7 @@ export async function createClassroom(roomId, creatorId, courseNumber = "", grad
   try {
     const creatorDoc = await getDoc(doc(db, "users", creatorId));
     const creator = creatorDoc.data();
-    const classroomName = `${creator.firstName} ${creator.lastName}'s Class`;
+    const classroomName = `${creator.firstName} ${creator.lastName}'s Assignment`;
 
     const now = new Date();
     const defaultDeadline = new Date(now);
@@ -107,21 +108,16 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
     const existingGroups = classroomData.groups || {};
     const existingDeletedGroups = classroomData.deletedGroups || {};
 
-    // Combine existing deleted groups with the new ones
     const combinedDeletedGroups = { ...existingDeletedGroups };
 
-    // Helper function to find the next available index in combinedDeletedGroups
     const findNextAvailableIndex = () => {
       const existingIndexes = Object.keys(combinedDeletedGroups).map(key => parseInt(key, 10)).filter(Number.isInteger);
       const maxIndex = existingIndexes.length > 0 ? Math.max(...existingIndexes) : -1;
       return (maxIndex + 1).toString();
     };
 
-    // Handle indexing for deleted groups
     Object.entries(deletedGroups).forEach(([key, group]) => {
       let index = key;
-
-      // If the index already exists in newGroups or combinedDeletedGroups, find a new index
       if (newGroups[index] || combinedDeletedGroups[index]) {
         index = findNextAvailableIndex();
       }
@@ -133,18 +129,31 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
       };
     });
 
-    // Prepare the updated groups and update groupIdInClassroom for each user
     const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
       const acc = await accPromise;
+      const memberConsentStatuses = await Promise.all(
+        group.members.map(async (memberId) => {
+          const userRef = doc(db, "users", memberId);
+          const userSnapshot = await getDoc(userRef);
+          if (userSnapshot.exists()) {
+            return userSnapshot.data().consent === true;
+          }
+          return false;
+        })
+      );
+
+      const allMembersDataConsent = memberConsentStatuses.every(status => status === true);
+
       acc[key] = {
         members: group.members,
         creationMethod: group.creationMethod,
         createdAt: group.createdAt || now,
         updatedAt: now,
+        locked: group.locked !== undefined ? group.locked : false, // Ensure locked is either true or false
         logMessages: group.logMessages || [],
+        allMembersDataConsent, // Add the consentComplete status
       };
 
-      // Update groupIdInClassroom for each member of this group
       for (const memberId of group.members) {
         const userRef = doc(db, "users", memberId);
         const userSnapshot = await getDoc(userRef);
@@ -160,7 +169,6 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
 
     const safeUngroupedMembers = Array.isArray(ungroupedMembers) ? ungroupedMembers : [];
 
-    // Update ungrouped members' groupIdInClassroom only if ungroupedMembers is not empty
     if (safeUngroupedMembers.length > 0) {
       for (const memberId of safeUngroupedMembers) {
         const userRef = doc(db, "users", memberId);
@@ -173,7 +181,6 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
         }
       }
     }
-
 
     await updateDoc(classroomRef, {
       groups: await updatedGroups,
@@ -190,6 +197,7 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
     return { success: false, error };
   }
 }
+
 
 
 // Get and possibly create groups
@@ -426,15 +434,32 @@ export async function saveClassroomSettings(roomId, settings) {
 }
 
 
-
-export const deleteClassroom = async (roomId) => {
+export const archiveClassroom = async (roomId) => {
   try {
     const db = getFirestore();
-    const classroomRef = doc(db, "classrooms", roomId); // Get the document reference
-    await deleteDoc(classroomRef); // Delete the document
-    console.log("Classroom deleted successfully");
+    const classroomRef = doc(db, "classrooms", roomId);
+    const classroomSnapshot = await getDoc(classroomRef);
+
+    if (classroomSnapshot.exists()) {
+      // Get the classroom data
+      const classroomData = classroomSnapshot.data();
+
+      // Set the document in the "classroomArchive" collection with the same ID
+      const archiveRef = doc(db, "classroomArchive", roomId);
+      await setDoc(archiveRef, {
+        ...classroomData,
+        archivedAt: new Date().toISOString() // Add a timestamp for when it was archived
+      });
+
+      // Delete the original classroom document
+      await deleteDoc(classroomRef);
+
+      console.log("Classroom archived successfully");
+    } else {
+      console.error("Classroom does not exist.");
+    }
   } catch (error) {
-    console.error("Error deleting classroom: ", error);
+    console.error("Error archiving classroom: ", error);
     throw error;
   }
 };
@@ -468,5 +493,27 @@ export async function checkProfileCompletion(userId) {
   } else {
     console.error("User does not exist");
     return false;
+  }
+}
+
+
+export async function getArchivedClassroomsForInstructor(instructorId) {
+  try {
+    const archiveCollectionRef = collection(db, "classroomArchive");
+    const querySnapshot = await getDocs(archiveCollectionRef);
+    const archivedClassrooms = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      // Manually filter by instructorId
+      if (data.instructorId === instructorId) {
+        archivedClassrooms.push({ id: doc.id, ...data });
+      }
+    });
+
+    return archivedClassrooms;
+  } catch (error) {
+    console.error("Error fetching archived classrooms for instructor: ", error);
+    return [];
   }
 }

@@ -9,7 +9,7 @@ import {
   removeMemberFromClassroom,
   updateClassroomState,
   saveClassroomSettings,
-  deleteClassroom,
+  archiveClassroom,
 } from "../firebase/firestoreService";
 import SettingsModal from "../components/SettingsModal";
 import "./styles/classroom.css";
@@ -85,7 +85,6 @@ const DroppableGroup = ({
   currentlyDragging,
   memberNames,
   isProfessor,
-  locked,
   toggleLockGroup
 }) => {
   const [, drop] = useDrop(() => ({
@@ -111,13 +110,14 @@ const DroppableGroup = ({
       </ul>
       <IconButton
         onClick={() => toggleLockGroup(index)}
-        className={`lock-button ${locked ? 'locked' : 'unlocked'}`}
+        className={`lock-button ${group.locked ? 'locked' : 'unlocked'}`}
         style={{ position: 'absolute', top: '10px', right: '5px' }}>
-        {locked ? <LockIcon /> : <LockOpenIcon />}
+        {group.locked ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
     </div>
   );
 };
+
 
 const NewGroupArea = ({ createNewGroup }) => {
   const [, drop] = useDrop(() => ({
@@ -214,8 +214,8 @@ const Classroom = () => {
 
   const [deadline, setDeadline] = useState(defaultDeadline());
   const [isLiveGrouping, setIsLiveGrouping] = useState(false);
-  const [minGroupSize, setMinGroupSize] = useState(5);
-  const [showSaveReminder, setShowSaveReminder] = useState(false); // State for the reminder
+  const [minGroupSize, setMinGroupSize] = useState(2);
+  const [showSaveReminder, setShowSaveReminder] = useState(false);
 
 
   const showReminder = () => {
@@ -254,10 +254,10 @@ const Classroom = () => {
 
   const handleClassroomDeleted = async () => {
     try {
-      await deleteClassroom(roomId);
+      await archiveClassroom(roomId);
       navigate("/classrooms");
     } catch (error) {
-      console.error("Failed to delete classroom:", error);
+      console.error("Failed to archive classroom:", error);
     }
   };
 
@@ -268,18 +268,25 @@ const Classroom = () => {
   };
 
   const toggleLockGroup = (index) => {
-    setLockedGroups(prevState => {
-      const newState = { ...prevState };
-      newState[index] = !prevState[index];
-      return newState;
+    setClassroom((prevClassroom) => {
+      const newGroups = { ...prevClassroom.groups };
+      newGroups[index].locked = !newGroups[index].locked; // Toggle the locked state
+      saveGroups(roomId, newGroups, {}, className, Object.values(newGroups).flatMap(group => group.members), unmatchedMembers);
+      return { ...prevClassroom, groups: newGroups };
     });
   };
+
 
   const moveMember = useCallback((fromIndexes, toGroupIndex) => {
     setClassroom(prevClassroom => {
       const newGroups = { ...prevClassroom.groups };
       let member;
       let action; // "added" or "removed"
+
+      if (fromIndexes.groupIndex === toGroupIndex && fromIndexes.groupIndex === -1) {
+        // No need to update anything if they are dropped back into the same ungrouped area
+        return prevClassroom;
+      }
 
       // Handle removal from current group or unmatched area
       if (fromIndexes.groupIndex === -1) {
@@ -424,7 +431,7 @@ const Classroom = () => {
         setGroups(fetchedGroups);
 
         const fetchedUser = await getUser(fetchedClassroom?.instructorId);
-        const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Class`;
+        const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
         setClassName(className);
 
 
@@ -586,15 +593,15 @@ const Classroom = () => {
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
     const groups = fetchedClassroom?.groups || {};
-    const currentLockedGroups = lockedGroups || {};
 
+    // Create separate lists for locked and unlocked members
     const lockedMembers = new Set();
     const passedLockedGroups = {};
 
-    Object.entries(currentLockedGroups).forEach(([groupIndex, isLocked]) => {
-      if (isLocked) {
-        passedLockedGroups[groupIndex] = groups[groupIndex] || { members: [] };
-        groups[groupIndex]?.members.forEach(member => lockedMembers.add(member));
+    Object.entries(groups).forEach(([groupIndex, group]) => {
+      if (group.locked) {
+        passedLockedGroups[groupIndex] = group;
+        group.members.forEach(member => lockedMembers.add(member));
       }
     });
 
@@ -621,6 +628,7 @@ const Classroom = () => {
     setClassroom(prevClassroom => {
       const updatedGroups = { ...prevClassroom.groups };
 
+      // Merge the newly generated groups with the existing locked groups
       Object.entries(newGroups).forEach(([key, group], index) => {
         const groupIndex = Object.keys(updatedGroups).length;
         updatedGroups[groupIndex] = {
@@ -628,8 +636,14 @@ const Classroom = () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: method,
-          logMessages: [`Group created with ${method} at ${new Date().toISOString()}`]
+          logMessages: [`Group created with ${method} at ${new Date().toISOString()}`],
+          locked: false,  // New groups are unlocked by default
         };
+      });
+
+      // Ensure locked groups are kept intact
+      Object.entries(passedLockedGroups).forEach(([key, group]) => {
+        updatedGroups[key] = group;
       });
 
       return { ...prevClassroom, groups: updatedGroups };
@@ -648,6 +662,17 @@ const Classroom = () => {
     setMemberNames(newMemberNames);
   };
 
+
+
+  useEffect(() => {
+    if (groups) {
+      const initialLockState = {};
+      Object.keys(groups).forEach(key => {
+        initialLockState[key] = groups[key].locked || false;
+      });
+      setLockedGroups(initialLockState);
+    }
+  }, [groups]);
 
 
 
@@ -1132,7 +1157,7 @@ const Classroom = () => {
 
               <div
                 id="Members"
-                style={{ right: showMembers ? '20px' : '-320px' }}  // Conditional styling based on showMembers state
+                style={{ right: showMembers ? '20px' : '-320px' }}
               >
                 <h3>Classroom Members ({memberNames.length})</h3>
                 <ul>
@@ -1163,7 +1188,7 @@ const Classroom = () => {
               borderRadius: '8px',
               padding: '20px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-              backgroundColor: '#fff', // Ensure background is white or fits your design
+              backgroundColor: '#fff',
             },
           }}
         >
@@ -1183,7 +1208,7 @@ const Classroom = () => {
                 padding: '0.75rem 2.25rem',
                 margin: '0.625rem',
                 transition: 'transform 0.3s, background-color 0.3s',
-                textTransform: 'none' // Prevents uppercase letters
+                textTransform: 'none'
               }}
             >
               Cancel
@@ -1199,7 +1224,7 @@ const Classroom = () => {
                 padding: '0.75rem 2.25rem',
                 margin: '0.625rem',
                 transition: 'transform 0.3s, background-color 0.3s',
-                textTransform: 'none' // Maintains font casing
+                textTransform: 'none'
               }}
             >
               Confirm

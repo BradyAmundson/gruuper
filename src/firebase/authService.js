@@ -159,7 +159,13 @@ export function SignUpEmail({
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
+    if (!email.endsWith("lmu.edu")) {
+      setError("Email must be associated with LMU.");
+      return;
+    }
     try {
+      navigate("/about");
+
       // Proceed with sign-up
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -175,7 +181,6 @@ export function SignUpEmail({
       createUser(firstName, lastName, auth.currentUser.uid, userType);
       signOut(auth);
       localStorage.clear();
-      navigate("/");
     } catch (error) {
       console.error("Error signing up:", error.message);
       setError(ErrorConversion(error));
@@ -258,7 +263,7 @@ export function SignInWithEmail() {
             label="Email"
             type="search"
             fullWidth
-            margin="large"
+            margin="dense"
             style={{
               minWidth: "19rem",
             }}
@@ -275,7 +280,7 @@ export function SignInWithEmail() {
             label="Password"
             type="password"
             fullWidth
-            margin="large"
+            margin="dense"
           />
         </label>
       </div>

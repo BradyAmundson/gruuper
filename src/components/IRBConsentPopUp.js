@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "react-modal";
 import Button from "@mui/material/Button";
-import { updateUser, getUser } from "../firebase/firestoreService";
+import { updateUser } from "../firebase/firestoreService";
 const pdfUrl = "/docs/Informed Consent Form Updated RCR 5.9.23.pdf";
 
 Modal.setAppElement("#root");
@@ -11,15 +11,14 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
   const customStyles = {
     content: {
       backgroundColor: "white",
-      width: "25rem",
-      minHeight: "15rem",
+      width: "30rem",
+      height: "80vh", // Adjust height as needed
       margin: "auto",
       top: "50%",
       left: "50%",
       right: "auto",
       bottom: "auto",
       transform: "translate(-50%, -50%)",
-      height: "fit-content",
       borderRadius: "20px",
       border: "5px solid #6db3f2",
       padding: "30px",
@@ -45,8 +44,36 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
 
   const buttonContainerStyle = {
     display: "flex",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "center",
     marginTop: "20px",
+  };
+
+  const agreeButtonStyle = {
+    marginBottom: "10px",
+    width: "100%",
+    background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+    color: "white",
+    borderRadius: "10px",
+    padding: "10px 20px",
+    fontSize: "1.25rem",
+    cursor: "pointer",
+    transition: "background-color 0.3s, transform 0.3s",
+    textAlign: "center",
+  };
+
+  const disagreeButtonStyle = {
+    width: "100%",
+    background: "transparent",
+    color: "#6db3f2",
+    textTransform: "none",
+    boxShadow: "none",
+    borderRadius: "10px",
+    // padding: "10px 20px",
+    fontSize: "0.75rem",
+    cursor: "pointer",
+    transition: "color 0.3s, transform 0.3s",
+    textAlign: "center",
   };
 
   return (
@@ -58,38 +85,42 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
       shouldCloseOnOverlayClick={false}
     >
       <h2>IRB Consent Form</h2>
-      <p>Please read the IRB Consent Form carefully before proceeding.</p>
       <p>
-        Gruuper is participating in an academic study to assess the efficacy of
-        grouping strategies in class teams on group satisfaction and academic
-        outcomes. You will be able to use Gruuper regardless of your
-        participation in the study (which is completely voluntary and will not
-        affect your assigned group or grade), but your data will only be
-        included if you agree to the following:
-        <br />
-        <a href={pdfUrl} download="IRB-Gruuper-T&C.pdf">
-          Terms and Conditions
-        </a>
+        Hello! Gruuper is a part of a research project that will require data
+        collection and analysis. Please review the IRB Consent Form before
+        proceeding!
       </p>
-      <p>
-        By clicking the button below, you are agreeing to the terms and
-        conditions of the IRB Consent Form.
-      </p>
-
+      <div
+        style={{
+          height: "50vh", // Height of the PDF viewer
+          overflow: "auto",
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+        }}
+      >
+        <iframe
+          src={pdfUrl}
+          width="100%"
+          height="100%"
+          style={{
+            border: "none",
+          }}
+        />
+      </div>
       <div style={buttonContainerStyle}>
         <Button
           variant="contained"
-          color="secondary"
-          onClick={async () => handleDisagree()}
-        >
-          I Disagree
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
+          style={agreeButtonStyle}
           onClick={async () => handleAgree()}
         >
           I Agree
+        </Button>
+        <Button
+          variant="text"
+          style={disagreeButtonStyle}
+          onClick={async () => handleDisagree()}
+        >
+          I Disagree
         </Button>
       </div>
     </Modal>

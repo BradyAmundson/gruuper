@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDocument, getUser } from "../firebase/firestoreService";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/firebase.js"; // Make sure this path is correct
 import "./styles/studentView.css";
 
 const calculateCloudParts = (name, cloudWidth) => {
@@ -49,23 +51,18 @@ const StudentView = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const fetchedClassroom = await getDocument("classrooms", roomId);
-        if (fetchedClassroom) {
-          setClassroom(fetchedClassroom);
-          await organizeMembers(fetchedClassroom);
-        } else {
-          console.error("No classroom data found for roomId:", roomId);
-        }
-      } catch (error) {
-        console.error("Error fetching classroom data:", error);
+    const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (doc) => {
+      if (doc.exists()) {
+        const fetchedClassroom = doc.data();
+        setClassroom(fetchedClassroom);
+        await organizeMembers(fetchedClassroom);
+      } else {
+        console.error("No classroom data found for roomId:", roomId);
       }
       setLoading(false);
-    };
+    });
 
-    fetchData();
+    return () => unsubscribe(); // Unsubscribe from the snapshot listener on component unmount
   }, [roomId]);
 
   useEffect(() => {
@@ -111,11 +108,12 @@ const StudentView = () => {
     );
 
     const allMembersList = membersDetails.map((member) =>
-      member ? `${member.firstName} ${member.lastName}` : "Unknown Member"
+      member && member.id !== userId
+        ? "Anonymous"
+        : `${member.firstName} ${member.lastName}`
     );
     setAllMembers(allMembersList);
 
-    // Assuming each group is an object with a members array
     const userGroupKey = Object.keys(classroom.groups).find((key) =>
       classroom.groups[key].members.includes(userId)
     );
@@ -135,7 +133,6 @@ const StudentView = () => {
     setGroupMembers(userGroupMembers);
   };
 
-
   if (loading) {
     return <div className="student-view-container">Loading...</div>;
   }
@@ -144,6 +141,9 @@ const StudentView = () => {
     <div>
       <h1 className="classroom-header">
         {classroom?.className || "Classroom Name"}
+        <span className="instructor-name">
+          {classroom?.instructor ? `${classroom.instructor}` : ""}
+        </span>
       </h1>
       {classroom.state === "Lobby" && (
         <div className="lobby-state">
@@ -166,7 +166,7 @@ const StudentView = () => {
         </div>
       )}
       <div className="student-view-container">
-        {classroom.state === "Grouping" && (
+        {classroom.state !== "Lobby" && (
           <div className="group-box">
             <h2 className="group-title">Your Group:</h2>
             <ul className="group-member-list">
@@ -206,7 +206,7 @@ const StudentView = () => {
           </div>
         )}
         <div className="classroom-box">
-          <h2>Classroom Roster</h2>
+          <h2>Classroom Roster ({allMembers.length})</h2>
           <ul className="member-list">
             {allMembers.map((name, index) => (
               <li
@@ -219,6 +219,7 @@ const StudentView = () => {
           </ul>
         </div>
       </div>
+      <p className="contact-message">Please contact your professor for any group updates and inquiries.</p>
     </div>
   );
 };
