@@ -178,7 +178,7 @@ export function SignUpEmail({
         setLoading(false);
       });
 
-      createUser(firstName, lastName, auth.currentUser.uid, userType);
+      createUser(firstName, lastName, auth.currentUser.uid, userType, email);
       signOut(auth);
       localStorage.clear();
     } catch (error) {
@@ -307,6 +307,7 @@ export function SignOut() {
   const handleSignOut = () => {
     signOut(auth);
     localStorage.clear();
+    window.location.reload();
   };
   return (
     <div style={{ paddingRight: "10px" }}>

@@ -12,7 +12,12 @@ import { randomizeGroups } from "../components/GroupRandomizer.js";
 import { optimizeGroups } from "../components/SmartMatch.js";
 import { smartMatchGroups } from "../components/SmartMatch2.js";
 
-export async function createClassroom(roomId, creatorId, courseNumber = "", gradeLevel = "") {
+export async function createClassroom(
+  roomId,
+  creatorId,
+  courseNumber = "",
+  gradeLevel = ""
+) {
   try {
     const creatorDoc = await getDoc(doc(db, "users", creatorId));
     const creator = creatorDoc.data();
@@ -33,8 +38,8 @@ export async function createClassroom(roomId, creatorId, courseNumber = "", grad
       groups: {},
       createdAt: now.toISOString(),
       groupingStartDeadline: defaultDeadline.toISOString().slice(0, 16), // Set default deadline
-      courseNumber: courseNumber,   // Added courseNumber
-      gradeLevel: gradeLevel,       // Added gradeLevel
+      courseNumber: courseNumber, // Added courseNumber
+      gradeLevel: gradeLevel, // Added gradeLevel
     });
 
     const classroomCodes = creator.classroomCodes || [];
@@ -47,8 +52,6 @@ export async function createClassroom(roomId, creatorId, courseNumber = "", grad
     return null;
   }
 }
-
-
 
 // Get a document from a specific collection
 export async function getDocument(collectionName, documentId) {
@@ -98,22 +101,33 @@ export async function joinClassroom(roomId, userId, setError) {
   }
 }
 
-
-export async function saveGroups(roomId, newGroups, deletedGroups, className, groupedMembers, ungroupedMembers) {
+export async function saveGroups(
+  roomId,
+  newGroups,
+  deletedGroups,
+  className,
+  groupedMembers,
+  ungroupedMembers
+) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
 
   try {
     const classroomSnapshot = await getDoc(classroomRef);
-    const classroomData = classroomSnapshot.exists() ? classroomSnapshot.data() : {};
+    const classroomData = classroomSnapshot.exists()
+      ? classroomSnapshot.data()
+      : {};
     const existingGroups = classroomData.groups || {};
     const existingDeletedGroups = classroomData.deletedGroups || {};
 
     const combinedDeletedGroups = { ...existingDeletedGroups };
 
     const findNextAvailableIndex = () => {
-      const existingIndexes = Object.keys(combinedDeletedGroups).map(key => parseInt(key, 10)).filter(Number.isInteger);
-      const maxIndex = existingIndexes.length > 0 ? Math.max(...existingIndexes) : -1;
+      const existingIndexes = Object.keys(combinedDeletedGroups)
+        .map((key) => parseInt(key, 10))
+        .filter(Number.isInteger);
+      const maxIndex =
+        existingIndexes.length > 0 ? Math.max(...existingIndexes) : -1;
       return (maxIndex + 1).toString();
     };
 
@@ -126,7 +140,9 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
       combinedDeletedGroups[index] = {
         ...group,
         deletedAt: now,
-        logMessages: group.logMessages ? [...group.logMessages, `Group deleted at ${now}`] : [`Group deleted at ${now}`],
+        logMessages: group.logMessages
+          ? [...group.logMessages, `Group deleted at ${now}`]
+          : [`Group deleted at ${now}`],
       };
     });
 
@@ -165,10 +181,14 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
         }
       }
 
-      return acc;
-    }, Promise.resolve({}));
+        return acc;
+      },
+      Promise.resolve({})
+    );
 
-    const safeUngroupedMembers = Array.isArray(ungroupedMembers) ? ungroupedMembers : [];
+    const safeUngroupedMembers = Array.isArray(ungroupedMembers)
+      ? ungroupedMembers
+      : [];
 
     if (safeUngroupedMembers.length > 0) {
       for (const memberId of safeUngroupedMembers) {
@@ -178,7 +198,9 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
           const userData = userSnapshot.data();
           const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
           delete updatedGroupIdInClassroom[roomId];
-          await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+          await updateDoc(userRef, {
+            groupIdInClassroom: updatedGroupIdInClassroom,
+          });
         }
       }
     }
@@ -198,7 +220,6 @@ export async function saveGroups(roomId, newGroups, deletedGroups, className, gr
     return { success: false, error };
   }
 }
-
 
 
 // Get and possibly create groups
@@ -251,11 +272,16 @@ export async function getGroups(
       // Remove indices already occupied by locked groups
       Object.keys(lockedGroups).forEach((index) => {
         availableIndices.delete(parseInt(index));
-        console.log(`Removed locked group index ${index}, updated available indices:`, Array.from(availableIndices));
+        console.log(
+          `Removed locked group index ${index}, updated available indices:`,
+          Array.from(availableIndices)
+        );
       });
 
       // Convert the available indices set to a sorted array
-      let availableIndexArray = Array.from(availableIndices).sort((a, b) => a - b);
+      let availableIndexArray = Array.from(availableIndices).sort(
+        (a, b) => a - b
+      );
 
       // Print the final available indices array
       console.log("Final sorted available indices array:", availableIndexArray);
@@ -275,18 +301,27 @@ export async function getGroups(
       console.log("Combined groups 3:", combinedGroups);
 
       const allMemberIds = classroom.members || [];
-      const groupedMembers = Object.values(combinedGroups).flatMap(group => group.members);
+      const groupedMembers = Object.values(combinedGroups).flatMap(
+        (group) => group.members
+      );
 
       // Ensure ungroupedMembers is an array
       const ungroupedMembers = Array.isArray(allMemberIds)
-        ? allMemberIds.filter(id => !groupedMembers.includes(id))
+        ? allMemberIds.filter((id) => !groupedMembers.includes(id))
         : [];
 
-
-      const safeUngroupedMembers = Array.isArray(ungroupedMembers) ? ungroupedMembers : [];
+      const safeUngroupedMembers = Array.isArray(ungroupedMembers)
+        ? ungroupedMembers
+        : [];
 
       // Save the new groups structure to the database
-      await saveGroups(roomId, combinedGroups, classroom.className, groupedMembers, safeUngroupedMembers);
+      await saveGroups(
+        roomId,
+        combinedGroups,
+        classroom.className,
+        groupedMembers,
+        safeUngroupedMembers
+      );
 
       // Update the groups state in the UI
       setGroups(combinedGroups);
@@ -302,8 +337,6 @@ export async function getGroups(
   }
 }
 
-
-
 // Save class name
 export async function saveClassname(roomId, className) {
   const classroomRef = doc(db, "classrooms", roomId);
@@ -315,12 +348,13 @@ export async function saveClassname(roomId, className) {
 }
 
 // Create a new user with demographic and availability data
-export async function createUser(firstName, lastName, userId, userType) {
+export async function createUser(firstName, lastName, userId, userType, email) {
   try {
     await setDoc(doc(db, "users", userId), {
       firstName,
       lastName,
       userType,
+      email,
       age: "",
       gender: "",
       ethnicity: "",
@@ -424,7 +458,6 @@ export async function removeMemberFromClassroom(roomId, userId) {
   }
 }
 
-
 export async function updateClassroomState(roomId, newState) {
   const classroomRef = doc(db, "classrooms", roomId);
   try {
@@ -433,7 +466,6 @@ export async function updateClassroomState(roomId, newState) {
     console.error("Error updating classroom state: ", error);
   }
 }
-
 
 export async function saveClassroomSettings(roomId, settings) {
   const classroomRef = doc(db, "classrooms", roomId);
@@ -478,7 +510,6 @@ export const archiveClassroom = async (roomId) => {
   }
 };
 
-
 export async function checkProfileCompletion(userId) {
   const userRef = doc(db, "users", userId);
   const userSnapshot = await getDoc(userRef);
@@ -486,18 +517,28 @@ export async function checkProfileCompletion(userId) {
   if (userSnapshot.exists()) {
     const userData = userSnapshot.data();
 
-    const isComplete = userData &&
-      typeof userData.firstName === 'string' && userData.firstName.trim() !== '' &&
-      typeof userData.lastName === 'string' && userData.lastName.trim() !== '' &&
-      typeof userData.age === 'string' && userData.age.trim() !== '' &&
-      typeof userData.gender === 'string' && userData.gender.trim() !== '' &&
-      typeof userData.ethnicity === 'string' && userData.ethnicity.trim() !== '' &&
-      typeof userData.major === 'string' && userData.major.trim() !== '' &&
-      typeof userData.classYear === 'string' && userData.classYear.trim() !== '' &&
-      typeof userData.description === 'string' && userData.description.trim() !== '' &&
-      typeof userData.idealGroup === 'string' && userData.idealGroup.trim() !== '' &&
-      Array.isArray(userData.availability) && userData.availability.length > 0;
-
+    const isComplete =
+      userData &&
+      typeof userData.firstName === "string" &&
+      userData.firstName.trim() !== "" &&
+      typeof userData.lastName === "string" &&
+      userData.lastName.trim() !== "" &&
+      typeof userData.age === "string" &&
+      userData.age.trim() !== "" &&
+      typeof userData.gender === "string" &&
+      userData.gender.trim() !== "" &&
+      typeof userData.ethnicity === "string" &&
+      userData.ethnicity.trim() !== "" &&
+      typeof userData.major === "string" &&
+      userData.major.trim() !== "" &&
+      typeof userData.classYear === "string" &&
+      userData.classYear.trim() !== "" &&
+      typeof userData.description === "string" &&
+      userData.description.trim() !== "" &&
+      typeof userData.idealGroup === "string" &&
+      userData.idealGroup.trim() !== "" &&
+      Array.isArray(userData.availability) &&
+      userData.availability.length > 0;
 
     if (isComplete !== userData.profileComplete) {
       await updateDoc(userRef, { profileComplete: isComplete });

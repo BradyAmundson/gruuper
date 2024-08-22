@@ -21,8 +21,8 @@ import { getUser } from "../firebase/firestoreService";
 const pages = ["Classrooms", "About", "Support"];
 
 function Navbar() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
   const user = useAuthentication();
   const [userData, setUserData] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
@@ -44,12 +44,13 @@ function Navbar() {
         const currentUser = localStorage.getItem("userId");
         if (currentUser) {
           const userDataFromFirebase = await getUser(currentUser);
+          console.log("userDataFromFirebase", userDataFromFirebase);
           setUserData(userDataFromFirebase);
-          if (userDataFromFirebase && userDataFromFirebase.profileImageUrl) {
+          if (userDataFromFirebase && userDataFromFirebase?.profileImageUrl) {
             setProfileImage(userDataFromFirebase.profileImageUrl);
+            setIsLoading(false);
           }
         }
-        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
         setIsLoading(false);
@@ -57,7 +58,7 @@ function Navbar() {
     };
 
     fetchUserData();
-  }, [profileImage]);
+  }, [navigate]);
 
   return (
     <AppBar position="static" sx={{ backgroundColor: "#1e5799" }}>
@@ -138,7 +139,7 @@ function Navbar() {
               display: { xs: "none", md: "flex" },
               justifyContent: "left",
               gap: 3,
-              marginLeft: "2rem"
+              marginLeft: "2rem",
             }}
           >
             {pages.map((page, index) => (
@@ -173,11 +174,10 @@ function Navbar() {
             ))}
           </Box>
 
-
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open profile">
               <IconButton onClick={() => navigate("/profile")} sx={{ p: 0 }}>
-                {(isLoading || !profileImage) && (
+                {isLoading ? (
                   <div
                     style={{
                       position: "relative",
@@ -185,10 +185,9 @@ function Navbar() {
                       height: "40px",
                     }}
                   >
-                    <CircularProgress color="inherit" size={40} />
+                    {user && <CircularProgress color="inherit" size={40} />}
                   </div>
-                )}
-                {!isLoading && profileImage && (
+                ) : (
                   <Avatar
                     color="secondary"
                     src={profileImage}
