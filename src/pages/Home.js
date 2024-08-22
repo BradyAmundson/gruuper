@@ -81,6 +81,8 @@ function Home() {
       },
     ];
 
+    console.log("Test Students Dat before format:", formattedStudents);
+
     const formattedStudents = testStudents.map((student) => [
       student.id,
       student.description,
@@ -88,9 +90,9 @@ function Home() {
       student.availability
     ]);
 
-    console.log("Test Students Data:", formattedStudents);
+    console.log("Test Students Data after format:", formattedStudents);
     const groupSize = 2;
-    console.log("Test Students Data:", JSON.stringify(formattedStudents, null, 2));
+    console.log("Test Students Data JSON.Stringify:", JSON.stringify(formattedStudents, null, 2));
 
     const testSmartMatch = async () => {
       try {
