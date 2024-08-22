@@ -27,7 +27,6 @@ function Home() {
     const userId = localStorage.getItem("userId");
     const response = await joinClassroom(roomId, userId, setError);
     if (!response) {
-      s
       return;
     }
     navigate(`/classroom?roomId=${roomId}`);
