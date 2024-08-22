@@ -497,7 +497,7 @@ const Classroom = () => {
       updateClassroomState(roomId, state);
     }
   }, [state, roomId, classroom]);
-
+  d
   // Function to automatically create a group during LiveGrouping
   useEffect(() => {
     if (state === "LiveGrouping" && unmatchedMembers.length >= minGroupSize) {

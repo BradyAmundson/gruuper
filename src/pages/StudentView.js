@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDocument, getUser } from "../firebase/firestoreService";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase/firebase.js"; // Make sure this path is correct
+import { db } from "../firebase/firebase.js";
 import "./styles/studentView.css";
 
 const calculateCloudParts = (name, cloudWidth) => {
@@ -62,7 +62,7 @@ const StudentView = () => {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Unsubscribe from the snapshot listener on component unmount
+    return () => unsubscribe();
   }, [roomId]);
 
   useEffect(() => {
