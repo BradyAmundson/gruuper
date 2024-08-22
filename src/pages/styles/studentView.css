@@ -10,7 +10,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(145deg, #6db3f2, #1e5799);
-  display: inline;
+  /* display: inline; */
 }
 
 .student-view-container {
@@ -211,4 +211,20 @@ h2 {
   justify-content: center;
   width: 100%;
   margin-top: 20px;
+}
+
+.instructor-name {
+  font-size: 1rem; /* Smaller font size */
+  font-weight: normal;
+  color: #888; /* Gentle, lighter color */
+  display: block;
+  margin-top: 5px;
+}
+
+.contact-message {
+  font-style: italic;
+  font-weight: 300;
+  color: #555;
+  margin-top: 20px;
+  text-align: center;
 }

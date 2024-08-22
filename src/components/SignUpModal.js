@@ -203,7 +203,6 @@ const Step2 = ({
             id="roomId"
             label="First Name"
             type="search"
-            variant="standard"
             fullWidth
             margin="normal"
             style={{
@@ -218,7 +217,6 @@ const Step2 = ({
             id="last-name"
             label="Last Name"
             type="search"
-            variant="standard"
             fullWidth
             margin="large"
             style={{
@@ -286,7 +284,7 @@ const Step3 = ({
             id="email"
             label="Email"
             type="search"
-            variant="standard"
+            variant="outlined"
             fullWidth
             margin="large"
             style={{
@@ -301,7 +299,7 @@ const Step3 = ({
             id="second-email"
             label="Confirm Email"
             type="search"
-            variant="standard"
+            variant="outlined"
             fullWidth
             margin="large"
             style={{
@@ -316,7 +314,7 @@ const Step3 = ({
             id="password"
             label="Password"
             type="password"
-            variant="standard"
+            variant="outlined"
             fullWidth
             margin="large"
             style={{
@@ -331,7 +329,7 @@ const Step3 = ({
             id="second-password"
             label="Confirm Password"
             type="password"
-            variant="standard"
+            variant="outlined"
             fullWidth
             margin="large"
             style={{

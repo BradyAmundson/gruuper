@@ -9,8 +9,9 @@ import {
   removeMemberFromClassroom,
   updateClassroomState,
   saveClassroomSettings,
-  deleteClassroom,
+  archiveClassroom,
 } from "../firebase/firestoreService";
+import { sendBulkEmails } from "../api/sendEmailNotification";
 import SettingsModal from "../components/SettingsModal";
 import "./styles/classroom.css";
 import { DndProvider } from "react-dnd";
@@ -23,15 +24,24 @@ import CreateIcon from "@mui/icons-material/Create";
 import SaveIcon from "@mui/icons-material/Save";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import SmartMatchIcon from "@mui/icons-material/Group";
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import LockIcon from '@mui/icons-material/Lock';
-import SettingsIcon from '@mui/icons-material/Settings';
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import LockIcon from "@mui/icons-material/Lock";
+import SettingsIcon from "@mui/icons-material/Settings";
 import Tooltip from "@mui/material/Tooltip";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import { Dialog, DialogActions, DialogContent, DialogContentText, Button } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+import SendIcon from "@mui/icons-material/Send";
+import DialogTitle from "@mui/material/DialogTitle";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  Button,
+} from "@mui/material";
+import MatchAnimationModal from "../components/MatchAnimationModal";
 
 const ItemTypes = {
   MEMBER: "member",
@@ -85,8 +95,7 @@ const DroppableGroup = ({
   currentlyDragging,
   memberNames,
   isProfessor,
-  locked,
-  toggleLockGroup
+  toggleLockGroup,
 }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
@@ -111,25 +120,28 @@ const DroppableGroup = ({
       </ul>
       <IconButton
         onClick={() => toggleLockGroup(index)}
-        className={`lock-button ${locked ? 'locked' : 'unlocked'}`}
+        className={`lock-button ${group.locked ? 'locked' : 'unlocked'}`}
         style={{ position: 'absolute', top: '10px', right: '5px' }}>
-        {locked ? <LockIcon /> : <LockOpenIcon />}
+        {group.locked ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
     </div>
   );
 };
+
 
 const NewGroupArea = ({ createNewGroup }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
     drop: (item, monitor) => {
       createNewGroup(item.index);
-    }
+    },
   }));
 
   return (
     <div ref={drop} className="new-group-area">
-      <p className="new-group-plus"><AddIcon fontSize="large" /></p>
+      <p className="new-group-plus">
+        <AddIcon fontSize="large" />
+      </p>
       <p className="new-group-caption">Drop here to create a new group</p>
     </div>
   );
@@ -142,17 +154,17 @@ const UnmatchedMembersArea = ({
   currentlyDragging,
   isProfessor,
   removeMemberFromGroup,
-  memberNames
+  memberNames,
 }) => {
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.MEMBER,
     drop: (item, monitor) => {
       moveMember(item.index, -1);
-    }
+    },
   }));
 
   const style = {
-    filter: unmatchedMembers.length === 0 ? 'grayscale(1)' : 'none'
+    filter: unmatchedMembers.length === 0 ? "grayscale(1)" : "none",
   };
 
   return (
@@ -204,6 +216,37 @@ const Classroom = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleNotifyClick = () => {
+    setDialogOpen(true);
+  };
+
+  const handleNotifyConfirm = () => {
+    sendBulkEmails(
+      roomId,
+      "Your groups are ready!",
+      `<!DOCTYPE html>
+      <html>
+        <body>
+          <p>Hi there,</p>
+          <p>Your new group has been successfully formed!</p>
+          <p>Click the link below to check it out:</p>
+          <p><a href="https://your-link-here.com" target="_blank">Go to your new group</a></p>
+          <p>Best regards,<br>Your Team</p>
+        </body>
+      </html>
+      `
+    );
+  };
+
+  const handleNotifyClose = () => {
+    setDialogOpen(false);
+  };
+
+  const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
+  const [pairedGroups, setPairedGroups] = useState({});
+
   const defaultDeadline = () => {
     const now = new Date();
     const deadline = new Date(now);
@@ -214,15 +257,13 @@ const Classroom = () => {
 
   const [deadline, setDeadline] = useState(defaultDeadline());
   const [isLiveGrouping, setIsLiveGrouping] = useState(false);
-  const [minGroupSize, setMinGroupSize] = useState(5);
-  const [showSaveReminder, setShowSaveReminder] = useState(false); // State for the reminder
+  const [minGroupSize, setMinGroupSize] = useState(2);
+  const [showSaveReminder, setShowSaveReminder] = useState(false);
 
 
   const showReminder = () => {
     setShowSaveReminder(true);
   };
-
-
 
   const saveDeadlineToFirestore = async (newDeadline) => {
     try {
@@ -254,43 +295,53 @@ const Classroom = () => {
 
   const handleClassroomDeleted = async () => {
     try {
-      await deleteClassroom(roomId);
+      await archiveClassroom(roomId);
       navigate("/classrooms");
     } catch (error) {
-      console.error("Failed to delete classroom:", error);
+      console.error("Failed to archive classroom:", error);
     }
   };
 
   // Show/Hide Members button position
-  const buttonRightPosition = showMembers ? '400px' : '50px';
+  const buttonRightPosition = showMembers ? "400px" : "50px";
   const toggleMembers = () => {
     setShowMembers(!showMembers);
   };
 
   const toggleLockGroup = (index) => {
-    setLockedGroups(prevState => {
-      const newState = { ...prevState };
-      newState[index] = !prevState[index];
-      return newState;
+    setClassroom((prevClassroom) => {
+      const newGroups = { ...prevClassroom.groups };
+      newGroups[index].locked = !newGroups[index].locked; // Toggle the locked state
+      saveGroups(roomId, newGroups, {}, className, Object.values(newGroups).flatMap(group => group.members), unmatchedMembers);
+      return { ...prevClassroom, groups: newGroups };
     });
   };
 
+
   const moveMember = useCallback((fromIndexes, toGroupIndex) => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       const newGroups = { ...prevClassroom.groups };
       let member;
       let action; // "added" or "removed"
 
+      if (fromIndexes.groupIndex === toGroupIndex && fromIndexes.groupIndex === -1) {
+        // No need to update anything if they are dropped back into the same ungrouped area
+        return prevClassroom;
+      }
+
       // Handle removal from current group or unmatched area
       if (fromIndexes.groupIndex === -1) {
-        setUnmatchedMembers(prevUnmatched => {
+        setUnmatchedMembers((prevUnmatched) => {
           const updatedUnmatched = [...prevUnmatched];
           member = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
           return updatedUnmatched;
         });
         action = "added";
       } else {
-        member = newGroups[fromIndexes.groupIndex].members.splice(fromIndexes.memberIndex, 1)[0];
+        member = newGroups[fromIndexes.groupIndex].members.splice(
+          fromIndexes.memberIndex,
+          1
+        )[0];
         action = "removed";
 
         // Log the removal action
@@ -299,9 +350,12 @@ const Classroom = () => {
         );
 
         // If the creation method changes to "Hand-Picked"
-        if (newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked") {
+        if (
+          newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
+        ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod} to Hand-Picked at ${new Date().toISOString()}`
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
         }
@@ -309,18 +363,24 @@ const Classroom = () => {
 
       // Handle addition to the new group or unmatched area
       if (toGroupIndex !== -1) {
-        newGroups[toGroupIndex] = newGroups[toGroupIndex] || { members: [], logMessages: [], creationMethod: "Hand-Picked" };
+        newGroups[toGroupIndex] = newGroups[toGroupIndex] || {
+          members: [],
+          logMessages: [],
+          creationMethod: "Hand-Picked",
+        };
         newGroups[toGroupIndex].members.push(member);
 
         // Log the addition action
         newGroups[toGroupIndex].logMessages.push(
-          `Member ${member} (ID: ${member.id}) was added at ${new Date().toISOString()}`
+          `Member ${member} (ID: ${member.id
+          }) was added at ${new Date().toISOString()}`
         );
 
         // If the creation method changes to "Hand-Picked"
         if (newGroups[toGroupIndex].creationMethod !== "Hand-Picked") {
           newGroups[toGroupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[toGroupIndex].creationMethod} to Hand-Picked at ${new Date().toISOString()}`
+            `Group creation method changed from ${newGroups[toGroupIndex].creationMethod
+            } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[toGroupIndex].creationMethod = "Hand-Picked";
         }
@@ -328,38 +388,39 @@ const Classroom = () => {
         showReminder();
 
         // Move from ungrouped to grouped
-        setUnmatchedMembers(prevUnmatched => prevUnmatched.filter(m => m !== member));
+        setUnmatchedMembers((prevUnmatched) =>
+          prevUnmatched.filter((m) => m !== member)
+        );
       } else {
-        setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
+        setUnmatchedMembers((prevUnmatched) => [...prevUnmatched, member]);
 
         newGroups[fromIndexes.groupIndex].logMessages.push(
-          `Member ${member.name} (ID: ${member.id}) was added to Ungrouped Members at ${new Date().toISOString()}`
+          `Member ${member.name} (ID: ${member.id
+          }) was added to Ungrouped Members at ${new Date().toISOString()}`
         );
         showReminder();
-
       }
 
       return { ...prevClassroom, groups: newGroups };
     });
   }, []);
 
-
-
-
   const updateUnmatchedMembers = (allMembers, groups) => {
     const groupedMembers = new Set();
-    Object.values(groups).forEach(group => {
-      group.members.forEach(member => {
+    Object.values(groups).forEach((group) => {
+      group.members.forEach((member) => {
         groupedMembers.add(member);
       });
     });
 
-    const unmatched = allMembers.filter(member => !groupedMembers.has(member));
+    const unmatched = allMembers.filter(
+      (member) => !groupedMembers.has(member)
+    );
     setUnmatchedMembers(unmatched);
   };
 
   const removeMemberFromGroup = (fromIndexes) => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       const { groupIndex, memberIndex } = fromIndexes;
       if (groupIndex === -1) {
         console.error("Invalid groupIndex for removal from group:", groupIndex);
@@ -369,7 +430,7 @@ const Classroom = () => {
       const newGroups = { ...prevClassroom.groups };
       const member = newGroups[groupIndex].members.splice(memberIndex, 1)[0];
 
-      setUnmatchedMembers(prevUnmatched => [...prevUnmatched, member]);
+      setUnmatchedMembers((prevUnmatched) => [...prevUnmatched, member]);
       return { ...prevClassroom, groups: newGroups };
     });
   };
@@ -403,7 +464,9 @@ const Classroom = () => {
           return;
         }
         console.log("Fetched classroom data:", fetchedClassroom.instructorId);
-        const isProfessor = localStorage.getItem("userType") === "Professor" && localStorage.getItem("userId") === fetchedClassroom?.instructorId;
+        const isProfessor =
+          localStorage.getItem("userType") === "Professor" &&
+          localStorage.getItem("userId") === fetchedClassroom?.instructorId;
         setIsProfessor(isProfessor);
 
         if (!isProfessor) {
@@ -424,35 +487,34 @@ const Classroom = () => {
         setGroups(fetchedGroups);
 
         const fetchedUser = await getUser(fetchedClassroom?.instructorId);
-        const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Class`;
+        const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
         setClassName(className);
 
-
-
-
-
         const members = fetchedClassroom?.members || [];
-        const newMemberNames = await Promise.all(members.map(async (member) => {
-          const user = await getUser(member);
-          return {
-            id: member,
-            name: `${user?.firstName || ""} ${user?.lastName || ""}`,
-            profileComplete: user?.profileComplete || false // Fetch profileComplete status
-          };
-        }));
+        const newMemberNames = await Promise.all(
+          members.map(async (member) => {
+            const user = await getUser(member);
+            return {
+              id: member,
+              name: `${user?.firstName || ""} ${user?.lastName || ""}`,
+              profileComplete: user?.profileComplete || false, // Fetch profileComplete status
+            };
+          })
+        );
         setMemberNames(newMemberNames);
 
         // Initialize grouped and ungrouped members
         const groupedMembers = new Set();
-        Object.values(fetchedGroups).forEach(group => {
-          group.members.forEach(member => {
+        Object.values(fetchedGroups).forEach((group) => {
+          group.members.forEach((member) => {
             groupedMembers.add(member);
           });
         });
 
-        const ungroupedMembers = members.filter(member => !groupedMembers.has(member));
+        const ungroupedMembers = members.filter(
+          (member) => !groupedMembers.has(member)
+        );
         setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
-
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -460,7 +522,6 @@ const Classroom = () => {
 
     fetchData();
   }, [roomId]);
-
 
   useEffect(() => {
     if (state === "Lobby" && deadline) {
@@ -473,8 +534,12 @@ const Classroom = () => {
           setState("Grouping");
         } else {
           const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+          );
           const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
           setTimeLeft({ days, hours, minutes, seconds });
@@ -494,7 +559,7 @@ const Classroom = () => {
   // Function to automatically create a group during LiveGrouping
   useEffect(() => {
     if (state === "LiveGrouping" && unmatchedMembers.length >= minGroupSize) {
-      setClassroom(prevClassroom => {
+      setClassroom((prevClassroom) => {
         const newGroups = { ...prevClassroom.groups };
         const newGroupIndex = Object.keys(newGroups).length;
 
@@ -506,19 +571,25 @@ const Classroom = () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: "Live Grouping",
-          logMessages: [`Group created with Live Grouping method at ${new Date().toISOString()}`]
+          logMessages: [
+            `Group created with Live Grouping method at ${new Date().toISOString()}`,
+          ],
         };
 
         setUnmatchedMembers(remainingUnmatched);
 
-        saveGroups(roomId, newGroups, className, Object.values(newGroups).flatMap(group => group.members), remainingUnmatched);
-
+        saveGroups(
+          roomId,
+          newGroups,
+          className,
+          Object.values(newGroups).flatMap((group) => group.members),
+          remainingUnmatched
+        );
 
         return { ...prevClassroom, groups: newGroups };
       });
     }
   }, [unmatchedMembers, minGroupSize, state]);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -560,19 +631,25 @@ const Classroom = () => {
     try {
       await removeMemberFromClassroom(roomId, userId);
 
-      setClassroom(prevClassroom => {
+      setClassroom((prevClassroom) => {
         const newGroups = { ...prevClassroom.groups };
 
-        Object.keys(newGroups).forEach(groupKey => {
-          newGroups[groupKey].members = newGroups[groupKey].members.filter(memberId => memberId !== userId);
+        Object.keys(newGroups).forEach((groupKey) => {
+          newGroups[groupKey].members = newGroups[groupKey].members.filter(
+            (memberId) => memberId !== userId
+          );
         });
 
         return { ...prevClassroom, groups: newGroups };
       });
 
-      setMemberNames(prevMembers => prevMembers.filter(member => member.id !== userId));
+      setMemberNames((prevMembers) =>
+        prevMembers.filter((member) => member.id !== userId)
+      );
 
-      setUnmatchedMembers(prevUnmatched => prevUnmatched.filter(member => member.id !== userId));
+      setUnmatchedMembers((prevUnmatched) =>
+        prevUnmatched.filter((member) => member.id !== userId)
+      );
     } catch (error) {
       console.error("Failed to delete member from classroom:", error);
     }
@@ -586,20 +663,21 @@ const Classroom = () => {
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
     const groups = fetchedClassroom?.groups || {};
-    const currentLockedGroups = lockedGroups || {};
 
+    // Create separate lists for locked and unlocked members
     const lockedMembers = new Set();
     const passedLockedGroups = {};
 
-    Object.entries(currentLockedGroups).forEach(([groupIndex, isLocked]) => {
-      if (isLocked) {
-        passedLockedGroups[groupIndex] = groups[groupIndex] || { members: [] };
-        groups[groupIndex]?.members.forEach(member => lockedMembers.add(member));
+    Object.entries(groups).forEach(([groupIndex, group]) => {
+      if (group?.locked) { // Ensure group is defined and locked property exists
+        passedLockedGroups[groupIndex] = group;
+        group.members?.forEach(member => lockedMembers.add(member)); // Check if members array exists
       }
     });
 
     const unlockedAndUnmatchedMembers = allMembers.filter(
-      member => !lockedMembers.has(member) && !unmatchedMembers.includes(member)
+      (member) =>
+        !lockedMembers.has(member) && !unmatchedMembers.includes(member)
     );
 
     const method = smartMatch ? "Gruuper" : "Randomizer";
@@ -614,34 +692,63 @@ const Classroom = () => {
       smartMatch
     );
 
+    if (smartMatch) {
+      setPairedGroups(newGroups);
+      setIsPairingModalOpen(true);
+
+      // Show the modal for 3 seconds before updating the UI
+      setTimeout(() => {
+        setIsPairingModalOpen(false);
+        updateGroups(newGroups, method, passedLockedGroups, allMembers);
+      }, 8000);
+    } else {
+      updateGroups(newGroups, method, passedLockedGroups, allMembers);
+    }
+
     setIsLoading(false);
     showReminder(); // Show reminder whenever a change is made
+  };
 
-    // Update the classroom state with the newly generated groups
+  const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
     setClassroom(prevClassroom => {
       const updatedGroups = { ...prevClassroom.groups };
 
-      Object.entries(newGroups).forEach(([key, group], index) => {
+      // Merge the newly generated groups with the existing locked groups
+      Object.entries(newGroups || {}).forEach(([key, group], index) => {
         const groupIndex = Object.keys(updatedGroups).length;
         updatedGroups[groupIndex] = {
-          members: group.members,
+          members: group?.members || [], // Ensure members array exists
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: method,
-          logMessages: [`Group created with ${method} at ${new Date().toISOString()}`]
+          logMessages: [`Group created with ${method} at ${new Date().toISOString()}`],
+          locked: false,
         };
+      });
+
+      Object.entries(passedLockedGroups || {}).forEach(([key, group]) => {
+        updatedGroups[key] = group;
       });
 
       return { ...prevClassroom, groups: updatedGroups };
     });
 
-    // Update member names
+    updateMemberNames(allMembers || []);
+  };
+
+  const updateMemberNames = async (allMembers) => {
+    if (!Array.isArray(allMembers) || allMembers.length === 0) {
+      setMemberNames([]); // Handle case where allMembers is not an array or is empty
+      return;
+    }
+
     const newMemberNames = await Promise.all(
       allMembers.map(async (member) => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}`,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+            }`,
         };
       })
     );
@@ -650,16 +757,29 @@ const Classroom = () => {
 
 
 
+  useEffect(() => {
+    if (groups) {
+      const initialLockState = {};
+      Object.keys(groups).forEach(key => {
+        initialLockState[key] = groups[key].locked || false;
+      });
+      setLockedGroups(initialLockState);
+    }
+  }, [groups]);
+
+
 
   const updateGroupCreationMethod = (groupIndex, newMethod) => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       const newGroups = { ...prevClassroom.groups };
       const group = newGroups[groupIndex];
 
       if (group && group.creationMethod !== newMethod) {
         group.creationMethod = newMethod;
         group.updatedAt = new Date().toISOString();
-        group.logMessages.push(`Creation method changed to ${newMethod} at ${new Date().toISOString()}`);
+        group.logMessages.push(
+          `Creation method changed to ${newMethod} at ${new Date().toISOString()}`
+        );
         newGroups[groupIndex] = group;
 
         setGroups(newGroups);
@@ -670,14 +790,14 @@ const Classroom = () => {
   };
 
   useEffect(() => {
-    setClassroom(prevClassroom => ({
+    setClassroom((prevClassroom) => ({
       ...prevClassroom,
-      groups: groups
+      groups: groups,
     }));
 
     if (groups) {
       const initialLockState = {};
-      Object.keys(groups).forEach(key => {
+      Object.keys(groups).forEach((key) => {
         initialLockState[key] = false;
       });
       setLockedGroups(initialLockState);
@@ -685,9 +805,9 @@ const Classroom = () => {
   }, [groups]);
 
   useEffect(() => {
-    setClassroom(prevClassroom => ({
+    setClassroom((prevClassroom) => ({
       ...prevClassroom,
-      lockedGroups: lockedGroups
+      lockedGroups: lockedGroups,
     }));
   }, [lockedGroups]);
 
@@ -710,41 +830,58 @@ const Classroom = () => {
             ...currentGroups[groupKey],
             deletedAt: new Date().toISOString(),
             logMessages: currentGroups[groupKey].logMessages
-              ? [...currentGroups[groupKey].logMessages, `Group deleted at ${new Date().toISOString()}`]
+              ? [
+                ...currentGroups[groupKey].logMessages,
+                `Group deleted at ${new Date().toISOString()}`,
+              ]
               : [`Group deleted at ${new Date().toISOString()}`],
           };
         }
       });
 
-      const groupedMembers = Object.values(newGroups).flatMap(group => group.members);
-      const ungroupedMembers = memberNames.map(member => member.id).filter(id => !groupedMembers.includes(id));
+      const groupedMembers = Object.values(newGroups).flatMap(
+        (group) => group.members
+      );
+      const ungroupedMembers = memberNames
+        .map((member) => member.id)
+        .filter((id) => !groupedMembers.includes(id));
 
       // Pass both newGroups and deletedGroups to the saveGroups function
-      saveGroups(roomId, newGroups, deletedGroups, className, groupedMembers, ungroupedMembers);
+      saveGroups(
+        roomId,
+        newGroups,
+        deletedGroups,
+        className,
+        groupedMembers,
+        ungroupedMembers
+      );
       setShowSaveReminder(false);
 
       return { ...prevClassroom, groups: newGroups };
     });
   };
 
-
-
   const createNewGroup = async (fromIndexes) => {
-    setClassroom(prevClassroom => {
-      const { groups: currentGroups, unmatchedMembers: currentUnmatched } = prevClassroom;
+    setClassroom((prevClassroom) => {
+      const { groups: currentGroups, unmatchedMembers: currentUnmatched } =
+        prevClassroom;
       const newGroups = { ...currentGroups };
       let memberId;
 
       // Handle removal from the existing group or unmatched area
       if (fromIndexes.groupIndex === -1) {
-        setUnmatchedMembers(prevUnmatched => {
+        setUnmatchedMembers((prevUnmatched) => {
           const updatedUnmatched = [...prevUnmatched];
           memberId = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
           return updatedUnmatched;
         });
       } else {
-        memberId = newGroups[fromIndexes.groupIndex].members[fromIndexes.memberIndex];
-        newGroups[fromIndexes.groupIndex].members.splice(fromIndexes.memberIndex, 1);
+        memberId =
+          newGroups[fromIndexes.groupIndex].members[fromIndexes.memberIndex];
+        newGroups[fromIndexes.groupIndex].members.splice(
+          fromIndexes.memberIndex,
+          1
+        );
 
         // Log the removal action
         newGroups[fromIndexes.groupIndex].logMessages.push(
@@ -752,9 +889,12 @@ const Classroom = () => {
         );
 
         // If the creation method changes to "Hand-Picked"
-        if (newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked") {
+        if (
+          newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
+        ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod} to Hand-Picked at ${new Date().toISOString()}`
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
         }
@@ -767,12 +907,15 @@ const Classroom = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         creationMethod: "Hand-Picked",
-        logMessages: [`Group created with Hand-Picked method at ${new Date().toISOString()}`, `Member ID: ${memberId} was added with group creation at ${new Date().toISOString()}`]
+        logMessages: [
+          `Group created with Hand-Picked method at ${new Date().toISOString()}`,
+          `Member ID: ${memberId} was added with group creation at ${new Date().toISOString()}`,
+        ],
       };
 
-      setLockedGroups(prevLocked => ({
+      setLockedGroups((prevLocked) => ({
         ...prevLocked,
-        [newGroupIndex]: false
+        [newGroupIndex]: false,
       }));
 
       showReminder();
@@ -781,8 +924,6 @@ const Classroom = () => {
       return { ...prevClassroom, groups: newGroups };
     });
   };
-
-
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -818,25 +959,25 @@ const Classroom = () => {
   };
 
   const incrementSize = () => {
-    const element = document.querySelector('.counter-value');
+    const element = document.querySelector(".counter-value");
 
     setGroupSize(groupSize + 1);
-    element.classList.add('counter-value-change');
+    element.classList.add("counter-value-change");
 
     setTimeout(() => {
-      element.classList.remove('counter-value-change');
+      element.classList.remove("counter-value-change");
     }, 200);
   };
 
   const DecrementSize = () => {
     if (groupSize > 1) {
-      const element = document.querySelector('.counter-value');
+      const element = document.querySelector(".counter-value");
 
       setGroupSize(groupSize - 1);
-      element.classList.add('counter-value-change');
+      element.classList.add("counter-value-change");
 
       setTimeout(() => {
-        element.classList.remove('counter-value-change');
+        element.classList.remove("counter-value-change");
       }, 200);
     }
   };
@@ -844,13 +985,12 @@ const Classroom = () => {
   const incrementMinGroupSize = () => {
     setMinGroupSize((prevSize) => prevSize + 1);
 
-    const element = document.querySelector('.counter-value');
+    const element = document.querySelector(".counter-value");
 
-
-    element.classList.add('counter-value-change');
+    element.classList.add("counter-value-change");
 
     setTimeout(() => {
-      element.classList.remove('counter-value-change');
+      element.classList.remove("counter-value-change");
     }, 200);
   };
 
@@ -859,12 +999,12 @@ const Classroom = () => {
       setMinGroupSize((prevSize) => prevSize - 1);
     }
 
-    const element = document.querySelector('.counter-value');
+    const element = document.querySelector(".counter-value");
 
-    element.classList.add('counter-value-change');
+    element.classList.add("counter-value-change");
 
     setTimeout(() => {
-      element.classList.remove('counter-value-change');
+      element.classList.remove("counter-value-change");
     }, 200);
   };
 
@@ -884,15 +1024,17 @@ const Classroom = () => {
             borderBottom: "1px solid #f1f1f1",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem" }}>
-            <h2 className="class-info">
-              Classroom: {roomId}
-            </h2>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "0 1rem",
+            }}
+          >
+            <h2 className="class-info">Classroom: {roomId}</h2>
             <Tooltip title="Settings">
-              <IconButton
-                color="primary"
-                onClick={handleSettingsOpen}
-              >
+              <IconButton color="primary" onClick={handleSettingsOpen}>
                 <SettingsIcon />
               </IconButton>
             </Tooltip>
@@ -910,7 +1052,14 @@ const Classroom = () => {
         </div>
 
         {showSaveReminder && (
-          <div style={{ backgroundColor: 'gray', color: 'white', padding: '5px', textAlign: 'center' }}>
+          <div
+            style={{
+              backgroundColor: "gray",
+              color: "white",
+              padding: "5px",
+              textAlign: "center",
+            }}
+          >
             Be sure to save your changes!
           </div>
         )}
@@ -923,15 +1072,20 @@ const Classroom = () => {
                 <p className="countdown-title">Time until grouping starts:</p>
                 {timeLeft ? (
                   <p className="countdown-timer">
-                    {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                    {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
+                    {timeLeft.seconds}s
                   </p>
                 ) : (
                   <p className="countdown-timer">No deadline set</p>
                 )}
-                <p style={{
-                  marginTop: '3rem',
-                  fontSize: '0.75rem',
-                }}>Choose a deadline below:</p>
+                <p
+                  style={{
+                    marginTop: "3rem",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  Choose a deadline below:
+                </p>
                 <input
                   type="datetime-local"
                   value={deadline}
@@ -953,9 +1107,9 @@ const Classroom = () => {
                   <li key={member.id} className="members-list-item">
                     {member.name}{" "}
                     {member.profileComplete ? (
-                      <CheckIcon style={{ color: 'green' }} />
+                      <CheckIcon style={{ color: "green" }} />
                     ) : (
-                      <CloseIcon style={{ color: 'red' }} />
+                      <CloseIcon style={{ color: "red" }} />
                     )}
                   </li>
                 ))}
@@ -963,27 +1117,50 @@ const Classroom = () => {
               <div
                 className="members-key"
                 style={{
-                  marginTop: '1rem',
-                  fontSize: '0.75rem',
-                  color: '#555',
-                  display: 'flex',
-                  justifyContent: 'center', // Center horizontally
-                  alignItems: 'center', // Center vertically
+                  marginTop: "1rem",
+                  fontSize: "0.75rem",
+                  color: "#555",
+                  display: "flex",
+                  justifyContent: "center", // Center horizontally
+                  alignItems: "center", // Center vertically
                 }}
               >
-                <p style={{ display: 'flex', alignItems: 'center', margin: '0 1rem' }}>
+                <p
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    margin: "0 1rem",
+                  }}
+                >
                   Profile Questionnaire Complete
-                  <CheckIcon style={{ color: 'green', fontSize: '1rem', marginRight: '0.25rem' }} />
+                  <CheckIcon
+                    style={{
+                      color: "green",
+                      fontSize: "1rem",
+                      marginRight: "0.25rem",
+                    }}
+                  />
                 </p>
-                <p style={{ display: 'flex', alignItems: 'center', margin: '0 1rem' }}>
+                <p
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    margin: "0 1rem",
+                  }}
+                >
                   Profile Questionnaire Incomplete
-                  <CloseIcon style={{ color: 'red', fontSize: '1rem', marginRight: '0.25rem' }} />
+                  <CloseIcon
+                    style={{
+                      color: "red",
+                      fontSize: "1rem",
+                      marginRight: "0.25rem",
+                    }}
+                  />
                 </p>
               </div>
             </div>
           </div>
         )}
-
 
         {(state === "Grouping" || state === "LiveGrouping") && (
           <div className="grouping-state">
@@ -993,7 +1170,10 @@ const Classroom = () => {
                   {state === "LiveGrouping" ? (
                     <div className="control-center">
                       <h1>Live Grouping Enabled</h1>
-                      <p>Whenever Ungrouped Members reaches the minimum grop size, a new group will be created!</p>
+                      <p>
+                        Whenever Ungrouped Members reaches the minimum grop
+                        size, a new group will be created!
+                      </p>
                       <div className="control-center">
                         <div className="size-counter">
                           <div className="counter-title">
@@ -1002,7 +1182,9 @@ const Classroom = () => {
                             <span>Group Size:</span>
                           </div>
                           <span className="counter-value">
-                            {minGroupSize < 10 ? "0" + minGroupSize : minGroupSize}
+                            {minGroupSize < 10
+                              ? "0" + minGroupSize
+                              : minGroupSize}
                           </span>
                           <div
                             className="counter-buttons"
@@ -1012,11 +1194,17 @@ const Classroom = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <button className="counter-button" onClick={incrementMinGroupSize}>
+                            <button
+                              className="counter-button"
+                              onClick={incrementMinGroupSize}
+                            >
                               {" "}
                               +{" "}
                             </button>
-                            <button className="counter-button" onClick={decrementMinGroupSize}>
+                            <button
+                              className="counter-button"
+                              onClick={decrementMinGroupSize}
+                            >
                               {" "}
                               -{" "}
                             </button>
@@ -1027,7 +1215,46 @@ const Classroom = () => {
                             <SaveIcon
                               className="save-groups-button"
                               onClick={saveGroupsToFirestore}
-                              sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                          <Dialog open={dialogOpen} onClose={handleNotifyClose}>
+                            <DialogTitle>Confirm Notify</DialogTitle>
+                            <DialogContent>
+                              You are about to notify all students in the class
+                              that the groups are completed.
+                              <br />
+                              Are you sure you want to proceed?
+                            </DialogContent>
+                            <DialogActions>
+                              <Button
+                                onClick={handleNotifyClose}
+                                color="primary"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  handleNotifyConfirm();
+                                  handleNotifyClose();
+                                }}
+                                color="primary"
+                              >
+                                Confirm
+                              </Button>
+                            </DialogActions>
+                          </Dialog>
+                          <Tooltip title="Notify">
+                            <SendIcon
+                              className="save-groups-button"
+                              onClick={handleNotifyClick}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
                             />
                           </Tooltip>
                         </div>
@@ -1052,11 +1279,17 @@ const Classroom = () => {
                             justifyContent: "center",
                           }}
                         >
-                          <button className="counter-button" onClick={incrementSize}>
+                          <button
+                            className="counter-button"
+                            onClick={incrementSize}
+                          >
                             {" "}
                             +{" "}
                           </button>
-                          <button className="counter-button" onClick={DecrementSize}>
+                          <button
+                            className="counter-button"
+                            onClick={DecrementSize}
+                          >
                             {" "}
                             -{" "}
                           </button>
@@ -1067,21 +1300,30 @@ const Classroom = () => {
                           <ShuffleIcon
                             className="randomize-groups-button"
                             onClick={() => handleRandomizeGroups(false)}
-                            sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                            sx={{
+                              fontSize: "30px",
+                              transition: "transform 0.3s",
+                            }}
                           />
                         </Tooltip>
                         <Tooltip title="Smart Match">
                           <SmartMatchIcon
                             className="smart-match-button"
                             onClick={() => handleRandomizeGroups(true)}
-                            sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                            sx={{
+                              fontSize: "30px",
+                              transition: "transform 0.3s",
+                            }}
                           />
                         </Tooltip>
                         <Tooltip title="Save">
                           <SaveIcon
                             className="save-groups-button"
                             onClick={saveGroupsToFirestore}
-                            sx={{ fontSize: "30px", transition: "transform 0.3s" }}
+                            sx={{
+                              fontSize: "30px",
+                              transition: "transform 0.3s",
+                            }}
                           />
                         </Tooltip>
                       </div>
@@ -1091,20 +1333,22 @@ const Classroom = () => {
               )}
               <div className="grid-container">
                 {classroom.groups &&
-                  Object.entries(classroom.groups).map(([key, group], index) => (
-                    <DroppableGroup
-                      key={index}
-                      group={group}
-                      index={index}
-                      moveMember={moveMember}
-                      setCurrentlyDragging={setCurrentlyDragging}
-                      currentlyDragging={currentlyDragging}
-                      memberNames={memberNames}
-                      isProfessor={isProfessor}
-                      locked={lockedGroups[index]}
-                      toggleLockGroup={toggleLockGroup}
-                    />
-                  ))}
+                  Object.entries(classroom.groups).map(
+                    ([key, group], index) => (
+                      <DroppableGroup
+                        key={index}
+                        group={group}
+                        index={index}
+                        moveMember={moveMember}
+                        setCurrentlyDragging={setCurrentlyDragging}
+                        currentlyDragging={currentlyDragging}
+                        memberNames={memberNames}
+                        isProfessor={isProfessor}
+                        locked={lockedGroups[index]}
+                        toggleLockGroup={toggleLockGroup}
+                      />
+                    )
+                  )}
                 {currentlyDragging !== null && (
                   <NewGroupArea createNewGroup={createNewGroup} />
                 )}
@@ -1132,23 +1376,25 @@ const Classroom = () => {
 
               <div
                 id="Members"
-                style={{ right: showMembers ? '20px' : '-320px' }}  // Conditional styling based on showMembers state
+                style={{ right: showMembers ? '20px' : '-320px' }}
               >
                 <h3>Classroom Members ({memberNames.length})</h3>
                 <ul>
-                  {memberNames.sort((a, b) => a.name.localeCompare(b.name)).map((member) => (
-                    <li key={member.id}>
-                      {member.name}
-                      <IconButton
-                        onClick={() => handleDeleteClick(member)}
-                        aria-label="delete member"
-                        size="small"
-                        className="delete-button"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </li>
-                  ))}
+                  {memberNames
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((member) => (
+                      <li key={member.id}>
+                        {member.name}
+                        <IconButton
+                          onClick={() => handleDeleteClick(member)}
+                          aria-label="delete member"
+                          size="small"
+                          className="delete-button"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>
@@ -1163,16 +1409,20 @@ const Classroom = () => {
               borderRadius: '8px',
               padding: '20px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-              backgroundColor: '#fff', // Ensure background is white or fits your design
+              backgroundColor: '#fff',
             },
           }}
         >
           <DialogContent>
-            <DialogContentText id="alert-dialog-description" style={{ color: '#333', fontSize: '1.2rem', textAlign: "center" }}>
-              Are you sure you want to delete {studentToDelete?.name}? This action cannot be undone.
+            <DialogContentText
+              id="alert-dialog-description"
+              style={{ color: "#333", fontSize: "1.2rem", textAlign: "center" }}
+            >
+              Are you sure you want to delete {studentToDelete?.name}? This
+              action cannot be undone.
             </DialogContentText>
           </DialogContent>
-          <DialogActions style={{ justifyContent: 'center' }}>
+          <DialogActions style={{ justifyContent: "center" }}>
             <Button
               onClick={handleCloseDeleteDialog}
               style={{
@@ -1183,7 +1433,7 @@ const Classroom = () => {
                 padding: '0.75rem 2.25rem',
                 margin: '0.625rem',
                 transition: 'transform 0.3s, background-color 0.3s',
-                textTransform: 'none' // Prevents uppercase letters
+                textTransform: 'none'
               }}
             >
               Cancel
@@ -1199,7 +1449,7 @@ const Classroom = () => {
                 padding: '0.75rem 2.25rem',
                 margin: '0.625rem',
                 transition: 'transform 0.3s, background-color 0.3s',
-                textTransform: 'none' // Maintains font casing
+                textTransform: 'none'
               }}
             >
               Confirm
@@ -1214,22 +1464,23 @@ const Classroom = () => {
           onDelete={handleClassroomDeleted}
         />
 
+        <MatchAnimationModal
+          open={isPairingModalOpen}
+          groups={pairedGroups}
+          memberNames={memberNames}
+        />
+
         {state === "Grouping" && (
           <button
             className="btn-confirm-groups"
             onClick={handleConfirmInitialGroups}
-
           >
             Confirm Initial Groups
           </button>
         )}
       </div>
-
     </DndProvider>
   );
 };
 
 export default Classroom;
-
-
-

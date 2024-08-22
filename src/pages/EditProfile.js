@@ -10,7 +10,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useNavigate } from "react-router-dom";
 import { updateUser, getUser } from "../firebase/firestoreService";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -35,7 +41,7 @@ function EditProfile() {
     idealGroup: "",
   });
   const [calendarDate, setCalendarDate] = useState(new Date(1970, 1, 4));
-
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -97,7 +103,6 @@ function EditProfile() {
     const [startHour, startMinute] = slot.startTime.split(':').map(Number);
     const [endHour, endMinute] = slot.endTime.split(':').map(Number);
 
-    // Use the day of the week (1-7) and map it to the appropriate week in the calendar
     const start = moment(calendarDate).day(slot.day).set({ hour: startHour, minute: startMinute });
     const end = moment(calendarDate).day(slot.day).set({ hour: endHour, minute: endMinute });
 
@@ -107,6 +112,14 @@ function EditProfile() {
       end: end.toDate(),
     };
   }).filter(event => event !== null);
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
   const paperStyle = {
     padding: "2rem",
@@ -208,12 +221,18 @@ function EditProfile() {
           </Select>
         </FormControl>
 
-        <Typography
-          variant="h6"
-          style={{ ...headingStyle, margin: "2rem 0 1rem", fontSize: "1.2rem" }}
-        >
-          Estimated Week-to-Week Availability
-        </Typography>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", marginTop: "2rem" }}>
+          <Typography
+            variant="h6"
+            style={{ ...headingStyle, fontSize: "1.2rem", marginBottom: "1rem" }}
+          >
+            Estimated Week-to-Week Availability
+          </Typography>
+          <IconButton onClick={handleOpenDialog} style={{ color: "#1e5799" }}>
+            <HelpOutlineIcon />
+          </IconButton>
+        </div>
+
         <div style={{ height: 400, width: "100%", marginBottom: "2rem" }}>
           <Calendar
             localizer={localizer}
@@ -313,6 +332,22 @@ function EditProfile() {
           </Grid>
         </Grid>
       </Paper>
+
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>How to Use the Availability Calendar</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Click and drag to select the time slots on the calendar to indicate your availability during the week.
+            <br /><br />
+            You can remove any previously selected time slots by clicking on them.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

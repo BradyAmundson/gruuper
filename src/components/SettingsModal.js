@@ -85,7 +85,7 @@ const SettingsModal = ({ open, onClose, classroomData = {}, onSave, onDelete }) 
                         Save
                     </Button>
                     <Button variant="outlined" color="error" onClick={handleDelete}>
-                        Delete Classroom
+                        Archive Classroom
                     </Button>
                 </Box>
             </Box>

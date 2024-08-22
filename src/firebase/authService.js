@@ -159,7 +159,13 @@ export function SignUpEmail({
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
+    if (!email.endsWith("lmu.edu")) {
+      setError("Email must be associated with LMU.");
+      return;
+    }
     try {
+      navigate("/about");
+
       // Proceed with sign-up
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -172,10 +178,9 @@ export function SignUpEmail({
         setLoading(false);
       });
 
-      createUser(firstName, lastName, auth.currentUser.uid, userType);
+      createUser(firstName, lastName, auth.currentUser.uid, userType, email);
       signOut(auth);
       localStorage.clear();
-      navigate("/");
     } catch (error) {
       console.error("Error signing up:", error.message);
       setError(ErrorConversion(error));
@@ -218,6 +223,9 @@ export function SignInWithEmail() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
+  const supportEmail = "gruuper.team@gmail.com";
+  const body = "#### Please describe your issue here. ####";
+
   const navigate = useNavigate();
 
   const handleSignIn = async () => {
@@ -249,13 +257,13 @@ export function SignInWithEmail() {
         <label style={{ display: "block", marginBottom: "5px" }}>
           <TextField
             value={email}
+            required
             onChange={(e) => setEmail(e.target.value)}
             id="email"
             label="Email"
             type="search"
-            variant="standard"
             fullWidth
-            margin="large"
+            margin="dense"
             style={{
               minWidth: "19rem",
             }}
@@ -265,17 +273,25 @@ export function SignInWithEmail() {
       <div className="input-group">
         <label style={{ display: "block", marginBottom: "5px" }}>
           <TextField
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             id="password"
             label="Password"
             type="password"
-            variant="standard"
             fullWidth
-            margin="large"
+            margin="dense"
           />
         </label>
       </div>
+      {"Support: "}
+      <a
+        href={`mailto:${supportEmail}?subject=${encodeURIComponent(
+          "I need help!"
+        )}&body=${encodeURIComponent(body)}`}
+      >
+        {supportEmail}
+      </a>
       <div
         className="sign-in-button-div"
         style={{ display: "flex", justifyContent: "flex-end" }}
@@ -291,6 +307,7 @@ export function SignOut() {
   const handleSignOut = () => {
     signOut(auth);
     localStorage.clear();
+    window.location.reload();
   };
   return (
     <div style={{ paddingRight: "10px" }}>

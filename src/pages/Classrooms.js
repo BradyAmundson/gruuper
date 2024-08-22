@@ -7,10 +7,11 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { getUser, getDocument } from "../firebase/firestoreService";
+import { getUser, getDocument, getArchivedClassroomsForInstructor } from "../firebase/firestoreService";
 
 const Classrooms = () => {
   const [classrooms, setClassrooms] = useState([]);
+  const [archivedClassrooms, setArchivedClassrooms] = useState([]); // Initialize as an empty array
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const userType = localStorage.getItem("userType");
@@ -21,6 +22,7 @@ const Classrooms = () => {
         const userId = localStorage.getItem("userId");
         const user = await getUser(userId);
         setLoading(true);
+
         if (user && user.classroomCodes) {
           const classroomDetails = await Promise.all(
             user.classroomCodes.map(async (code) => {
@@ -38,8 +40,37 @@ const Classrooms = () => {
           );
 
           setClassrooms(classroomDetails.filter(Boolean));
-          setLoading(false);
         }
+
+        // Fetch archived classrooms
+        if (userType === "Professor") {
+          const archivedClassroomDetails = await getArchivedClassroomsForInstructor(userId);
+          console.log("archivedClassroomDetails", archivedClassroomDetails);
+          const formattedArchivedClassrooms = archivedClassroomDetails.map((classroom) => ({
+            code: classroom.id,
+            name: classroom.className || "Unnamed",
+          }));
+          setArchivedClassrooms(formattedArchivedClassrooms);
+        } else if (user && user.classroomCodes) {
+          const archivedClassroomDetails = await Promise.all(
+            user.classroomCodes.map(async (code) => {
+              const archivedClassroom = await getDocument("classroomArchive", code);
+              if (archivedClassroom) {
+                const userGroup = getUserGroup(archivedClassroom, userId);
+                return {
+                  code,
+                  name: archivedClassroom?.className || "Unnamed",
+                  userGroup,
+                };
+              }
+              return null;
+            })
+          );
+
+          setArchivedClassrooms(archivedClassroomDetails.filter(Boolean));
+        }
+
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
         setLoading(false);
@@ -55,7 +86,6 @@ const Classrooms = () => {
     }
 
     const userGroup = Object.values(classroom.groups).find((group) => {
-      // Check if group.members is an array, otherwise convert or handle accordingly
       const members = Array.isArray(group?.members) ? group.members : Object.values(group?.members || {});
       return members.includes(userId);
     });
@@ -88,7 +118,7 @@ const Classrooms = () => {
       {loading ? (
         <Typography variant="body1">Loading...</Typography>
       ) : classrooms.length === 0 ? (
-        <Typography variant="body1">Error: No classrooms found.</Typography>
+        <Typography variant="body1">No classrooms found.</Typography>
       ) : (
         <List>
           {classrooms.map(({ code, name, userGroup }) => (
@@ -123,7 +153,7 @@ const Classrooms = () => {
                 <ListItemText
                   primary={`Classroom: ${name ? name : "Unnamed"} @ ${code}`}
                   secondary={
-                    userGroup.length > 0 && userType === "Student"
+                    userType === "Student" && userGroup.length > 0
                       ? `Your Group: ${userGroup.join(", ")}`
                       : userType !== "Student"
                         ? "Click to view classroom"
@@ -135,11 +165,59 @@ const Classrooms = () => {
           ))}
         </List>
       )}
+
+      <Typography
+        variant="h5"
+        gutterBottom
+        style={{
+          margin: "20px",
+          padding: "15px",
+          borderRadius: "10px",
+          fontSize: "30px",
+          fontWeight: "bold",
+          color: "transparent",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundImage: "linear-gradient(145deg, #d3d3d3, #999)",
+          display: "inline-block",
+        }}
+      >
+        Archived Classrooms
+      </Typography>
+
+      {loading ? (
+        <Typography variant="body1">Loading...</Typography>
+      ) : archivedClassrooms.length === 0 ? (
+        <Typography variant="body1">No archived classrooms found.</Typography>
+      ) : (
+        <List>
+          {archivedClassrooms.map(({ code, name }) => (
+            <ListItem key={code} disablePadding>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                disabled
+                style={{
+                  borderRadius: 20,
+                  marginBottom: "1rem",
+                  transition: "transform 0.3s, background-color 0.3s",
+                  background: "linear-gradient(145deg, #d3d3d3, #999)",
+                  color: "white",
+                  cursor: "not-allowed",
+                }}
+              >
+                <ListItemText
+                  primary={`Archived Classroom: ${name ? name : "Unnamed"} @ ${code}`}
+                />
+              </Button>
+            </ListItem>
+          ))}
+        </List>
+      )}
     </div>
   );
 };
 
 export default Classrooms;
-
-
-
