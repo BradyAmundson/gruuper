@@ -81,7 +81,7 @@ function Home() {
       },
     ];
 
-    console.log("Test Students Dat before format:", formattedStudents);
+    console.log("Test Students Dat before format:", testStudents);
 
     const formattedStudents = testStudents.map((student) => [
       student.id,
