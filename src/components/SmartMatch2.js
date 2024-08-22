@@ -4,7 +4,7 @@ export const smartMatchGroups = async (students, groupSize) => {
         console.log('Students:', students);
         console.log('Group Size:', groupSize);
 
-        const response = await fetch('https://smartmatch-vmlt.onrender.com/api/smartmatch', {
+        const response = await fetch('https://smartmatch-zj2w.onrender.com/api/smartmatch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
