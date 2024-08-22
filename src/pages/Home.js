@@ -35,7 +35,7 @@ function Home() {
   useEffect(() => {
     const testStudents = [
       {
-        id: "student1",
+        id: 200,
         description: "I love web development and enjoy building responsive applications.",
         idealGroup: "I prefer working with a backend developer and a designer.",
         availability: [
@@ -44,7 +44,7 @@ function Home() {
         ],
       },
       {
-        id: "student2",
+        id: 201,
         description: "I'm focused on backend development, particularly in API design.",
         idealGroup: "I want to work with a frontend developer and a data scientist.",
         availability: [
@@ -53,7 +53,7 @@ function Home() {
         ],
       },
       {
-        id: "student3",
+        id: 202,
         description: "My passion lies in data science and machine learning.",
         idealGroup: "I'd like to team up with a backend developer and a data engineer.",
         availability: [
@@ -62,7 +62,7 @@ function Home() {
         ],
       },
       {
-        id: "student4",
+        id: 203,
         description: "I have a strong background in UI/UX design and frontend development.",
         idealGroup: "I prefer working with a backend developer and a project manager.",
         availability: [
@@ -71,7 +71,7 @@ function Home() {
         ],
       },
       {
-        id: "student5",
+        id: 204,
         description: "I'm interested in AI and machine learning.",
         idealGroup: "I'd like to work with a data scientist and a backend developer.",
         availability: [
@@ -81,13 +81,21 @@ function Home() {
       },
     ];
 
+    const formattedStudents = testStudents.map((student) => [
+      student.id,
+      student.description,
+      student.idealGroup,
+      student.availability
+    ]);
+
+    console.log("Test Students Data:", formattedStudents);
     const groupSize = 2;
-    console.log("Test Students Data:", JSON.stringify(testStudents, null, 2));
+    console.log("Test Students Data:", JSON.stringify(formattedStudents, null, 2));
 
     const testSmartMatch = async () => {
       try {
         console.log("Starting SmartMatch 2.0 Grouping Test...");
-        const result = await smartMatchGroups(testStudents, groupSize);
+        const result = await smartMatchGroups(formattedStudents, groupSize);
         console.log("SmartMatch 2.0 Grouping Result:", result);
       } catch (error) {
         console.error("Error in SmartMatch 2.0:", error);

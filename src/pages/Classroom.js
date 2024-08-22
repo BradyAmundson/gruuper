@@ -32,6 +32,7 @@ import Tooltip from "@mui/material/Tooltip";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogActions, DialogContent, DialogContentText, Button } from "@mui/material";
+import MatchAnimationModal from "../components/MatchAnimationModal";
 
 const ItemTypes = {
   MEMBER: "member",
@@ -203,6 +204,9 @@ const Classroom = () => {
   const [state, setState] = useState();
   const [timeLeft, setTimeLeft] = useState(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
+  const [pairedGroups, setPairedGroups] = useState({});
 
   const defaultDeadline = () => {
     const now = new Date();
@@ -599,9 +603,9 @@ const Classroom = () => {
     const passedLockedGroups = {};
 
     Object.entries(groups).forEach(([groupIndex, group]) => {
-      if (group.locked) {
+      if (group?.locked) { // Ensure group is defined and locked property exists
         passedLockedGroups[groupIndex] = group;
-        group.members.forEach(member => lockedMembers.add(member));
+        group.members?.forEach(member => lockedMembers.add(member)); // Check if members array exists
       }
     });
 
@@ -621,35 +625,56 @@ const Classroom = () => {
       smartMatch
     );
 
+    if (smartMatch) {
+      setPairedGroups(newGroups);
+      setIsPairingModalOpen(true);
+
+      // Show the modal for 3 seconds before updating the UI
+      setTimeout(() => {
+        setIsPairingModalOpen(false);
+        updateGroups(newGroups, method, passedLockedGroups, allMembers);
+      }, 8000);
+    } else {
+      updateGroups(newGroups, method, passedLockedGroups, allMembers);
+    }
+
     setIsLoading(false);
     showReminder(); // Show reminder whenever a change is made
+  };
 
-    // Update the classroom state with the newly generated groups
+  const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
     setClassroom(prevClassroom => {
       const updatedGroups = { ...prevClassroom.groups };
 
       // Merge the newly generated groups with the existing locked groups
-      Object.entries(newGroups).forEach(([key, group], index) => {
+      Object.entries(newGroups || {}).forEach(([key, group], index) => {
         const groupIndex = Object.keys(updatedGroups).length;
         updatedGroups[groupIndex] = {
-          members: group.members,
+          members: group?.members || [], // Ensure members array exists
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: method,
           logMessages: [`Group created with ${method} at ${new Date().toISOString()}`],
-          locked: false,  // New groups are unlocked by default
+          locked: false,
         };
       });
 
-      // Ensure locked groups are kept intact
-      Object.entries(passedLockedGroups).forEach(([key, group]) => {
+      Object.entries(passedLockedGroups || {}).forEach(([key, group]) => {
         updatedGroups[key] = group;
       });
 
       return { ...prevClassroom, groups: updatedGroups };
     });
 
-    // Update member names
+    updateMemberNames(allMembers || []);
+  };
+
+  const updateMemberNames = async (allMembers) => {
+    if (!Array.isArray(allMembers) || allMembers.length === 0) {
+      setMemberNames([]); // Handle case where allMembers is not an array or is empty
+      return;
+    }
+
     const newMemberNames = await Promise.all(
       allMembers.map(async (member) => {
         const fetchedUser = await getUser(member);
@@ -1237,6 +1262,12 @@ const Classroom = () => {
           classroomData={classroom}
           onSave={handleSaveSettings}
           onDelete={handleClassroomDeleted}
+        />
+
+        <MatchAnimationModal
+          open={isPairingModalOpen}
+          groups={pairedGroups}
+          memberNames={memberNames}
         />
 
         {state === "Grouping" && (

@@ -3,7 +3,7 @@ import { smartMatchGroups } from "./SmartMatch2"; // Import your SmartMatch 2.0 
 // Sample data to simulate student data
 const testStudents = [
     {
-        id: "student1",
+        id: 200,
         description: "I love web development and enjoy building responsive applications.",
         idealGroup: "I prefer working with a backend developer and a designer.",
         availability: [
@@ -12,7 +12,7 @@ const testStudents = [
         ],
     },
     {
-        id: "student2",
+        id: 201,
         description: "I'm focused on backend development, particularly in API design.",
         idealGroup: "I want to work with a frontend developer and a data scientist.",
         availability: [
@@ -21,7 +21,7 @@ const testStudents = [
         ],
     },
     {
-        id: "student3",
+        id: 202,
         description: "My passion lies in data science and machine learning.",
         idealGroup: "I'd like to team up with a backend developer and a data engineer.",
         availability: [
@@ -30,7 +30,7 @@ const testStudents = [
         ],
     },
     {
-        id: "student4",
+        id: 203,
         description: "I have a strong background in UI/UX design and frontend development.",
         idealGroup: "I prefer working with a backend developer and a project manager.",
         availability: [
@@ -39,7 +39,7 @@ const testStudents = [
         ],
     },
     {
-        id: "student5",
+        id: 204,
         description: "I'm interested in AI and machine learning.",
         idealGroup: "I'd like to work with a data scientist and a backend developer.",
         availability: [
