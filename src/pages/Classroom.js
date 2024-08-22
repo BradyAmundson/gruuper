@@ -41,9 +41,6 @@ import {
   DialogContentText,
   Button,
 } from "@mui/material";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import { Dialog, DialogActions, DialogContent, DialogContentText, Button } from "@mui/material";
 import MatchAnimationModal from "../components/MatchAnimationModal";
 
 const ItemTypes = {
@@ -712,569 +709,482 @@ const Classroom = () => {
     showReminder(); // Show reminder whenever a change is made
   };
 
-  // Update the classroom state with the newly generated groups
-  setClassroom((prevClassroom) => {
-    const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
-      setClassroom(prevClassroom => {
-        const updatedGroups = { ...prevClassroom.groups };
+  const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
+    setClassroom(prevClassroom => {
+      const updatedGroups = { ...prevClassroom.groups };
 
-        // Merge the newly generated groups with the existing locked groups
-        Object.entries(newGroups || {}).forEach(([key, group], index) => {
-          const groupIndex = Object.keys(updatedGroups).length;
-          updatedGroups[groupIndex] = {
-            members: group?.members || [], // Ensure members array exists
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            creationMethod: method,
-            logMessages: [`Group created with ${method} at ${new Date().toISOString()}`],
-            locked: false,
-          };
-        });
-
-        Object.entries(passedLockedGroups || {}).forEach(([key, group]) => {
-          updatedGroups[key] = group;
-        });
-
-        return { ...prevClassroom, groups: updatedGroups };
-      });
-
-      updateMemberNames(allMembers || []);
-    };
-
-    const updateMemberNames = async (allMembers) => {
-      if (!Array.isArray(allMembers) || allMembers.length === 0) {
-        setMemberNames([]); // Handle case where allMembers is not an array or is empty
-        return;
-      }
-
-      const newMemberNames = await Promise.all(
-        allMembers.map(async (member) => {
-          const fetchedUser = await getUser(member);
-          return {
-            id: member,
-            name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
-              }`,
-          };
-        })
-      );
-      setMemberNames(newMemberNames);
-    };
-
-
-
-    useEffect(() => {
-      if (groups) {
-        const initialLockState = {};
-        Object.keys(groups).forEach(key => {
-          initialLockState[key] = groups[key].locked || false;
-        });
-        setLockedGroups(initialLockState);
-      }
-    }, [groups]);
-
-
-
-    const updateGroupCreationMethod = (groupIndex, newMethod) => {
-      setClassroom((prevClassroom) => {
-        const newGroups = { ...prevClassroom.groups };
-        const group = newGroups[groupIndex];
-
-        if (group && group.creationMethod !== newMethod) {
-          group.creationMethod = newMethod;
-          group.updatedAt = new Date().toISOString();
-          group.logMessages.push(
-            `Creation method changed to ${newMethod} at ${new Date().toISOString()}`
-          );
-          newGroups[groupIndex] = group;
-
-          setGroups(newGroups);
-        }
-
-        return { ...prevClassroom, groups: newGroups };
-      });
-    };
-
-    useEffect(() => {
-      setClassroom((prevClassroom) => ({
-        ...prevClassroom,
-        groups: groups,
-      }));
-
-      if (groups) {
-        const initialLockState = {};
-        Object.keys(groups).forEach((key) => {
-          initialLockState[key] = false;
-        });
-        setLockedGroups(initialLockState);
-      }
-    }, [groups]);
-
-    useEffect(() => {
-      setClassroom((prevClassroom) => ({
-        ...prevClassroom,
-        lockedGroups: lockedGroups,
-      }));
-    }, [lockedGroups]);
-
-    const saveGroupsToFirestore = () => {
-      setClassroom((prevClassroom) => {
-        const currentGroups = prevClassroom.groups;
-        const newGroups = {};
-        const deletedGroups = {};
-
-        let newGroupIndex = 0;
-
-        // Identify active groups (those that have members)
-        Object.keys(currentGroups).forEach((groupKey) => {
-          if (currentGroups[groupKey].members.length > 0) {
-            newGroups[newGroupIndex] = currentGroups[groupKey];
-            newGroupIndex++;
-          } else {
-            // Groups that are empty will be marked as deleted
-            deletedGroups[groupKey] = {
-              ...currentGroups[groupKey],
-              deletedAt: new Date().toISOString(),
-              logMessages: currentGroups[groupKey].logMessages
-                ? [
-                  ...currentGroups[groupKey].logMessages,
-                  `Group deleted at ${new Date().toISOString()}`,
-                ]
-                : [`Group deleted at ${new Date().toISOString()}`],
-            };
-          }
-        });
-
-        const groupedMembers = Object.values(newGroups).flatMap(
-          (group) => group.members
-        );
-        const ungroupedMembers = memberNames
-          .map((member) => member.id)
-          .filter((id) => !groupedMembers.includes(id));
-
-        // Pass both newGroups and deletedGroups to the saveGroups function
-        saveGroups(
-          roomId,
-          newGroups,
-          deletedGroups,
-          className,
-          groupedMembers,
-          ungroupedMembers
-        );
-        setShowSaveReminder(false);
-
-        return { ...prevClassroom, groups: newGroups };
-      });
-    };
-
-    const createNewGroup = async (fromIndexes) => {
-      setClassroom((prevClassroom) => {
-        const { groups: currentGroups, unmatchedMembers: currentUnmatched } =
-          prevClassroom;
-        const newGroups = { ...currentGroups };
-        let memberId;
-
-        // Handle removal from the existing group or unmatched area
-        if (fromIndexes.groupIndex === -1) {
-          setUnmatchedMembers((prevUnmatched) => {
-            const updatedUnmatched = [...prevUnmatched];
-            memberId = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
-            return updatedUnmatched;
-          });
-        } else {
-          memberId =
-            newGroups[fromIndexes.groupIndex].members[fromIndexes.memberIndex];
-          newGroups[fromIndexes.groupIndex].members.splice(
-            fromIndexes.memberIndex,
-            1
-          );
-
-          // Log the removal action
-          newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Member ID: ${memberId} was removed at ${new Date().toISOString()}`
-          );
-
-          // If the creation method changes to "Hand-Picked"
-          if (
-            newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
-          ) {
-            newGroups[fromIndexes.groupIndex].logMessages.push(
-              `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
-              } to Hand-Picked at ${new Date().toISOString()}`
-            );
-            newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
-          }
-        }
-
-        // Create a new group with the removed member
-        const newGroupIndex = Object.keys(newGroups).length;
-        newGroups[newGroupIndex] = {
-          members: [memberId],
+      // Merge the newly generated groups with the existing locked groups
+      Object.entries(newGroups || {}).forEach(([key, group], index) => {
+        const groupIndex = Object.keys(updatedGroups).length;
+        updatedGroups[groupIndex] = {
+          members: group?.members || [], // Ensure members array exists
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          creationMethod: "Hand-Picked",
-          logMessages: [
-            `Group created with Hand-Picked method at ${new Date().toISOString()}`,
-            `Member ID: ${memberId} was added with group creation at ${new Date().toISOString()}`,
-          ],
+          creationMethod: method,
+          logMessages: [`Group created with ${method} at ${new Date().toISOString()}`],
+          locked: false,
         };
+      });
 
-        setLockedGroups((prevLocked) => ({
-          ...prevLocked,
-          [newGroupIndex]: false,
-        }));
+      Object.entries(passedLockedGroups || {}).forEach(([key, group]) => {
+        updatedGroups[key] = group;
+      });
 
-        showReminder();
+      return { ...prevClassroom, groups: updatedGroups };
+    });
+
+    updateMemberNames(allMembers || []);
+  };
+
+  const updateMemberNames = async (allMembers) => {
+    if (!Array.isArray(allMembers) || allMembers.length === 0) {
+      setMemberNames([]); // Handle case where allMembers is not an array or is empty
+      return;
+    }
+
+    const newMemberNames = await Promise.all(
+      allMembers.map(async (member) => {
+        const fetchedUser = await getUser(member);
+        return {
+          id: member,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+            }`,
+        };
+      })
+    );
+    setMemberNames(newMemberNames);
+  };
+
+
+
+  useEffect(() => {
+    if (groups) {
+      const initialLockState = {};
+      Object.keys(groups).forEach(key => {
+        initialLockState[key] = groups[key].locked || false;
+      });
+      setLockedGroups(initialLockState);
+    }
+  }, [groups]);
+
+
+
+  const updateGroupCreationMethod = (groupIndex, newMethod) => {
+    setClassroom((prevClassroom) => {
+      const newGroups = { ...prevClassroom.groups };
+      const group = newGroups[groupIndex];
+
+      if (group && group.creationMethod !== newMethod) {
+        group.creationMethod = newMethod;
+        group.updatedAt = new Date().toISOString();
+        group.logMessages.push(
+          `Creation method changed to ${newMethod} at ${new Date().toISOString()}`
+        );
+        newGroups[groupIndex] = group;
 
         setGroups(newGroups);
-        return { ...prevClassroom, groups: newGroups };
+      }
+
+      return { ...prevClassroom, groups: newGroups };
+    });
+  };
+
+  useEffect(() => {
+    setClassroom((prevClassroom) => ({
+      ...prevClassroom,
+      groups: groups,
+    }));
+
+    if (groups) {
+      const initialLockState = {};
+      Object.keys(groups).forEach((key) => {
+        initialLockState[key] = false;
       });
-    };
+      setLockedGroups(initialLockState);
+    }
+  }, [groups]);
 
-    const handleEditClick = () => {
-      setIsEditing(true);
-    };
+  useEffect(() => {
+    setClassroom((prevClassroom) => ({
+      ...prevClassroom,
+      lockedGroups: lockedGroups,
+    }));
+  }, [lockedGroups]);
 
-    const handleSave = () => {
-      setIsEditing(false);
-      setClassName(className);
-      saveClassname(roomId, className);
-    };
+  const saveGroupsToFirestore = () => {
+    setClassroom((prevClassroom) => {
+      const currentGroups = prevClassroom.groups;
+      const newGroups = {};
+      const deletedGroups = {};
 
-    const handleKeyDown = (event) => {
-      if (event.key === "Enter") {
-        handleSave();
+      let newGroupIndex = 0;
+
+      // Identify active groups (those that have members)
+      Object.keys(currentGroups).forEach((groupKey) => {
+        if (currentGroups[groupKey].members.length > 0) {
+          newGroups[newGroupIndex] = currentGroups[groupKey];
+          newGroupIndex++;
+        } else {
+          // Groups that are empty will be marked as deleted
+          deletedGroups[groupKey] = {
+            ...currentGroups[groupKey],
+            deletedAt: new Date().toISOString(),
+            logMessages: currentGroups[groupKey].logMessages
+              ? [
+                ...currentGroups[groupKey].logMessages,
+                `Group deleted at ${new Date().toISOString()}`,
+              ]
+              : [`Group deleted at ${new Date().toISOString()}`],
+          };
+        }
+      });
+
+      const groupedMembers = Object.values(newGroups).flatMap(
+        (group) => group.members
+      );
+      const ungroupedMembers = memberNames
+        .map((member) => member.id)
+        .filter((id) => !groupedMembers.includes(id));
+
+      // Pass both newGroups and deletedGroups to the saveGroups function
+      saveGroups(
+        roomId,
+        newGroups,
+        deletedGroups,
+        className,
+        groupedMembers,
+        ungroupedMembers
+      );
+      setShowSaveReminder(false);
+
+      return { ...prevClassroom, groups: newGroups };
+    });
+  };
+
+  const createNewGroup = async (fromIndexes) => {
+    setClassroom((prevClassroom) => {
+      const { groups: currentGroups, unmatchedMembers: currentUnmatched } =
+        prevClassroom;
+      const newGroups = { ...currentGroups };
+      let memberId;
+
+      // Handle removal from the existing group or unmatched area
+      if (fromIndexes.groupIndex === -1) {
+        setUnmatchedMembers((prevUnmatched) => {
+          const updatedUnmatched = [...prevUnmatched];
+          memberId = updatedUnmatched.splice(fromIndexes.memberIndex, 1)[0];
+          return updatedUnmatched;
+        });
+      } else {
+        memberId =
+          newGroups[fromIndexes.groupIndex].members[fromIndexes.memberIndex];
+        newGroups[fromIndexes.groupIndex].members.splice(
+          fromIndexes.memberIndex,
+          1
+        );
+
+        // Log the removal action
+        newGroups[fromIndexes.groupIndex].logMessages.push(
+          `Member ID: ${memberId} was removed at ${new Date().toISOString()}`
+        );
+
+        // If the creation method changes to "Hand-Picked"
+        if (
+          newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
+        ) {
+          newGroups[fromIndexes.groupIndex].logMessages.push(
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            } to Hand-Picked at ${new Date().toISOString()}`
+          );
+          newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
+        }
       }
-    };
 
-    const handleDeleteClick = (student) => {
-      setStudentToDelete(student);
-      setOpenDeleteDialog(true);
-    };
+      // Create a new group with the removed member
+      const newGroupIndex = Object.keys(newGroups).length;
+      newGroups[newGroupIndex] = {
+        members: [memberId],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        creationMethod: "Hand-Picked",
+        logMessages: [
+          `Group created with Hand-Picked method at ${new Date().toISOString()}`,
+          `Member ID: ${memberId} was added with group creation at ${new Date().toISOString()}`,
+        ],
+      };
 
-    const handleCloseDeleteDialog = () => {
+      setLockedGroups((prevLocked) => ({
+        ...prevLocked,
+        [newGroupIndex]: false,
+      }));
+
+      showReminder();
+
+      setGroups(newGroups);
+      return { ...prevClassroom, groups: newGroups };
+    });
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    setIsEditing(false);
+    setClassName(className);
+    saveClassname(roomId, className);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSave();
+    }
+  };
+
+  const handleDeleteClick = (student) => {
+    setStudentToDelete(student);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+  };
+
+  const confirmDelete = async () => {
+    if (studentToDelete) {
+      await handleDeleteMember(studentToDelete.id, roomId);
       setOpenDeleteDialog(false);
-    };
+      setStudentToDelete(null);
+    }
+  };
 
-    const confirmDelete = async () => {
-      if (studentToDelete) {
-        await handleDeleteMember(studentToDelete.id, roomId);
-        setOpenDeleteDialog(false);
-        setStudentToDelete(null);
-      }
-    };
+  const incrementSize = () => {
+    const element = document.querySelector(".counter-value");
 
-    const incrementSize = () => {
+    setGroupSize(groupSize + 1);
+    element.classList.add("counter-value-change");
+
+    setTimeout(() => {
+      element.classList.remove("counter-value-change");
+    }, 200);
+  };
+
+  const DecrementSize = () => {
+    if (groupSize > 1) {
       const element = document.querySelector(".counter-value");
 
-      setGroupSize(groupSize + 1);
+      setGroupSize(groupSize - 1);
       element.classList.add("counter-value-change");
 
       setTimeout(() => {
         element.classList.remove("counter-value-change");
       }, 200);
-    };
+    }
+  };
 
-    const DecrementSize = () => {
-      if (groupSize > 1) {
-        const element = document.querySelector(".counter-value");
+  const incrementMinGroupSize = () => {
+    setMinGroupSize((prevSize) => prevSize + 1);
 
-        setGroupSize(groupSize - 1);
-        element.classList.add("counter-value-change");
+    const element = document.querySelector(".counter-value");
 
-        setTimeout(() => {
-          element.classList.remove("counter-value-change");
-        }, 200);
-      }
-    };
+    element.classList.add("counter-value-change");
 
-    const incrementMinGroupSize = () => {
-      setMinGroupSize((prevSize) => prevSize + 1);
+    setTimeout(() => {
+      element.classList.remove("counter-value-change");
+    }, 200);
+  };
 
-      const element = document.querySelector(".counter-value");
+  const decrementMinGroupSize = () => {
+    if (minGroupSize > 0) {
+      setMinGroupSize((prevSize) => prevSize - 1);
+    }
 
-      element.classList.add("counter-value-change");
+    const element = document.querySelector(".counter-value");
 
-      setTimeout(() => {
-        element.classList.remove("counter-value-change");
-      }, 200);
-    };
+    element.classList.add("counter-value-change");
 
-    const decrementMinGroupSize = () => {
-      if (minGroupSize > 0) {
-        setMinGroupSize((prevSize) => prevSize - 1);
-      }
+    setTimeout(() => {
+      element.classList.remove("counter-value-change");
+    }, 200);
+  };
 
-      const element = document.querySelector(".counter-value");
+  return (
+    <DndProvider backend={HTML5Backend}>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
 
-      element.classList.add("counter-value-change");
-
-      setTimeout(() => {
-        element.classList.remove("counter-value-change");
-      }, 200);
-    };
-
-    return (
-      <DndProvider backend={HTML5Backend}>
-        {isLoading && (
-          <div className="loading-overlay">
-            <div className="loading-spinner"></div>
-          </div>
-        )}
-
-        <div>
+      <div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            borderBottom: "1px solid #f1f1f1",
+          }}
+        >
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              borderBottom: "1px solid #f1f1f1",
+              alignItems: "center",
+              padding: "0 1rem",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "0 1rem",
-              }}
-            >
-              <h2 className="class-info">Classroom: {roomId}</h2>
-              <Tooltip title="Settings">
-                <IconButton color="primary" onClick={handleSettingsOpen}>
-                  <SettingsIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <h2
-                className="class-info"
-                style={{
-                  marginRight: isProfessor ? "1rem" : "1rem",
-                }}
-              >
-                {className}
-              </h2>
-            </div>
+            <h2 className="class-info">Classroom: {roomId}</h2>
+            <Tooltip title="Settings">
+              <IconButton color="primary" onClick={handleSettingsOpen}>
+                <SettingsIcon />
+              </IconButton>
+            </Tooltip>
           </div>
-
-          {showSaveReminder && (
-            <div
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <h2
+              className="class-info"
               style={{
-                backgroundColor: "gray",
-                color: "white",
-                padding: "5px",
-                textAlign: "center",
+                marginRight: isProfessor ? "1rem" : "1rem",
               }}
             >
-              Be sure to save your changes!
-            </div>
-          )}
+              {className}
+            </h2>
+          </div>
+        </div>
 
-          {state === "Lobby" && (
-            <div className="lobby-state body">
-              <h2 className="lobby-title">Lobby</h2>
-              <div className="control-center">
-                <div className="countdown-container">
-                  <p className="countdown-title">Time until grouping starts:</p>
-                  {timeLeft ? (
-                    <p className="countdown-timer">
-                      {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
-                      {timeLeft.seconds}s
-                    </p>
-                  ) : (
-                    <p className="countdown-timer">No deadline set</p>
-                  )}
-                  <p
-                    style={{
-                      marginTop: "3rem",
-                      fontSize: "0.75rem",
-                    }}
-                  >
-                    Choose a deadline below:
+        {showSaveReminder && (
+          <div
+            style={{
+              backgroundColor: "gray",
+              color: "white",
+              padding: "5px",
+              textAlign: "center",
+            }}
+          >
+            Be sure to save your changes!
+          </div>
+        )}
+
+        {state === "Lobby" && (
+          <div className="lobby-state body">
+            <h2 className="lobby-title">Lobby</h2>
+            <div className="control-center">
+              <div className="countdown-container">
+                <p className="countdown-title">Time until grouping starts:</p>
+                {timeLeft ? (
+                  <p className="countdown-timer">
+                    {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
+                    {timeLeft.seconds}s
                   </p>
-                  <input
-                    type="datetime-local"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    className="deadline-picker"
-                  />
-                  <button
-                    className="btn-start-grouping"
-                    onClick={handleStateChange}
-                  >
-                    Start Grouping Now
-                  </button>
-                </div>
-              </div>
-              <div className="members-list">
-                <h3 className="members-title">Students Joined:</h3>
-                <ul className="members-list-ul">
-                  {memberNames.map((member) => (
-                    <li key={member.id} className="members-list-item">
-                      {member.name}{" "}
-                      {member.profileComplete ? (
-                        <CheckIcon style={{ color: "green" }} />
-                      ) : (
-                        <CloseIcon style={{ color: "red" }} />
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                <div
-                  className="members-key"
+                ) : (
+                  <p className="countdown-timer">No deadline set</p>
+                )}
+                <p
                   style={{
-                    marginTop: "1rem",
+                    marginTop: "3rem",
                     fontSize: "0.75rem",
-                    color: "#555",
-                    display: "flex",
-                    justifyContent: "center", // Center horizontally
-                    alignItems: "center", // Center vertically
                   }}
                 >
-                  <p
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    Profile Questionnaire Complete
-                    <CheckIcon
-                      style={{
-                        color: "green",
-                        fontSize: "1rem",
-                        marginRight: "0.25rem",
-                      }}
-                    />
-                  </p>
-                  <p
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    Profile Questionnaire Incomplete
-                    <CloseIcon
-                      style={{
-                        color: "red",
-                        fontSize: "1rem",
-                        marginRight: "0.25rem",
-                      }}
-                    />
-                  </p>
-                </div>
+                  Choose a deadline below:
+                </p>
+                <input
+                  type="datetime-local"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="deadline-picker"
+                />
+                <button
+                  className="btn-start-grouping"
+                  onClick={handleStateChange}
+                >
+                  Start Grouping Now
+                </button>
               </div>
             </div>
-          )}
-
-          {(state === "Grouping" || state === "LiveGrouping") && (
-            <div className="grouping-state">
-              <div className="body">
-                {isProfessor && (
-                  <div className="control-center">
-                    {state === "LiveGrouping" ? (
-                      <div className="control-center">
-                        <h1>Live Grouping Enabled</h1>
-                        <p>
-                          Whenever Ungrouped Members reaches the minimum grop
-                          size, a new group will be created!
-                        </p>
-                        <div className="control-center">
-                          <div className="size-counter">
-                            <div className="counter-title">
-                              <span>Minimum</span>
-                              <br />
-                              <span>Group Size:</span>
-                            </div>
-                            <span className="counter-value">
-                              {minGroupSize < 10
-                                ? "0" + minGroupSize
-                                : minGroupSize}
-                            </span>
-                            <div
-                              className="counter-buttons"
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <button
-                                className="counter-button"
-                                onClick={incrementMinGroupSize}
-                              >
-                                {" "}
-                                +{" "}
-                              </button>
-                              <button
-                                className="counter-button"
-                                onClick={decrementMinGroupSize}
-                              >
-                                {" "}
-                                -{" "}
-                              </button>
-                            </div>
-                          </div>
-                          <div className="group-controls">
-                            <Tooltip title="Save">
-                              <SaveIcon
-                                className="save-groups-button"
-                                onClick={saveGroupsToFirestore}
-                                sx={{
-                                  fontSize: "30px",
-                                  transition: "transform 0.3s",
-                                }}
-                              />
-                            </Tooltip>
-                            <Dialog open={dialogOpen} onClose={handleNotifyClose}>
-                              <DialogTitle>Confirm Notify</DialogTitle>
-                              <DialogContent>
-                                You are about to notify all students in the class
-                                that the groups are completed.
-                                <br />
-                                Are you sure you want to proceed?
-                              </DialogContent>
-                              <DialogActions>
-                                <Button
-                                  onClick={handleNotifyClose}
-                                  color="primary"
-                                >
-                                  Cancel
-                                </Button>
-                                <Button
-                                  onClick={() => {
-                                    handleNotifyConfirm();
-                                    handleNotifyClose();
-                                  }}
-                                  color="primary"
-                                >
-                                  Confirm
-                                </Button>
-                              </DialogActions>
-                            </Dialog>
-                            <Tooltip title="Notify">
-                              <SendIcon
-                                className="save-groups-button"
-                                onClick={handleNotifyClick}
-                                sx={{
-                                  fontSize: "30px",
-                                  transition: "transform 0.3s",
-                                }}
-                              />
-                            </Tooltip>
-                          </div>
-                        </div>
-                      </div>
+            <div className="members-list">
+              <h3 className="members-title">Students Joined:</h3>
+              <ul className="members-list-ul">
+                {memberNames.map((member) => (
+                  <li key={member.id} className="members-list-item">
+                    {member.name}{" "}
+                    {member.profileComplete ? (
+                      <CheckIcon style={{ color: "green" }} />
                     ) : (
+                      <CloseIcon style={{ color: "red" }} />
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <div
+                className="members-key"
+                style={{
+                  marginTop: "1rem",
+                  fontSize: "0.75rem",
+                  color: "#555",
+                  display: "flex",
+                  justifyContent: "center", // Center horizontally
+                  alignItems: "center", // Center vertically
+                }}
+              >
+                <p
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    margin: "0 1rem",
+                  }}
+                >
+                  Profile Questionnaire Complete
+                  <CheckIcon
+                    style={{
+                      color: "green",
+                      fontSize: "1rem",
+                      marginRight: "0.25rem",
+                    }}
+                  />
+                </p>
+                <p
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    margin: "0 1rem",
+                  }}
+                >
+                  Profile Questionnaire Incomplete
+                  <CloseIcon
+                    style={{
+                      color: "red",
+                      fontSize: "1rem",
+                      marginRight: "0.25rem",
+                    }}
+                  />
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {(state === "Grouping" || state === "LiveGrouping") && (
+          <div className="grouping-state">
+            <div className="body">
+              {isProfessor && (
+                <div className="control-center">
+                  {state === "LiveGrouping" ? (
+                    <div className="control-center">
+                      <h1>Live Grouping Enabled</h1>
+                      <p>
+                        Whenever Ungrouped Members reaches the minimum grop
+                        size, a new group will be created!
+                      </p>
                       <div className="control-center">
                         <div className="size-counter">
                           <div className="counter-title">
-                            <span>Maximum</span>
+                            <span>Minimum</span>
                             <br />
                             <span>Group Size:</span>
                           </div>
                           <span className="counter-value">
-                            {groupSize < 10 ? "0" + groupSize : groupSize}
+                            {minGroupSize < 10
+                              ? "0" + minGroupSize
+                              : minGroupSize}
                           </span>
                           <div
                             className="counter-buttons"
@@ -1286,14 +1196,14 @@ const Classroom = () => {
                           >
                             <button
                               className="counter-button"
-                              onClick={incrementSize}
+                              onClick={incrementMinGroupSize}
                             >
                               {" "}
                               +{" "}
                             </button>
                             <button
                               className="counter-button"
-                              onClick={DecrementSize}
+                              onClick={decrementMinGroupSize}
                             >
                               {" "}
                               -{" "}
@@ -1301,26 +1211,6 @@ const Classroom = () => {
                           </div>
                         </div>
                         <div className="group-controls">
-                          <Tooltip title="Shuffle">
-                            <ShuffleIcon
-                              className="randomize-groups-button"
-                              onClick={() => handleRandomizeGroups(false)}
-                              sx={{
-                                fontSize: "30px",
-                                transition: "transform 0.3s",
-                              }}
-                            />
-                          </Tooltip>
-                          <Tooltip title="Smart Match">
-                            <SmartMatchIcon
-                              className="smart-match-button"
-                              onClick={() => handleRandomizeGroups(true)}
-                              sx={{
-                                fontSize: "30px",
-                                transition: "transform 0.3s",
-                              }}
-                            />
-                          </Tooltip>
                           <Tooltip title="Save">
                             <SaveIcon
                               className="save-groups-button"
@@ -1331,161 +1221,266 @@ const Classroom = () => {
                               }}
                             />
                           </Tooltip>
+                          <Dialog open={dialogOpen} onClose={handleNotifyClose}>
+                            <DialogTitle>Confirm Notify</DialogTitle>
+                            <DialogContent>
+                              You are about to notify all students in the class
+                              that the groups are completed.
+                              <br />
+                              Are you sure you want to proceed?
+                            </DialogContent>
+                            <DialogActions>
+                              <Button
+                                onClick={handleNotifyClose}
+                                color="primary"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  handleNotifyConfirm();
+                                  handleNotifyClose();
+                                }}
+                                color="primary"
+                              >
+                                Confirm
+                              </Button>
+                            </DialogActions>
+                          </Dialog>
+                          <Tooltip title="Notify">
+                            <SendIcon
+                              className="save-groups-button"
+                              onClick={handleNotifyClick}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
-                <div className="grid-container">
-                  {classroom.groups &&
-                    Object.entries(classroom.groups).map(
-                      ([key, group], index) => (
-                        <DroppableGroup
-                          key={index}
-                          group={group}
-                          index={index}
-                          moveMember={moveMember}
-                          setCurrentlyDragging={setCurrentlyDragging}
-                          currentlyDragging={currentlyDragging}
-                          memberNames={memberNames}
-                          isProfessor={isProfessor}
-                          locked={lockedGroups[index]}
-                          toggleLockGroup={toggleLockGroup}
-                        />
-                      )
-                    )}
-                  {currentlyDragging !== null && (
-                    <NewGroupArea createNewGroup={createNewGroup} />
+                    </div>
+                  ) : (
+                    <div className="control-center">
+                      <div className="size-counter">
+                        <div className="counter-title">
+                          <span>Maximum</span>
+                          <br />
+                          <span>Group Size:</span>
+                        </div>
+                        <span className="counter-value">
+                          {groupSize < 10 ? "0" + groupSize : groupSize}
+                        </span>
+                        <div
+                          className="counter-buttons"
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <button
+                            className="counter-button"
+                            onClick={incrementSize}
+                          >
+                            {" "}
+                            +{" "}
+                          </button>
+                          <button
+                            className="counter-button"
+                            onClick={DecrementSize}
+                          >
+                            {" "}
+                            -{" "}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="group-controls">
+                        <Tooltip title="Shuffle">
+                          <ShuffleIcon
+                            className="randomize-groups-button"
+                            onClick={() => handleRandomizeGroups(false)}
+                            sx={{
+                              fontSize: "30px",
+                              transition: "transform 0.3s",
+                            }}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Smart Match">
+                          <SmartMatchIcon
+                            className="smart-match-button"
+                            onClick={() => handleRandomizeGroups(true)}
+                            sx={{
+                              fontSize: "30px",
+                              transition: "transform 0.3s",
+                            }}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Save">
+                          <SaveIcon
+                            className="save-groups-button"
+                            onClick={saveGroupsToFirestore}
+                            sx={{
+                              fontSize: "30px",
+                              transition: "transform 0.3s",
+                            }}
+                          />
+                        </Tooltip>
+                      </div>
+                    </div>
                   )}
                 </div>
-                {isProfessor && (
-                  <UnmatchedMembersArea
-                    unmatchedMembers={unmatchedMembers}
-                    moveMember={moveMember}
-                    setCurrentlyDragging={setCurrentlyDragging}
-                    currentlyDragging={currentlyDragging}
-                    isProfessor={isProfessor}
-                    removeMemberFromGroup={removeMemberFromGroup}
-                    memberNames={memberNames}
-                  />
+              )}
+              <div className="grid-container">
+                {classroom.groups &&
+                  Object.entries(classroom.groups).map(
+                    ([key, group], index) => (
+                      <DroppableGroup
+                        key={index}
+                        group={group}
+                        index={index}
+                        moveMember={moveMember}
+                        setCurrentlyDragging={setCurrentlyDragging}
+                        currentlyDragging={currentlyDragging}
+                        memberNames={memberNames}
+                        isProfessor={isProfessor}
+                        locked={lockedGroups[index]}
+                        toggleLockGroup={toggleLockGroup}
+                      />
+                    )
+                  )}
+                {currentlyDragging !== null && (
+                  <NewGroupArea createNewGroup={createNewGroup} />
                 )}
               </div>
-              <div>
-                <button
-                  onClick={toggleMembers}
-                  className="show-members-btn"
-                  style={{ right: buttonRightPosition }}
-                >
-                  {showMembers ? "Hide All Members" : "Show All Members"}
-                </button>
+              {isProfessor && (
+                <UnmatchedMembersArea
+                  unmatchedMembers={unmatchedMembers}
+                  moveMember={moveMember}
+                  setCurrentlyDragging={setCurrentlyDragging}
+                  currentlyDragging={currentlyDragging}
+                  isProfessor={isProfessor}
+                  removeMemberFromGroup={removeMemberFromGroup}
+                  memberNames={memberNames}
+                />
+              )}
+            </div>
+            <div>
+              <button
+                onClick={toggleMembers}
+                className="show-members-btn"
+                style={{ right: buttonRightPosition }}
+              >
+                {showMembers ? "Hide All Members" : "Show All Members"}
+              </button>
 
-                <div
-                  id="Members"
-                  style={{ right: showMembers ? '20px' : '-320px' }}
-                >
-                  <h3>Classroom Members ({memberNames.length})</h3>
-                  <ul>
-                    {memberNames
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((member) => (
-                        <li key={member.id}>
-                          {member.name}
-                          <IconButton
-                            onClick={() => handleDeleteClick(member)}
-                            aria-label="delete member"
-                            size="small"
-                            className="delete-button"
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
+              <div
+                id="Members"
+                style={{ right: showMembers ? '20px' : '-320px' }}
+              >
+                <h3>Classroom Members ({memberNames.length})</h3>
+                <ul>
+                  {memberNames
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((member) => (
+                      <li key={member.id}>
+                        {member.name}
+                        <IconButton
+                          onClick={() => handleDeleteClick(member)}
+                          aria-label="delete member"
+                          size="small"
+                          className="delete-button"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </li>
+                    ))}
+                </ul>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <Dialog
-            open={openDeleteDialog}
-            onClose={handleCloseDeleteDialog}
-            PaperProps={{
-              style: {
-                borderRadius: '8px',
-                padding: '20px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-                backgroundColor: '#fff',
-              },
-            }}
-          >
-            <DialogContent>
-              <DialogContentText
-                id="alert-dialog-description"
-                style={{ color: "#333", fontSize: "1.2rem", textAlign: "center" }}
-              >
-                Are you sure you want to delete {studentToDelete?.name}? This
-                action cannot be undone.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions style={{ justifyContent: "center" }}>
-              <Button
-                onClick={handleCloseDeleteDialog}
-                style={{
-                  color: 'red',
-                  borderRadius: '0.75rem',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  padding: '0.75rem 2.25rem',
-                  margin: '0.625rem',
-                  transition: 'transform 0.3s, background-color 0.3s',
-                  textTransform: 'none'
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={confirmDelete}
-                style={{
-                  background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
-                  color: 'white',
-                  borderRadius: '0.75rem',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  padding: '0.75rem 2.25rem',
-                  margin: '0.625rem',
-                  transition: 'transform 0.3s, background-color 0.3s',
-                  textTransform: 'none'
-                }}
-              >
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <SettingsModal
-            open={isSettingsModalOpen}
-            onClose={handleSettingsClose}
-            classroomData={classroom}
-            onSave={handleSaveSettings}
-            onDelete={handleClassroomDeleted}
-          />
-
-          <MatchAnimationModal
-            open={isPairingModalOpen}
-            groups={pairedGroups}
-            memberNames={memberNames}
-          />
-
-          {state === "Grouping" && (
-            <button
-              className="btn-confirm-groups"
-              onClick={handleConfirmInitialGroups}
+        <Dialog
+          open={openDeleteDialog}
+          onClose={handleCloseDeleteDialog}
+          PaperProps={{
+            style: {
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+              backgroundColor: '#fff',
+            },
+          }}
+        >
+          <DialogContent>
+            <DialogContentText
+              id="alert-dialog-description"
+              style={{ color: "#333", fontSize: "1.2rem", textAlign: "center" }}
             >
-              Confirm Initial Groups
-            </button>
-          )}
-        </div>
-      </DndProvider>
-    );
-  };
+              Are you sure you want to delete {studentToDelete?.name}? This
+              action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions style={{ justifyContent: "center" }}>
+            <Button
+              onClick={handleCloseDeleteDialog}
+              style={{
+                color: 'red',
+                borderRadius: '0.75rem',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                padding: '0.75rem 2.25rem',
+                margin: '0.625rem',
+                transition: 'transform 0.3s, background-color 0.3s',
+                textTransform: 'none'
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              style={{
+                background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
+                color: 'white',
+                borderRadius: '0.75rem',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                padding: '0.75rem 2.25rem',
+                margin: '0.625rem',
+                transition: 'transform 0.3s, background-color 0.3s',
+                textTransform: 'none'
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <SettingsModal
+          open={isSettingsModalOpen}
+          onClose={handleSettingsClose}
+          classroomData={classroom}
+          onSave={handleSaveSettings}
+          onDelete={handleClassroomDeleted}
+        />
 
-  export default Classroom;
+        <MatchAnimationModal
+          open={isPairingModalOpen}
+          groups={pairedGroups}
+          memberNames={memberNames}
+        />
+
+        {state === "Grouping" && (
+          <button
+            className="btn-confirm-groups"
+            onClick={handleConfirmInitialGroups}
+          >
+            Confirm Initial Groups
+          </button>
+        )}
+      </div>
+    </DndProvider>
+  );
+};
+
+export default Classroom;
