@@ -1,5 +1,9 @@
 export const smartMatchGroups = async (students, groupSize) => {
     try {
+        console.log('Starting SmartMatch 2.0 grouping...');
+        console.log('Students:', students);
+        console.log('Group Size:', groupSize);
+
         const response = await fetch('https://smartmatch-vmlt.onrender.com/api/smartmatch', {
             method: 'POST',
             headers: {
@@ -8,11 +12,14 @@ export const smartMatchGroups = async (students, groupSize) => {
             body: JSON.stringify({ students, group_size: groupSize }),
         });
 
+        console.log('API Response Status:', response.status);
+
         if (!response.ok) {
-            throw new Error('Failed to get groupings from SmartMatch 2.0 API');
+            throw new Error(`Failed to get groupings from SmartMatch 2.0 API. Status: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('API Response Data:', data);
 
         // Convert the result to the expected format similar to your randomizeGroups function
         const groups = {};
@@ -25,6 +32,7 @@ export const smartMatchGroups = async (students, groupSize) => {
             };
         });
 
+        console.log('Generated Groups:', groups);
         return groups;
     } catch (error) {
         console.error('Error with SmartMatch 2.0 grouping:', error);
