@@ -14,12 +14,12 @@ export const sendBulkEmails = async (roomId, subject, content) => {
   for (const user of members) {
     const userData = await getUser(user);
     const email = userData?.email;
-    recipients.push(email);
+    if (email) recipients.push(email);
   }
 
   try {
     const response = await fetch(
-      "https://smartmatch-vmlt.onrender.com/api/send-email",
+      "https://smartmatch-zj2w.onrender.com/send-emails",
       {
         method: "POST",
         headers: {

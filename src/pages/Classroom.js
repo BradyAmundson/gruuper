@@ -75,8 +75,9 @@ const DraggableMember = ({
     },
   }));
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
-    }`;
+  let className = `draggable-item-professor ${
+    isCurrentlyBeingDragged ? "dragging-item" : ""
+  }`;
   if (!isProfessor) {
     className = "draggable-item-student";
   }
@@ -120,14 +121,14 @@ const DroppableGroup = ({
       </ul>
       <IconButton
         onClick={() => toggleLockGroup(index)}
-        className={`lock-button ${group.locked ? 'locked' : 'unlocked'}`}
-        style={{ position: 'absolute', top: '10px', right: '5px' }}>
+        className={`lock-button ${group.locked ? "locked" : "unlocked"}`}
+        style={{ position: "absolute", top: "10px", right: "5px" }}
+      >
         {group.locked ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
     </div>
   );
 };
-
 
 const NewGroupArea = ({ createNewGroup }) => {
   const [, drop] = useDrop(() => ({
@@ -232,7 +233,7 @@ const Classroom = () => {
           <p>Hi there,</p>
           <p>Your new group has been successfully formed!</p>
           <p>Click the link below to check it out:</p>
-          <p><a href="https://your-link-here.com" target="_blank">Go to your new group</a></p>
+          <p><a href="https://gruuper.vercel.app/classroom?roomId=${roomId}" target="_blank">Go to your new group</a></p>
           <p>Best regards,<br>Your Team</p>
         </body>
       </html>
@@ -259,7 +260,6 @@ const Classroom = () => {
   const [isLiveGrouping, setIsLiveGrouping] = useState(false);
   const [minGroupSize, setMinGroupSize] = useState(2);
   const [showSaveReminder, setShowSaveReminder] = useState(false);
-
 
   const showReminder = () => {
     setShowSaveReminder(true);
@@ -312,11 +312,17 @@ const Classroom = () => {
     setClassroom((prevClassroom) => {
       const newGroups = { ...prevClassroom.groups };
       newGroups[index].locked = !newGroups[index].locked; // Toggle the locked state
-      saveGroups(roomId, newGroups, {}, className, Object.values(newGroups).flatMap(group => group.members), unmatchedMembers);
+      saveGroups(
+        roomId,
+        newGroups,
+        {},
+        className,
+        Object.values(newGroups).flatMap((group) => group.members),
+        unmatchedMembers
+      );
       return { ...prevClassroom, groups: newGroups };
     });
   };
-
 
   const moveMember = useCallback((fromIndexes, toGroupIndex) => {
     setClassroom((prevClassroom) => {
@@ -324,7 +330,10 @@ const Classroom = () => {
       let member;
       let action; // "added" or "removed"
 
-      if (fromIndexes.groupIndex === toGroupIndex && fromIndexes.groupIndex === -1) {
+      if (
+        fromIndexes.groupIndex === toGroupIndex &&
+        fromIndexes.groupIndex === -1
+      ) {
         // No need to update anything if they are dropped back into the same ungrouped area
         return prevClassroom;
       }
@@ -354,7 +363,8 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${
+              newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
@@ -372,14 +382,16 @@ const Classroom = () => {
 
         // Log the addition action
         newGroups[toGroupIndex].logMessages.push(
-          `Member ${member} (ID: ${member.id
+          `Member ${member} (ID: ${
+            member.id
           }) was added at ${new Date().toISOString()}`
         );
 
         // If the creation method changes to "Hand-Picked"
         if (newGroups[toGroupIndex].creationMethod !== "Hand-Picked") {
           newGroups[toGroupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[toGroupIndex].creationMethod
+            `Group creation method changed from ${
+              newGroups[toGroupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[toGroupIndex].creationMethod = "Hand-Picked";
@@ -395,7 +407,8 @@ const Classroom = () => {
         setUnmatchedMembers((prevUnmatched) => [...prevUnmatched, member]);
 
         newGroups[fromIndexes.groupIndex].logMessages.push(
-          `Member ${member.name} (ID: ${member.id
+          `Member ${member.name} (ID: ${
+            member.id
           }) was added to Ungrouped Members at ${new Date().toISOString()}`
         );
         showReminder();
@@ -443,7 +456,7 @@ const Classroom = () => {
         if (user && user.classroomCodes) {
           setIsProfessor(
             localStorage.getItem("userType") === "Professor" &&
-            user.classroomCodes.includes(roomId)
+              user.classroomCodes.includes(roomId)
           );
         }
       } catch (error) {
@@ -487,7 +500,11 @@ const Classroom = () => {
         setGroups(fetchedGroups);
 
         const fetchedUser = await getUser(fetchedClassroom?.instructorId);
-        const className = fetchedClassroom?.className || `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
+        const className =
+          fetchedClassroom?.className ||
+          `${fetchedUser?.firstName || ""} ${
+            fetchedUser?.lastName || ""
+          }'s Assignment`;
         setClassName(className);
 
         const members = fetchedClassroom?.members || [];
@@ -669,9 +686,10 @@ const Classroom = () => {
     const passedLockedGroups = {};
 
     Object.entries(groups).forEach(([groupIndex, group]) => {
-      if (group?.locked) { // Ensure group is defined and locked property exists
+      if (group?.locked) {
+        // Ensure group is defined and locked property exists
         passedLockedGroups[groupIndex] = group;
-        group.members?.forEach(member => lockedMembers.add(member)); // Check if members array exists
+        group.members?.forEach((member) => lockedMembers.add(member)); // Check if members array exists
       }
     });
 
@@ -710,7 +728,7 @@ const Classroom = () => {
   };
 
   const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
-    setClassroom(prevClassroom => {
+    setClassroom((prevClassroom) => {
       const updatedGroups = { ...prevClassroom.groups };
 
       // Merge the newly generated groups with the existing locked groups
@@ -721,7 +739,9 @@ const Classroom = () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: method,
-          logMessages: [`Group created with ${method} at ${new Date().toISOString()}`],
+          logMessages: [
+            `Group created with ${method} at ${new Date().toISOString()}`,
+          ],
           locked: false,
         };
       });
@@ -747,27 +767,24 @@ const Classroom = () => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
-            }`,
+          name: `${fetchedUser?.firstName || ""} ${
+            fetchedUser?.lastName || ""
+          }`,
         };
       })
     );
     setMemberNames(newMemberNames);
   };
 
-
-
   useEffect(() => {
     if (groups) {
       const initialLockState = {};
-      Object.keys(groups).forEach(key => {
+      Object.keys(groups).forEach((key) => {
         initialLockState[key] = groups[key].locked || false;
       });
       setLockedGroups(initialLockState);
     }
   }, [groups]);
-
-
 
   const updateGroupCreationMethod = (groupIndex, newMethod) => {
     setClassroom((prevClassroom) => {
@@ -831,9 +848,9 @@ const Classroom = () => {
             deletedAt: new Date().toISOString(),
             logMessages: currentGroups[groupKey].logMessages
               ? [
-                ...currentGroups[groupKey].logMessages,
-                `Group deleted at ${new Date().toISOString()}`,
-              ]
+                  ...currentGroups[groupKey].logMessages,
+                  `Group deleted at ${new Date().toISOString()}`,
+                ]
               : [`Group deleted at ${new Date().toISOString()}`],
           };
         }
@@ -893,7 +910,8 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${
+              newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
@@ -1376,7 +1394,7 @@ const Classroom = () => {
 
               <div
                 id="Members"
-                style={{ right: showMembers ? '20px' : '-320px' }}
+                style={{ right: showMembers ? "20px" : "-320px" }}
               >
                 <h3>Classroom Members ({memberNames.length})</h3>
                 <ul>
@@ -1406,10 +1424,10 @@ const Classroom = () => {
           onClose={handleCloseDeleteDialog}
           PaperProps={{
             style: {
-              borderRadius: '8px',
-              padding: '20px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-              backgroundColor: '#fff',
+              borderRadius: "8px",
+              padding: "20px",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+              backgroundColor: "#fff",
             },
           }}
         >
@@ -1426,14 +1444,14 @@ const Classroom = () => {
             <Button
               onClick={handleCloseDeleteDialog}
               style={{
-                color: 'red',
-                borderRadius: '0.75rem',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                padding: '0.75rem 2.25rem',
-                margin: '0.625rem',
-                transition: 'transform 0.3s, background-color 0.3s',
-                textTransform: 'none'
+                color: "red",
+                borderRadius: "0.75rem",
+                cursor: "pointer",
+                fontSize: "1rem",
+                padding: "0.75rem 2.25rem",
+                margin: "0.625rem",
+                transition: "transform 0.3s, background-color 0.3s",
+                textTransform: "none",
               }}
             >
               Cancel
@@ -1441,15 +1459,15 @@ const Classroom = () => {
             <Button
               onClick={confirmDelete}
               style={{
-                background: 'linear-gradient(145deg, #6db3f2, #1e5799)',
-                color: 'white',
-                borderRadius: '0.75rem',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                padding: '0.75rem 2.25rem',
-                margin: '0.625rem',
-                transition: 'transform 0.3s, background-color 0.3s',
-                textTransform: 'none'
+                background: "linear-gradient(145deg, #6db3f2, #1e5799)",
+                color: "white",
+                borderRadius: "0.75rem",
+                cursor: "pointer",
+                fontSize: "1rem",
+                padding: "0.75rem 2.25rem",
+                margin: "0.625rem",
+                transition: "transform 0.3s, background-color 0.3s",
+                textTransform: "none",
               }}
             >
               Confirm
