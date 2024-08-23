@@ -155,7 +155,7 @@ function Home() {
     ];
 
 
-    console.log("Test Students Dat before format:", all_students);
+    console.log("Test Students Data before format:", testStudents);
 
     const formattedStudents = testStudents.map((student) => [
       student.id,
@@ -164,7 +164,9 @@ function Home() {
       student.availability
     ]);
 
-    console.log("Test Students Data after format:", all_students);
+    console.log("Test Students Data after format:", formattedStudents);
+    console.log("all_students:", all_students);
+
     const groupSize = 2;
     // console.log("Test Students Data JSON.Stringify:", JSON.stringify(all_students, null, 2));
 
