@@ -159,10 +159,10 @@ export function SignUpEmail({
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
-    // if (!email.endsWith("lmu.edu")) {
-    //   setError("Email must be associated with LMU.");
-    //   return;
-    // }
+    if (!email.endsWith("lmu.edu")) {
+      setError("Email must be associated with LMU.");
+      return;
+    }
     try {
       navigate("/about");
 
