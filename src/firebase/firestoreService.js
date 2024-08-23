@@ -146,50 +146,62 @@ export async function saveGroups(
       };
     });
 
-    // Prepare the updated groups and update groupIdInClassroom for each user
-    const updatedGroups = Object.entries(newGroups).reduce(
-      async (accPromise, [key, group]) => {
-        const acc = await accPromise;
-        acc[key] = {
-          members: group.members,
-          creationMethod: group.creationMethod,
-          createdAt: group.createdAt || now,
-          updatedAt: now,
-          logMessages: group.logMessages || [],
-        };
-
-        // Update groupIdInClassroom for each member of this group
-        for (const memberId of group.members) {
+    const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
+      const acc = await accPromise;
+      const memberConsentStatuses = await Promise.all(
+        group.members.map(async (memberId) => {
           const userRef = doc(db, "users", memberId);
           const userSnapshot = await getDoc(userRef);
           if (userSnapshot.exists()) {
-            const userData = userSnapshot.data();
-            const updatedGroupIdInClassroom = {
-              ...userData.groupIdInClassroom,
-              [roomId]: key,
-            };
-            await updateDoc(userRef, {
-              groupIdInClassroom: updatedGroupIdInClassroom,
-            });
+            return userSnapshot.data().consent === true;
           }
-        }
+          return false;
+        })
+      );
 
-        return acc;
-      },
+      const allMembersDataConsent = memberConsentStatuses.every(status => status === true);
+
+      acc[key] = {
+        members: group.members,
+        creationMethod: group.creationMethod,
+        createdAt: group.createdAt || now,
+        updatedAt: now,
+        locked: group.locked !== undefined ? group.locked : false, // Ensure locked is either true or false
+        logMessages: group.logMessages || [],
+        allMembersDataConsent, // Add the consentComplete status
+      };
+
+      for (const memberId of group.members) {
+        const userRef = doc(db, "users", memberId);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom, [roomId]: key };
+          await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+        }
+      }
+
+      return acc;
+    },
       Promise.resolve({})
     );
 
-    // Update ungrouped members' groupIdInClassroom
-    for (const memberId of ungroupedMembers) {
-      const userRef = doc(db, "users", memberId);
-      const userSnapshot = await getDoc(userRef);
-      if (userSnapshot.exists()) {
-        const userData = userSnapshot.data();
-        const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
-        delete updatedGroupIdInClassroom[roomId];
-        await updateDoc(userRef, {
-          groupIdInClassroom: updatedGroupIdInClassroom,
-        });
+    const safeUngroupedMembers = Array.isArray(ungroupedMembers)
+      ? ungroupedMembers
+      : [];
+
+    if (safeUngroupedMembers.length > 0) {
+      for (const memberId of safeUngroupedMembers) {
+        const userRef = doc(db, "users", memberId);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
+          delete updatedGroupIdInClassroom[roomId];
+          await updateDoc(userRef, {
+            groupIdInClassroom: updatedGroupIdInClassroom,
+          });
+        }
       }
     }
 
@@ -208,6 +220,7 @@ export async function saveGroups(
     return { success: false, error };
   }
 }
+
 
 // Get and possibly create groups
 export async function getGroups(
@@ -466,24 +479,22 @@ export async function saveClassroomSettings(roomId, settings) {
   }
 }
 
-export const deleteClassroom = async (roomId) => {
+
+export const archiveClassroom = async (roomId) => {
   try {
     const db = getFirestore();
     const classroomRef = doc(db, "classrooms", roomId);
     const classroomSnapshot = await getDoc(classroomRef);
 
     if (classroomSnapshot.exists()) {
-      // Get the classroom data
       const classroomData = classroomSnapshot.data();
 
-      // Set the document in the "classroomArchive" collection with the same ID
       const archiveRef = doc(db, "classroomArchive", roomId);
       await setDoc(archiveRef, {
         ...classroomData,
-        archivedAt: new Date().toISOString(), // Add a timestamp for when it was archived
+        archivedAt: new Date().toISOString() // Add a timestamp for when it was archived
       });
 
-      // Delete the original classroom document
       await deleteDoc(classroomRef);
 
       console.log("Classroom archived successfully");
@@ -537,6 +548,7 @@ export async function checkProfileCompletion(userId) {
   }
 }
 
+
 export async function getArchivedClassroomsForInstructor(instructorId) {
   try {
     const archiveCollectionRef = collection(db, "classroomArchive");
@@ -545,7 +557,6 @@ export async function getArchivedClassroomsForInstructor(instructorId) {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      // Manually filter by instructorId
       if (data.instructorId === instructorId) {
         archivedClassrooms.push({ id: doc.id, ...data });
       }

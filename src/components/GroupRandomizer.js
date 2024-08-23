@@ -11,13 +11,12 @@ export const randomizeGroups = (members, groupSize) => {
   for (let i = 0; i < numGroups; i++) {
     groups[i] = {
       members: shuffledArray.filter((_, index) => index % numGroups === i),
-      creationMethod: "Randomizer", // Set creation method to "Randomizer"
-      createdAt: new Date().toISOString(), // Add a timestamp for creation
+      creationMethod: "Randomizer",
+      createdAt: new Date().toISOString(),
       logMessages: [`Group created with Randomizer at ${new Date().toISOString()}`], // Log the creation
     };
   }
 
-  // console.log(groups);
   return groups;
 
 };
