@@ -17,11 +17,13 @@ export const generateToken = async () => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const result = await response.text();
+    const data = await response.json();
+
+    const result = data.access_token;
 
     return result;
   } catch (error) {
-    console.error("Error fetching token:", error);
+    throw new Error("Error fetching token:", error);
     return null;
   }
 };

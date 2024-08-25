@@ -228,13 +228,11 @@ export const SmartMatch = async () => {
         body: raw,
       }
     );
-    console.log("API Response Status:", response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    // console.log("Emails sent:", data);
     return data;
   } catch (error) {
     console.error("Error smart matching", error);
