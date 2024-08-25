@@ -7,8 +7,8 @@ export const smartMatchGroups = async (students, groupSize) => {
         console.log('Students:', students);
         console.log('Group Size:', groupSize);
         console.log('JSON:', JSON.stringify({ students, group_size: groupSize }));
-        const token = await generateToken();  // Await the Promise to get the actual token value
-
+        const preToken = await generateToken();
+        const token = JSON.parse(preToken).access_token;
 
         const response = await fetch('https://smartmatch-zj2w.onrender.com/smartmatch', {
             method: 'POST',
