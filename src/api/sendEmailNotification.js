@@ -6,10 +6,11 @@
  * @returns {Promise} - A promise that resolves when the emails are sent.
  */
 import { getDocument, getUser } from "../firebase/firestoreService";
+import { generateToken } from "./tokenFetch";
+
 export const sendBulkEmails = async (roomId, subject, content) => {
   const recipients = [];
   const classroom = await getDocument("classrooms", roomId);
-  console.log("classroom", classroom);
   const members = classroom.members;
   for (const user of members) {
     const userData = await getUser(user);
@@ -18,13 +19,15 @@ export const sendBulkEmails = async (roomId, subject, content) => {
   }
 
   try {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${generateToken()}`);
+
     const response = await fetch(
       "https://smartmatch-zj2w.onrender.com/send-emails",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: myHeaders,
         body: JSON.stringify({
           recipients,
           subject,
