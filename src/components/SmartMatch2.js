@@ -1,3 +1,5 @@
+import { generateToken } from "../api/tokenFetch";
+
 export const smartMatchGroups = async (students, groupSize) => {
     try {
         console.log('Starting SmartMatch 2.0 grouping...');
@@ -8,6 +10,7 @@ export const smartMatchGroups = async (students, groupSize) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${generateToken()}`,
             },
             body: JSON.stringify({ students, group_size: groupSize }),
         });

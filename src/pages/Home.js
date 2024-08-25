@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import PhotoBanner from "../components/PhotoBanner";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -13,6 +13,7 @@ import "./styles/Home.css";
 function Home() {
   const [error, setError] = React.useState(null);
   const navigate = useNavigate();
+  const hasCalledAPI = useRef(false);
 
   const createClass = () => {
     const newRoomId = nanoid(5);
@@ -33,6 +34,9 @@ function Home() {
   };
 
   useEffect(() => {
+    if (hasCalledAPI.current) return;
+    hasCalledAPI.current = true;
+
     const testStudents = [
       {
         id: 200,
@@ -179,7 +183,7 @@ function Home() {
     const testSmartMatch = async () => {
       try {
         console.log("Starting SmartMatch 2.0 Grouping Test...");
-        const result = await smartMatchGroups(all_students, groupSize);
+        const result = await smartMatchGroups(testStudents, groupSize);
         console.log("SmartMatch 2.0 Grouping Result:", result);
       } catch (error) {
         console.error("Error in SmartMatch 2.0:", error);
