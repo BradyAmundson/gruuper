@@ -6,7 +6,7 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "nanoid";
 import { createClassroom, joinClassroom } from "../firebase/firestoreService";
-import { smartMatchGroups } from "../components/SmartMatch2.js";
+import { smartMatchGroups, SmartMatch } from "../components/SmartMatch2.js";
 
 import "./styles/Home.css";
 
@@ -176,7 +176,6 @@ function Home() {
 
     console.log("Test Students Data after format:", formattedStudents);
     console.log("all_students:", all_students);
-
     const groupSize = 2;
     // console.log("Test Students Data JSON.Stringify:", JSON.stringify(all_students, null, 2));
 
@@ -184,8 +183,8 @@ function Home() {
       try {
         console.log("Starting SmartMatch 2.0 Grouping Test...");
         // console.log("Test Students Data:", JSON.stringify({ students: testStudents, groupSize: groupSize }));
-        const result = await smartMatchGroups(testStudents, groupSize, null, 2);
-        console.log("SmartMatch 2.0 Grouping Result:", result);
+        const result = await SmartMatch();
+        console.log("SmartMatch 2.0 Grouping Result: SMARTMATRCG", result);
       } catch (error) {
         console.error("Error in SmartMatch 2.0:", error);
       }
