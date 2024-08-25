@@ -183,7 +183,7 @@ function Home() {
     const testSmartMatch = async () => {
       try {
         console.log("Starting SmartMatch 2.0 Grouping Test...");
-        console.log("Test Students Data:", JSON.stringify({ students: testStudents, groupSize: groupSize }));
+        // console.log("Test Students Data:", JSON.stringify({ students: testStudents, groupSize: groupSize }));
         const result = await smartMatchGroups(testStudents, groupSize, null, 2);
         console.log("SmartMatch 2.0 Grouping Result:", result);
       } catch (error) {

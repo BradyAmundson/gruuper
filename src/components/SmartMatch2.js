@@ -1,16 +1,20 @@
 import { generateToken } from "../api/tokenFetch";
 
 export const smartMatchGroups = async (students, groupSize) => {
+
     try {
         console.log('Starting SmartMatch 2.0 grouping...');
         console.log('Students:', students);
         console.log('Group Size:', groupSize);
+        console.log('JSON:', JSON.stringify({ students, group_size: groupSize }));
+        const token = await generateToken();  // Await the Promise to get the actual token value
+
 
         const response = await fetch('https://smartmatch-zj2w.onrender.com/smartmatch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${generateToken()}`,
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({ students, group_size: groupSize }),
         });
