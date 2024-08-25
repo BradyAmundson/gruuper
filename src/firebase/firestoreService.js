@@ -78,17 +78,26 @@ export async function joinClassroom(roomId, userId, setError) {
     const usrDocumentSnapshot = await getDoc(usrDocumentRef);
 
     if (documentSnapshot.exists() && usrDocumentSnapshot.exists()) {
-      const members = documentSnapshot.data().members;
+      const classroomData = documentSnapshot.data();
+      const members = classroomData.members;
+      const instructorId = classroomData.instructorId;
       const currentCodes = usrDocumentSnapshot.data().classroomCodes || [];
+      const instructorsWithAccess = usrDocumentSnapshot.data().instructorsWithAccess || [];
+
       if (currentCodes.includes(roomId)) {
         return roomId;
       }
+
       const updatedCodes = [...currentCodes, roomId];
+      const updatedInstructorsWithAccess = [...new Set([...instructorsWithAccess, instructorId])];
+
       members.push(userId);
       await updateDoc(documentRef, { members: members });
       await updateDoc(usrDocumentRef, {
         classroomCodes: updatedCodes,
+        instructorsWithAccess: updatedInstructorsWithAccess,
       });
+
       return roomId;
     } else {
       setError("Invalid classroom code!");
