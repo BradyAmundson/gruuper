@@ -2,6 +2,9 @@ import React from "react";
 import Modal from "react-modal";
 import Button from "@mui/material/Button";
 import { updateUser } from "../firebase/firestoreService";
+import { Viewer } from "@react-pdf-viewer/core";
+import { Worker } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
 const pdfUrl = "/docs/Informed Consent Form Updated RCR 5.9.23.pdf";
 
 Modal.setAppElement("#root");
@@ -98,14 +101,11 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
           borderRadius: "10px",
         }}
       >
-        <iframe
-          src={pdfUrl}
-          width="100%"
-          height="100%"
-          style={{
-            border: "none",
-          }}
-        />
+        <Worker
+          workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}
+        >
+          <Viewer fileUrl={pdfUrl} />
+        </Worker>
       </div>
       <div style={buttonContainerStyle}>
         <Button
