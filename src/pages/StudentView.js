@@ -97,20 +97,14 @@ const StudentView = () => {
     }
   }, []);
 
-  const organizeMembers = async (classroom) => {
+  const organizeMembers = (classroom) => {
     if (!classroom.members || !classroom.groups) {
       console.error("Invalid classroom data structure:", classroom);
       return;
     }
 
-    const membersDetails = await Promise.all(
-      classroom.members.map((memberId) => getUser(memberId))
-    );
-
-    const allMembersList = membersDetails.map((member) =>
-      member && member.id !== userId
-        ? "Anonymous"
-        : `${member.firstName} ${member.lastName}`
+    const allMembersList = classroom.members.map((memberId) =>
+      memberId === userId ? "You" : "Anonymous"
     );
     setAllMembers(allMembersList);
 
@@ -123,12 +117,9 @@ const StudentView = () => {
       return;
     }
 
-    const userGroupMembers = classroom.groups[userGroupKey].members.map((id) => {
-      const member = membersDetails.find((member) => member.id === id);
-      return member
-        ? `${member.firstName} ${member.lastName}`
-        : "Unknown Member";
-    });
+    const userGroupMembers = classroom.groups[userGroupKey].members.map((id) =>
+      id === userId ? "You" : "Anonymous"
+    );
 
     setGroupMembers(userGroupMembers);
   };

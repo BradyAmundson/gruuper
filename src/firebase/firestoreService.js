@@ -185,7 +185,13 @@ export async function saveGroups(
         const userSnapshot = await getDoc(userRef);
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
-          const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom, [roomId]: key };
+          const updatedGroupIdInClassroom = {
+            ...userData.groupIdInClassroom,
+            [roomId]: {
+              groupId: key,
+              members: group.members
+            }
+          };
           await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
         }
       }
@@ -229,6 +235,7 @@ export async function saveGroups(
     return { success: false, error };
   }
 }
+
 
 
 // Get and possibly create groups
@@ -386,19 +393,37 @@ export async function createUser(firstName, lastName, userId, userType, email) {
 
 // Get a user document by userId
 export async function getUser(userId) {
+  console.log("getUser called with userId:", userId); // Log when the function is called
+
   const userRef = doc(db, "users", userId);
-  const userSnapshot = await getDoc(userRef);
-  if (userSnapshot.exists()) {
-    const data = userSnapshot.data();
-    return {
-      id: userSnapshot.id,
-      ...data,
-      availability: Array.isArray(data.availability) ? data.availability : [], // Ensure it's an array
-    };
-  } else {
-    return null;
+  console.log("User reference created:", userRef); // Log the created document reference
+
+  try {
+    const userSnapshot = await getDoc(userRef);
+    console.log("User snapshot:", userSnapshot); // Log the snapshot object
+
+    if (userSnapshot.exists()) {
+      const data = userSnapshot.data();
+      console.log("User data fetched:", data); // Log the fetched data
+
+      const result = {
+        id: userSnapshot.id,
+        ...data,
+        availability: Array.isArray(data.availability) ? data.availability : [], // Ensure it's an array
+      };
+
+      console.log("Returning user data:", result); // Log the result before returning
+      return result;
+    } else {
+      console.log("User not found for userId:", userId); // Log if the user does not exist
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching user data for userId:", userId, error); // Log any errors encountered
+    throw error; // Re-throw the error after logging it
   }
 }
+
 
 // Update user data
 export async function updateUser(userId, data) {

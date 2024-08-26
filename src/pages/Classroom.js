@@ -11,6 +11,8 @@ import {
   saveClassroomSettings,
   archiveClassroom,
 } from "../firebase/firestoreService";
+import { onSnapshot, doc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import { sendBulkEmails } from "../api/sendEmailNotification";
 import SettingsModal from "../components/SettingsModal";
 import "./styles/classroom.css";
@@ -75,9 +77,8 @@ const DraggableMember = ({
     },
   }));
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item-professor ${
-    isCurrentlyBeingDragged ? "dragging-item" : ""
-  }`;
+  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
+    }`;
   if (!isProfessor) {
     className = "draggable-item-student";
   }
@@ -363,8 +364,7 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${
-              newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
@@ -382,16 +382,14 @@ const Classroom = () => {
 
         // Log the addition action
         newGroups[toGroupIndex].logMessages.push(
-          `Member ${member} (ID: ${
-            member.id
+          `Member ${member} (ID: ${member.id
           }) was added at ${new Date().toISOString()}`
         );
 
         // If the creation method changes to "Hand-Picked"
         if (newGroups[toGroupIndex].creationMethod !== "Hand-Picked") {
           newGroups[toGroupIndex].logMessages.push(
-            `Group creation method changed from ${
-              newGroups[toGroupIndex].creationMethod
+            `Group creation method changed from ${newGroups[toGroupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[toGroupIndex].creationMethod = "Hand-Picked";
@@ -407,8 +405,7 @@ const Classroom = () => {
         setUnmatchedMembers((prevUnmatched) => [...prevUnmatched, member]);
 
         newGroups[fromIndexes.groupIndex].logMessages.push(
-          `Member ${member.name} (ID: ${
-            member.id
+          `Member ${member.name} (ID: ${member.id
           }) was added to Ungrouped Members at ${new Date().toISOString()}`
         );
         showReminder();
@@ -456,7 +453,7 @@ const Classroom = () => {
         if (user && user.classroomCodes) {
           setIsProfessor(
             localStorage.getItem("userType") === "Professor" &&
-              user.classroomCodes.includes(roomId)
+            user.classroomCodes.includes(roomId)
           );
         }
       } catch (error) {
@@ -469,14 +466,10 @@ const Classroom = () => {
   }, [roomId]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const fetchedClassroom = await getDocument("classrooms", roomId);
-        if (!fetchedClassroom) {
-          console.error("Failed to fetch classroom data");
-          return;
-        }
-        console.log("Fetched classroom data:", fetchedClassroom.instructorId);
+    const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const fetchedClassroom = docSnapshot.data();
+
         const isProfessor =
           localStorage.getItem("userType") === "Professor" &&
           localStorage.getItem("userId") === fetchedClassroom?.instructorId;
@@ -502,9 +495,7 @@ const Classroom = () => {
         const fetchedUser = await getUser(fetchedClassroom?.instructorId);
         const className =
           fetchedClassroom?.className ||
-          `${fetchedUser?.firstName || ""} ${
-            fetchedUser?.lastName || ""
-          }'s Assignment`;
+          `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
         setClassName(className);
 
         const members = fetchedClassroom?.members || [];
@@ -514,7 +505,7 @@ const Classroom = () => {
             return {
               id: member,
               name: `${user?.firstName || ""} ${user?.lastName || ""}`,
-              profileComplete: user?.profileComplete || false, // Fetch profileComplete status
+              profileComplete: user?.profileComplete || false,
             };
           })
         );
@@ -532,13 +523,14 @@ const Classroom = () => {
           (member) => !groupedMembers.has(member)
         );
         setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } else {
+        console.error("Failed to fetch classroom data");
       }
-    };
+    });
 
-    fetchData();
+    return () => unsubscribe();
   }, [roomId]);
+
 
   useEffect(() => {
     if (state === "Lobby" && deadline) {
@@ -767,9 +759,8 @@ const Classroom = () => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${
-            fetchedUser?.lastName || ""
-          }`,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+            }`,
         };
       })
     );
@@ -848,9 +839,9 @@ const Classroom = () => {
             deletedAt: new Date().toISOString(),
             logMessages: currentGroups[groupKey].logMessages
               ? [
-                  ...currentGroups[groupKey].logMessages,
-                  `Group deleted at ${new Date().toISOString()}`,
-                ]
+                ...currentGroups[groupKey].logMessages,
+                `Group deleted at ${new Date().toISOString()}`,
+              ]
               : [`Group deleted at ${new Date().toISOString()}`],
           };
         }
@@ -910,8 +901,7 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${
-              newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
