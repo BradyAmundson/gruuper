@@ -277,7 +277,7 @@ export async function getGroups(
         const smartMatchData = await SmartMatch(students, groupSize);
         groupingData = smartMatchData.result;
         shuffledGroups = groupingData.groupings;
-
+        console.log("Grouping data:", groupingData);
         console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
         shuffledGroups = await randomizeGroups(passedMembers, groupSize);
@@ -322,6 +322,7 @@ export async function getGroups(
 
       const deletedGroups = {};
 
+      console.log("Combined groups:", combinedGroups);
       await saveGroups(
         roomId,
         combinedGroups,
@@ -349,7 +350,7 @@ export async function getGroups(
 }
 
 async function saveGroupingData(roomId, groupingData) {
-  const groupingDataRef = doc(db, "GroupingData", roomId);
+  const groupingDataRef = doc(db, "grouping_data", roomId);
   const smartMatchId = generateUUID();
   const smartMatchRef = collection(groupingDataRef, smartMatchId);
   const now = new Date().toISOString();
