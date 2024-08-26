@@ -715,19 +715,18 @@ const Classroom = () => {
       smartMatch
     );
 
-    // if (smartMatch) {
-    //   setPairedGroups(newGroups);
-    //   setIsPairingModalOpen(true);
+    if (smartMatch) {
+      setPairedGroups(newGroups);
+      setIsPairingModalOpen(true);
 
-    //   setTimeout(() => {
-    //     setIsPairingModalOpen(false);
-    //     updateGroups(newGroups, method, passedLockedGroups, allMembers);
-    //   }, 8000);
-    // } else {
-    //   updateGroups(newGroups, method, passedLockedGroups, allMembers);
-    // }
-    updateGroups(newGroups, method, passedLockedGroups, allMembers);
-
+      setTimeout(() => {
+        setIsPairingModalOpen(false);
+        updateGroups(newGroups, method, passedLockedGroups, allMembers);
+        window.location.reload();
+      }, 8000);
+    } else {
+      updateGroups(newGroups, method, passedLockedGroups, allMembers);
+    }
 
     setIsLoading(false);
     showReminder();
