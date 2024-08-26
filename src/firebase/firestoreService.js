@@ -246,8 +246,8 @@ export async function saveGroups(
           const userData = userSnapshot.data();
           const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
           delete updatedGroupIdInClassroom[roomId];
-          console.log("userData :", userData);
-          console.log("Updated groupIdInClassroom:", updatedGroupIdInClassroom);
+          console.log("2userData :", userData);
+          console.log("2Updated groupIdInClassroom:", updatedGroupIdInClassroom);
           await updateDoc(userRef, {
             groupIdInClassroom: updatedGroupIdInClassroom,
           });
