@@ -103,29 +103,46 @@ const StudentView = () => {
       return;
     }
 
-    const currentUser = await getUser(userId);
-    const currentUserName = `${currentUser.firstName} ${currentUser.lastName} (You)`; // Create the display name
+    // Get current user data from localStorage or from the classroom data directly
+    const currentUserId = localStorage.getItem("userId");
 
-    const allMembersList = classroom.members.map((memberId) =>
-      memberId === userId ? currentUserName : "Anonymous"
-    );
-    setAllMembers(allMembersList);
+    // Extract the user's group information from the classroom object
+    const userGroupData = classroom.groups[roomId]?.[currentUserId];
 
-    const userGroupKey = Object.keys(classroom.groups).find((key) =>
-      classroom.groups[key].members.includes(userId)
-    );
-
-    if (!userGroupKey) {
+    if (!userGroupData) {
+      console.error("No group data found for this classroom for the current user.");
       setGroupMembers([]);
       return;
     }
 
-    const userGroupMembers = classroom.groups[userGroupKey].members.map((id) =>
-      id === userId ? currentUserName : "Anonymous"
-    );
+    // Get group member IDs
+    const userGroupMembersIds = userGroupData.members;
+
+    // Fetch and set all classroom members' names
+    const allMembersList = classroom.members.map((memberId) => {
+      const memberData = classroom.groups[roomId]?.[memberId];
+      const memberName = memberData
+        ? `${memberData.firstName} ${memberData.lastName}`
+        : "Anonymous";
+
+      return memberId === currentUserId ? `${memberName} (You)` : memberName;
+    });
+    setAllMembers(allMembersList);
+
+    // Fetch and set group members' names
+    const userGroupMembers = userGroupMembersIds.map((memberId) => {
+      const memberData = classroom.groups[roomId]?.[memberId];
+      const memberName = memberData
+        ? `${memberData.firstName} ${memberData.lastName}`
+        : "Anonymous";
+
+      return memberId === currentUserId ? `${memberName} (You)` : memberName;
+    });
 
     setGroupMembers(userGroupMembers);
   };
+
+
 
 
   if (loading) {
