@@ -10,7 +10,7 @@ import {
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { randomizeGroups } from "../components/GroupRandomizer.js";
 import { optimizeGroups } from "../components/SmartMatch.js";
-import { smartMatchGroups } from "../components/SmartMatch2.js";
+import { SmartMatch } from "../components/SmartMatch2.js";
 
 export async function createClassroom(
   roomId,
@@ -258,19 +258,22 @@ export async function getGroups(
       let shuffledGroups;
 
       if (smartMatch) {
-        const students = passedMembers.map((memberId) => {
-          const member = classroom.members.find((m) => m.id === memberId);
-          return {
-            id: memberId,
-            description: member.description || "",
-            idealGroup: member.idealGroup || "",
-            availability: member.availability || [],
-          };
-        });
+        const students = await Promise.all(
+          passedMembers.map(async (memberId) => {
+            const member = await getUser(memberId);
+            console.log("Member:", member);
+            return [
+              memberId,
+              member.description || "",
+              member.idealGroup || "",
+              member.availability || [],
+            ];
+          })
+        );
 
         console.log("Students before smart match:", students);
 
-        shuffledGroups = await smartMatchGroups(students, groupSize);
+        shuffledGroups = await SmartMatch(students, groupSize);
         console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
         shuffledGroups = await randomizeGroups(passedMembers, groupSize);
