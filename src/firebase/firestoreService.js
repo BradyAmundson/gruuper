@@ -122,6 +122,12 @@ export async function saveGroups(
 ) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
+  console.log("Saving groups...");
+  console.log("New groups:", newGroups);
+  console.log("Deleted groups:", deletedGroups);
+  console.log("Classroom ID:", roomId);
+  console.log("groupedMembers:", groupedMembers);
+  console.log("ungroupedMembers:", ungroupedMembers);
 
   try {
     const classroomSnapshot = await getDoc(classroomRef);
@@ -375,7 +381,6 @@ async function saveGroupingData(roomId, groupingData) {
   try {
     const smartMatchDoc = doc(smartMatchRef, timestamp);
 
-    // Flatten the nested arrays in groupingData
     const flattenedGroupings = groupingData.groupings.reduce((acc, group, index) => {
       group.forEach((member, memberIndex) => {
         acc[`group_${index}_member_${memberIndex}`] = member;
