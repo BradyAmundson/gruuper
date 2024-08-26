@@ -985,7 +985,7 @@ const Classroom = () => {
   };
 
   const decrementMinGroupSize = () => {
-    if (minGroupSize > 0) {
+    if (minGroupSize > 1) {
       setMinGroupSize((prevSize) => prevSize - 1);
     }
 
