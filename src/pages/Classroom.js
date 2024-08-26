@@ -288,6 +288,7 @@ const Classroom = () => {
       await saveClassroomSettings(roomId, { ...settings, deadline });
       const updatedClassroom = await getDocument("classrooms", roomId);
       setClassroom(updatedClassroom);
+      console.log("settings uopdate name:", updatedClassroom.className);
       setClassName(updatedClassroom.className);
     } catch (error) {
       console.error("Failed to save settings:", error);
@@ -469,6 +470,7 @@ const Classroom = () => {
     const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const fetchedClassroom = docSnapshot.data();
+        console.log("snapshot:", fetchedClassroom?.className);
 
         const isProfessor =
           localStorage.getItem("userType") === "Professor" &&
@@ -496,6 +498,7 @@ const Classroom = () => {
         const className =
           fetchedClassroom?.className ||
           `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
+        console.log("classroom name:", className);
         setClassName(className);
 
         const members = fetchedClassroom?.members || [];
@@ -664,10 +667,8 @@ const Classroom = () => {
     }
   };
 
-  const handleRandomizeGroups = async (smartMatch) => {
-    if (smartMatch) {
-      setIsLoading(true);
-    }
+  const handleGrouping = async (smartMatch) => {
+    setIsLoading(true);
 
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
@@ -685,6 +686,7 @@ const Classroom = () => {
       }
     });
 
+
     const unlockedAndUnmatchedMembers = allMembers.filter(
       (member) =>
         !lockedMembers.has(member) && !unmatchedMembers.includes(member)
@@ -701,6 +703,7 @@ const Classroom = () => {
       passedLockedGroups,
       smartMatch
     );
+
 
     if (smartMatch) {
       setPairedGroups(newGroups);
@@ -720,6 +723,7 @@ const Classroom = () => {
   };
 
   const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
+
     setClassroom((prevClassroom) => {
       const updatedGroups = { ...prevClassroom.groups };
 
@@ -742,8 +746,12 @@ const Classroom = () => {
         updatedGroups[key] = group;
       });
 
+
+
       return { ...prevClassroom, groups: updatedGroups };
     });
+
+
 
     updateMemberNames(allMembers || []);
   };
@@ -765,6 +773,7 @@ const Classroom = () => {
       })
     );
     setMemberNames(newMemberNames);
+
   };
 
   useEffect(() => {
@@ -876,7 +885,6 @@ const Classroom = () => {
       const newGroups = { ...currentGroups };
       let memberId;
 
-      // Handle removal from the existing group or unmatched area
       if (fromIndexes.groupIndex === -1) {
         setUnmatchedMembers((prevUnmatched) => {
           const updatedUnmatched = [...prevUnmatched];
@@ -891,12 +899,10 @@ const Classroom = () => {
           1
         );
 
-        // Log the removal action
         newGroups[fromIndexes.groupIndex].logMessages.push(
           `Member ID: ${memberId} was removed at ${new Date().toISOString()}`
         );
 
-        // If the creation method changes to "Hand-Picked"
         if (
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
@@ -931,22 +937,6 @@ const Classroom = () => {
       setGroups(newGroups);
       return { ...prevClassroom, groups: newGroups };
     });
-  };
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-    setClassName(className);
-    saveClassname(roomId, className);
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleSave();
-    }
   };
 
   const handleDeleteClick = (student) => {
@@ -1304,36 +1294,51 @@ const Classroom = () => {
                         </div>
                       </div>
                       <div className="group-controls">
-                        <Tooltip title="Shuffle">
-                          <ShuffleIcon
-                            className="randomize-groups-button"
-                            onClick={() => handleRandomizeGroups(false)}
-                            sx={{
-                              fontSize: "30px",
-                              transition: "transform 0.3s",
-                            }}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Smart Match">
-                          <SmartMatchIcon
-                            className="smart-match-button"
-                            onClick={() => handleRandomizeGroups(true)}
-                            sx={{
-                              fontSize: "30px",
-                              transition: "transform 0.3s",
-                            }}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Save">
-                          <SaveIcon
-                            className="save-groups-button"
-                            onClick={saveGroupsToFirestore}
-                            sx={{
-                              fontSize: "30px",
-                              transition: "transform 0.3s",
-                            }}
-                          />
-                        </Tooltip>
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                            Random
+                          </span>
+                          <Tooltip title="Shuffle">
+                            <ShuffleIcon
+                              className="randomize-groups-button"
+                              onClick={() => handleGrouping(false)}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                            GruupMatch
+                          </span>
+                          <Tooltip title="Smart Match">
+                            <SmartMatchIcon
+                              className="smart-match-button"
+                              onClick={() => handleGrouping(true)}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                            Save
+                          </span>
+                          <Tooltip title="Save">
+                            <SaveIcon
+                              className="save-groups-button"
+                              onClick={saveGroupsToFirestore}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
                       </div>
                     </div>
                   )}

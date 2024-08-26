@@ -37,9 +37,9 @@ export async function createClassroom(
       groupedMembers: [],
       groups: {},
       createdAt: now.toISOString(),
-      groupingStartDeadline: defaultDeadline.toISOString().slice(0, 16), // Set default deadline
-      courseNumber: courseNumber, // Added courseNumber
-      gradeLevel: gradeLevel, // Added gradeLevel
+      groupingStartDeadline: defaultDeadline.toISOString().slice(0, 16),
+      courseNumber: courseNumber,
+      gradeLevel: gradeLevel,
     });
 
     const classroomCodes = creator.classroomCodes || [];
@@ -53,7 +53,6 @@ export async function createClassroom(
   }
 }
 
-// Get a document from a specific collection
 export async function getDocument(collectionName, documentId) {
   const documentRef = doc(db, collectionName, documentId);
   const documentSnapshot = await getDoc(documentRef);
@@ -65,7 +64,6 @@ export async function getDocument(collectionName, documentId) {
   }
 }
 
-// Join a classroom
 export async function joinClassroom(roomId, userId, setError) {
   if (!roomId || !userId) {
     setError("Invalid classroom code!");
@@ -175,9 +173,9 @@ export async function saveGroups(
         creationMethod: group.creationMethod,
         createdAt: group.createdAt || now,
         updatedAt: now,
-        locked: group.locked !== undefined ? group.locked : false, // Ensure locked is either true or false
+        locked: group.locked !== undefined ? group.locked : false,
         logMessages: group.logMessages || [],
-        allMembersDataConsent, // Add the consentComplete status
+        allMembersDataConsent,
       };
 
       for (const memberId of group.members) {
@@ -236,9 +234,6 @@ export async function saveGroups(
   }
 }
 
-
-
-// Get and possibly create groups
 export async function getGroups(
   roomId,
   setGroups,
@@ -267,61 +262,40 @@ export async function getGroups(
         });
 
         shuffledGroups = await smartMatchGroups(students, groupSize);
+        console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
-        shuffledGroups = await randomizeGroups(passedMembers, groupSize); // Use the existing randomizeGroups function
+        shuffledGroups = await randomizeGroups(passedMembers, groupSize);
+        console.log("Shuffled groups after randomization:", shuffledGroups);
       }
 
-      console.log("Shuffled groups:", shuffledGroups);
       const combinedGroups = { ...lockedGroups };
 
-      console.log("Locked groups:", lockedGroups);
-      console.log("Combined groups 1:", combinedGroups);
       let availableIndices = new Set([
         ...Array(
           Object.keys(shuffledGroups).length + Object.keys(lockedGroups).length
         ).keys(),
       ]);
 
-      // Print the initial set of available indices
-      console.log("Initial available indices:", Array.from(availableIndices));
-
-      // Remove indices already occupied by locked groups
       Object.keys(lockedGroups).forEach((index) => {
         availableIndices.delete(parseInt(index));
-        console.log(
-          `Removed locked group index ${index}, updated available indices:`,
-          Array.from(availableIndices)
-        );
       });
 
-      // Convert the available indices set to a sorted array
       let availableIndexArray = Array.from(availableIndices).sort(
         (a, b) => a - b
       );
 
-      // Print the final available indices array
-      console.log("Final sorted available indices array:", availableIndexArray);
-      console.log("Combined groups 2:", combinedGroups);
-
-      // Place random groups in the first available indices not occupied by locked groups
       Object.entries(shuffledGroups).forEach(([key, group]) => {
-        console.log("Group:", group);
-        console.log("Available index array:", availableIndexArray);
-        console.log("Key:", group.length);
         if (group && availableIndexArray.length > 0) {
-          console.log("Available index array:", availableIndexArray);
           const index = availableIndexArray.shift();
           combinedGroups[index] = group;
         }
       });
-      console.log("Combined groups 3:", combinedGroups);
 
       const allMemberIds = classroom.members || [];
       const groupedMembers = Object.values(combinedGroups).flatMap(
         (group) => group.members
       );
 
-      // Ensure ungroupedMembers is an array
       const ungroupedMembers = Array.isArray(allMemberIds)
         ? allMemberIds.filter((id) => !groupedMembers.includes(id))
         : [];
@@ -330,16 +304,17 @@ export async function getGroups(
         ? ungroupedMembers
         : [];
 
-      // Save the new groups structure to the database
+      const deletedGroups = {};
+
       await saveGroups(
         roomId,
         combinedGroups,
+        deletedGroups,
         classroom.className,
         groupedMembers,
         safeUngroupedMembers
       );
 
-      // Update the groups state in the UI
       setGroups(combinedGroups);
 
       return shuffledGroups;
@@ -353,7 +328,7 @@ export async function getGroups(
   }
 }
 
-// Save class name
+
 export async function saveClassname(roomId, className) {
   const classroomRef = doc(db, "classrooms", roomId);
   try {
@@ -363,7 +338,6 @@ export async function saveClassname(roomId, className) {
   }
 }
 
-// Create a new user with demographic and availability data
 export async function createUser(firstName, lastName, userId, userType, email) {
   try {
     await setDoc(doc(db, "users", userId), {
@@ -391,51 +365,43 @@ export async function createUser(firstName, lastName, userId, userType, email) {
   }
 }
 
-// Get a user document by userId
 export async function getUser(userId) {
-  console.log("getUser called with userId:", userId); // Log when the function is called
 
   const userRef = doc(db, "users", userId);
-  console.log("User reference created:", userRef); // Log the created document reference
 
   try {
     const userSnapshot = await getDoc(userRef);
-    console.log("User snapshot:", userSnapshot); // Log the snapshot object
 
     if (userSnapshot.exists()) {
       const data = userSnapshot.data();
-      console.log("User data fetched:", data); // Log the fetched data
 
       const result = {
         id: userSnapshot.id,
         ...data,
-        availability: Array.isArray(data.availability) ? data.availability : [], // Ensure it's an array
+        availability: Array.isArray(data.availability) ? data.availability : [],
       };
 
-      console.log("Returning user data:", result); // Log the result before returning
       return result;
     } else {
-      console.log("User not found for userId:", userId); // Log if the user does not exist
+      console.log("User not found for userId:", userId);
       return null;
     }
   } catch (error) {
-    console.error("Error fetching user data for userId:", userId, error); // Log any errors encountered
-    throw error; // Re-throw the error after logging it
+    console.error("Error fetching user data for userId:", userId, error);
+    throw error;
   }
 }
 
 
-// Update user data
 export async function updateUser(userId, data) {
   try {
     await updateDoc(doc(db, "users", userId), data);
-    await checkProfileCompletion(userId); // Check if the profile is complete after updating
+    await checkProfileCompletion(userId);
   } catch (error) {
     console.error("Error updating user: ", error);
   }
 }
 
-// Remove a member from a classroom
 export async function removeMemberFromClassroom(roomId, userId) {
   const classroomRef = doc(db, "classrooms", roomId);
   const userRef = doc(db, "users", userId);
@@ -527,7 +493,7 @@ export const archiveClassroom = async (roomId) => {
       const archiveRef = doc(db, "classroomArchive", roomId);
       await setDoc(archiveRef, {
         ...classroomData,
-        archivedAt: new Date().toISOString() // Add a timestamp for when it was archived
+        archivedAt: new Date().toISOString()
       });
 
       await deleteDoc(classroomRef);

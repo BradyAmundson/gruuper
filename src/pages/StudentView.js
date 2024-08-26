@@ -97,14 +97,17 @@ const StudentView = () => {
     }
   }, []);
 
-  const organizeMembers = (classroom) => {
+  const organizeMembers = async (classroom) => {
     if (!classroom.members || !classroom.groups) {
       console.error("Invalid classroom data structure:", classroom);
       return;
     }
 
+    const currentUser = await getUser(userId);
+    const currentUserName = `${currentUser.firstName} ${currentUser.lastName} (You)`; // Create the display name
+
     const allMembersList = classroom.members.map((memberId) =>
-      memberId === userId ? "You" : "Anonymous"
+      memberId === userId ? currentUserName : "Anonymous"
     );
     setAllMembers(allMembersList);
 
@@ -118,11 +121,12 @@ const StudentView = () => {
     }
 
     const userGroupMembers = classroom.groups[userGroupKey].members.map((id) =>
-      id === userId ? "You" : "Anonymous"
+      id === userId ? currentUserName : "Anonymous"
     );
 
     setGroupMembers(userGroupMembers);
   };
+
 
   if (loading) {
     return <div className="student-view-container">Loading...</div>;
