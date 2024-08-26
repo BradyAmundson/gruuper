@@ -375,6 +375,7 @@ export async function createUser(firstName, lastName, userId, userType, email) {
       classroomCodes: [],
       groupIdInClassroom: {},
       profileComplete: false,
+      instructorsWithAccess: [],
     });
     return { id: userId, data: { firstName, lastName, userType } };
   } catch (error) {
