@@ -21,7 +21,7 @@ function App() {
   const [userConsent, setUserConsent] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && user.emailVerified) {
       getUser(user.uid).then((doc) => {
         setUserConsent(doc?.consent !== undefined);
         setShowModal(true);

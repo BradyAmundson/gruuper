@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   sendEmailVerification,
   updatePassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { createUser, getUser } from "./firestoreService";
@@ -71,6 +72,16 @@ const ErrorConversion = (error) => {
     default:
       return error.message;
   }
+};
+
+export const forgotPassword = (email) => {
+  return sendPasswordResetEmail(auth, email)
+    .then(() => {
+      return;
+    })
+    .catch((error) => {
+      throw new Error("Error sending password reset email:", error);
+    });
 };
 
 export function SignIn() {
@@ -159,10 +170,10 @@ export function SignUpEmail({
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
-    if (!email.endsWith("lmu.edu")) {
-      setError("Email must be associated with LMU.");
-      return;
-    }
+    // if (!email.endsWith("lmu.edu")) {
+    //   setError("Email must be associated with LMU.");
+    //   return;
+    // }
     try {
       navigate("/about");
 

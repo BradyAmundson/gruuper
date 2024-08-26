@@ -103,14 +103,11 @@ const StudentView = () => {
       return;
     }
 
-    const membersDetails = await Promise.all(
-      classroom.members.map((memberId) => getUser(memberId))
-    );
+    const currentUser = await getUser(userId);
+    const currentUserName = `${currentUser.firstName} ${currentUser.lastName} (You)`; // Create the display name
 
-    const allMembersList = membersDetails.map((member) =>
-      member && member.id !== userId
-        ? "Anonymous"
-        : `${member.firstName} ${member.lastName}`
+    const allMembersList = classroom.members.map((memberId) =>
+      memberId === userId ? currentUserName : "Anonymous"
     );
     setAllMembers(allMembersList);
 
@@ -123,15 +120,13 @@ const StudentView = () => {
       return;
     }
 
-    const userGroupMembers = classroom.groups[userGroupKey].members.map((id) => {
-      const member = membersDetails.find((member) => member.id === id);
-      return member
-        ? `${member.firstName} ${member.lastName}`
-        : "Unknown Member";
-    });
+    const userGroupMembers = classroom.groups[userGroupKey].members.map((id) =>
+      id === userId ? currentUserName : "Anonymous"
+    );
 
     setGroupMembers(userGroupMembers);
   };
+
 
   if (loading) {
     return <div className="student-view-container">Loading...</div>;

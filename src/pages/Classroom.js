@@ -11,6 +11,8 @@ import {
   saveClassroomSettings,
   archiveClassroom,
 } from "../firebase/firestoreService";
+import { onSnapshot, doc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import { sendBulkEmails } from "../api/sendEmailNotification";
 import SettingsModal from "../components/SettingsModal";
 import "./styles/classroom.css";
@@ -75,9 +77,8 @@ const DraggableMember = ({
     },
   }));
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item-professor ${
-    isCurrentlyBeingDragged ? "dragging-item" : ""
-  }`;
+  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
+    }`;
   if (!isProfessor) {
     className = "draggable-item-student";
   }
@@ -287,6 +288,7 @@ const Classroom = () => {
       await saveClassroomSettings(roomId, { ...settings, deadline });
       const updatedClassroom = await getDocument("classrooms", roomId);
       setClassroom(updatedClassroom);
+      console.log("settings uopdate name:", updatedClassroom.className);
       setClassName(updatedClassroom.className);
     } catch (error) {
       console.error("Failed to save settings:", error);
@@ -363,8 +365,7 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${
-              newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
@@ -382,16 +383,14 @@ const Classroom = () => {
 
         // Log the addition action
         newGroups[toGroupIndex].logMessages.push(
-          `Member ${member} (ID: ${
-            member.id
+          `Member ${member} (ID: ${member.id
           }) was added at ${new Date().toISOString()}`
         );
 
         // If the creation method changes to "Hand-Picked"
         if (newGroups[toGroupIndex].creationMethod !== "Hand-Picked") {
           newGroups[toGroupIndex].logMessages.push(
-            `Group creation method changed from ${
-              newGroups[toGroupIndex].creationMethod
+            `Group creation method changed from ${newGroups[toGroupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[toGroupIndex].creationMethod = "Hand-Picked";
@@ -407,8 +406,7 @@ const Classroom = () => {
         setUnmatchedMembers((prevUnmatched) => [...prevUnmatched, member]);
 
         newGroups[fromIndexes.groupIndex].logMessages.push(
-          `Member ${member.name} (ID: ${
-            member.id
+          `Member ${member.name} (ID: ${member.id
           }) was added to Ungrouped Members at ${new Date().toISOString()}`
         );
         showReminder();
@@ -456,7 +454,7 @@ const Classroom = () => {
         if (user && user.classroomCodes) {
           setIsProfessor(
             localStorage.getItem("userType") === "Professor" &&
-              user.classroomCodes.includes(roomId)
+            user.classroomCodes.includes(roomId)
           );
         }
       } catch (error) {
@@ -469,14 +467,10 @@ const Classroom = () => {
   }, [roomId]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const fetchedClassroom = await getDocument("classrooms", roomId);
-        if (!fetchedClassroom) {
-          console.error("Failed to fetch classroom data");
-          return;
-        }
-        console.log("Fetched classroom data:", fetchedClassroom.instructorId);
+    const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const fetchedClassroom = docSnapshot.data();
+
         const isProfessor =
           localStorage.getItem("userType") === "Professor" &&
           localStorage.getItem("userId") === fetchedClassroom?.instructorId;
@@ -502,9 +496,7 @@ const Classroom = () => {
         const fetchedUser = await getUser(fetchedClassroom?.instructorId);
         const className =
           fetchedClassroom?.className ||
-          `${fetchedUser?.firstName || ""} ${
-            fetchedUser?.lastName || ""
-          }'s Assignment`;
+          `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
         setClassName(className);
 
         const members = fetchedClassroom?.members || [];
@@ -514,7 +506,7 @@ const Classroom = () => {
             return {
               id: member,
               name: `${user?.firstName || ""} ${user?.lastName || ""}`,
-              profileComplete: user?.profileComplete || false, // Fetch profileComplete status
+              profileComplete: user?.profileComplete || false,
             };
           })
         );
@@ -531,14 +523,16 @@ const Classroom = () => {
         const ungroupedMembers = members.filter(
           (member) => !groupedMembers.has(member)
         );
+        console.log("fetch ungroupedMembers:", ungroupedMembers);
         setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } else {
+        console.error("Failed to fetch classroom data");
       }
-    };
+    });
 
-    fetchData();
+    return () => unsubscribe();
   }, [roomId]);
+
 
   useEffect(() => {
     if (state === "Lobby" && deadline) {
@@ -672,35 +666,34 @@ const Classroom = () => {
     }
   };
 
-  const handleRandomizeGroups = async (smartMatch) => {
-    if (smartMatch) {
-      setIsLoading(true);
-    }
+  const handleGrouping = async (smartMatch) => {
+    setIsLoading(true);
 
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
     const groups = fetchedClassroom?.groups || {};
+    const ungroupedMembers = fetchedClassroom?.ungroupedMembers || [];
 
-    // Create separate lists for locked and unlocked members
     const lockedMembers = new Set();
     const passedLockedGroups = {};
 
     Object.entries(groups).forEach(([groupIndex, group]) => {
       if (group?.locked) {
-        // Ensure group is defined and locked property exists
         passedLockedGroups[groupIndex] = group;
-        group.members?.forEach((member) => lockedMembers.add(member)); // Check if members array exists
+        group.members?.forEach((member) => lockedMembers.add(member));
       }
     });
 
-    const unlockedAndUnmatchedMembers = allMembers.filter(
+
+    const unlockedMembers = allMembers.filter(
       (member) =>
-        !lockedMembers.has(member) && !unmatchedMembers.includes(member)
+        !lockedMembers.has(member) && !ungroupedMembers.includes(member)
     );
+
+    const unlockedAndUnmatchedMembers = unlockedMembers.concat(ungroupedMembers);
 
     const method = smartMatch ? "Gruuper" : "Randomizer";
 
-    // Use getGroups function to process the groups, leveraging randomizeGroups or optimizeGroups
     const newGroups = await getGroups(
       roomId,
       setGroups,
@@ -714,7 +707,6 @@ const Classroom = () => {
       setPairedGroups(newGroups);
       setIsPairingModalOpen(true);
 
-      // Show the modal for 3 seconds before updating the UI
       setTimeout(() => {
         setIsPairingModalOpen(false);
         updateGroups(newGroups, method, passedLockedGroups, allMembers);
@@ -724,18 +716,18 @@ const Classroom = () => {
     }
 
     setIsLoading(false);
-    showReminder(); // Show reminder whenever a change is made
+    showReminder();
   };
 
   const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
+
     setClassroom((prevClassroom) => {
       const updatedGroups = { ...prevClassroom.groups };
 
-      // Merge the newly generated groups with the existing locked groups
       Object.entries(newGroups || {}).forEach(([key, group], index) => {
         const groupIndex = Object.keys(updatedGroups).length;
         updatedGroups[groupIndex] = {
-          members: group?.members || [], // Ensure members array exists
+          members: group?.members || [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: method,
@@ -750,15 +742,19 @@ const Classroom = () => {
         updatedGroups[key] = group;
       });
 
+
+
       return { ...prevClassroom, groups: updatedGroups };
     });
+
+
 
     updateMemberNames(allMembers || []);
   };
 
   const updateMemberNames = async (allMembers) => {
     if (!Array.isArray(allMembers) || allMembers.length === 0) {
-      setMemberNames([]); // Handle case where allMembers is not an array or is empty
+      setMemberNames([]);
       return;
     }
 
@@ -767,13 +763,13 @@ const Classroom = () => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${
-            fetchedUser?.lastName || ""
-          }`,
+          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
+            }`,
         };
       })
     );
     setMemberNames(newMemberNames);
+
   };
 
   useEffect(() => {
@@ -836,21 +832,19 @@ const Classroom = () => {
 
       let newGroupIndex = 0;
 
-      // Identify active groups (those that have members)
       Object.keys(currentGroups).forEach((groupKey) => {
         if (currentGroups[groupKey].members.length > 0) {
           newGroups[newGroupIndex] = currentGroups[groupKey];
           newGroupIndex++;
         } else {
-          // Groups that are empty will be marked as deleted
           deletedGroups[groupKey] = {
             ...currentGroups[groupKey],
             deletedAt: new Date().toISOString(),
             logMessages: currentGroups[groupKey].logMessages
               ? [
-                  ...currentGroups[groupKey].logMessages,
-                  `Group deleted at ${new Date().toISOString()}`,
-                ]
+                ...currentGroups[groupKey].logMessages,
+                `Group deleted at ${new Date().toISOString()}`,
+              ]
               : [`Group deleted at ${new Date().toISOString()}`],
           };
         }
@@ -863,7 +857,6 @@ const Classroom = () => {
         .map((member) => member.id)
         .filter((id) => !groupedMembers.includes(id));
 
-      // Pass both newGroups and deletedGroups to the saveGroups function
       saveGroups(
         roomId,
         newGroups,
@@ -885,7 +878,6 @@ const Classroom = () => {
       const newGroups = { ...currentGroups };
       let memberId;
 
-      // Handle removal from the existing group or unmatched area
       if (fromIndexes.groupIndex === -1) {
         setUnmatchedMembers((prevUnmatched) => {
           const updatedUnmatched = [...prevUnmatched];
@@ -900,25 +892,21 @@ const Classroom = () => {
           1
         );
 
-        // Log the removal action
         newGroups[fromIndexes.groupIndex].logMessages.push(
           `Member ID: ${memberId} was removed at ${new Date().toISOString()}`
         );
 
-        // If the creation method changes to "Hand-Picked"
         if (
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${
-              newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
         }
       }
 
-      // Create a new group with the removed member
       const newGroupIndex = Object.keys(newGroups).length;
       newGroups[newGroupIndex] = {
         members: [memberId],
@@ -941,22 +929,6 @@ const Classroom = () => {
       setGroups(newGroups);
       return { ...prevClassroom, groups: newGroups };
     });
-  };
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-    setClassName(className);
-    saveClassname(roomId, className);
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleSave();
-    }
   };
 
   const handleDeleteClick = (student) => {
@@ -1013,7 +985,7 @@ const Classroom = () => {
   };
 
   const decrementMinGroupSize = () => {
-    if (minGroupSize > 0) {
+    if (minGroupSize > 1) {
       setMinGroupSize((prevSize) => prevSize - 1);
     }
 
@@ -1314,36 +1286,51 @@ const Classroom = () => {
                         </div>
                       </div>
                       <div className="group-controls">
-                        <Tooltip title="Shuffle">
-                          <ShuffleIcon
-                            className="randomize-groups-button"
-                            onClick={() => handleRandomizeGroups(false)}
-                            sx={{
-                              fontSize: "30px",
-                              transition: "transform 0.3s",
-                            }}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Smart Match">
-                          <SmartMatchIcon
-                            className="smart-match-button"
-                            onClick={() => handleRandomizeGroups(true)}
-                            sx={{
-                              fontSize: "30px",
-                              transition: "transform 0.3s",
-                            }}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Save">
-                          <SaveIcon
-                            className="save-groups-button"
-                            onClick={saveGroupsToFirestore}
-                            sx={{
-                              fontSize: "30px",
-                              transition: "transform 0.3s",
-                            }}
-                          />
-                        </Tooltip>
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                            Random
+                          </span>
+                          <Tooltip title="Shuffle">
+                            <ShuffleIcon
+                              className="randomize-groups-button"
+                              onClick={() => handleGrouping(false)}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                            GruupMatch
+                          </span>
+                          <Tooltip title="Smart Match">
+                            <SmartMatchIcon
+                              className="smart-match-button"
+                              onClick={() => handleGrouping(true)}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                            Save
+                          </span>
+                          <Tooltip title="Save">
+                            <SaveIcon
+                              className="save-groups-button"
+                              onClick={saveGroupsToFirestore}
+                              sx={{
+                                fontSize: "30px",
+                                transition: "transform 0.3s",
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
                       </div>
                     </div>
                   )}

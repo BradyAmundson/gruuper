@@ -10,7 +10,7 @@ import {
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { randomizeGroups } from "../components/GroupRandomizer.js";
 import { optimizeGroups } from "../components/SmartMatch.js";
-import { smartMatchGroups } from "../components/SmartMatch2.js";
+import { SmartMatch } from "../components/SmartMatch2.js";
 
 export async function createClassroom(
   roomId,
@@ -37,9 +37,9 @@ export async function createClassroom(
       groupedMembers: [],
       groups: {},
       createdAt: now.toISOString(),
-      groupingStartDeadline: defaultDeadline.toISOString().slice(0, 16), // Set default deadline
-      courseNumber: courseNumber, // Added courseNumber
-      gradeLevel: gradeLevel, // Added gradeLevel
+      groupingStartDeadline: defaultDeadline.toISOString().slice(0, 16),
+      courseNumber: courseNumber,
+      gradeLevel: gradeLevel,
     });
 
     const classroomCodes = creator.classroomCodes || [];
@@ -53,7 +53,6 @@ export async function createClassroom(
   }
 }
 
-// Get a document from a specific collection
 export async function getDocument(collectionName, documentId) {
   const documentRef = doc(db, collectionName, documentId);
   const documentSnapshot = await getDoc(documentRef);
@@ -65,7 +64,6 @@ export async function getDocument(collectionName, documentId) {
   }
 }
 
-// Join a classroom
 export async function joinClassroom(roomId, userId, setError) {
   if (!roomId || !userId) {
     setError("Invalid classroom code!");
@@ -78,17 +76,26 @@ export async function joinClassroom(roomId, userId, setError) {
     const usrDocumentSnapshot = await getDoc(usrDocumentRef);
 
     if (documentSnapshot.exists() && usrDocumentSnapshot.exists()) {
-      const members = documentSnapshot.data().members;
+      const classroomData = documentSnapshot.data();
+      const members = classroomData.members;
+      const instructorId = classroomData.instructorId;
       const currentCodes = usrDocumentSnapshot.data().classroomCodes || [];
+      const instructorsWithAccess = usrDocumentSnapshot.data().instructorsWithAccess || [];
+
       if (currentCodes.includes(roomId)) {
         return roomId;
       }
+
       const updatedCodes = [...currentCodes, roomId];
+      const updatedInstructorsWithAccess = [...new Set([...instructorsWithAccess, instructorId])];
+
       members.push(userId);
       await updateDoc(documentRef, { members: members });
       await updateDoc(usrDocumentRef, {
         classroomCodes: updatedCodes,
+        instructorsWithAccess: updatedInstructorsWithAccess,
       });
+
       return roomId;
     } else {
       setError("Invalid classroom code!");
@@ -166,9 +173,9 @@ export async function saveGroups(
         creationMethod: group.creationMethod,
         createdAt: group.createdAt || now,
         updatedAt: now,
-        locked: group.locked !== undefined ? group.locked : false, // Ensure locked is either true or false
+        locked: group.locked !== undefined ? group.locked : false,
         logMessages: group.logMessages || [],
-        allMembersDataConsent, // Add the consentComplete status
+        allMembersDataConsent,
       };
 
       for (const memberId of group.members) {
@@ -176,7 +183,13 @@ export async function saveGroups(
         const userSnapshot = await getDoc(userRef);
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
-          const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom, [roomId]: key };
+          const updatedGroupIdInClassroom = {
+            ...userData.groupIdInClassroom,
+            [roomId]: {
+              groupId: key,
+              members: group.members
+            }
+          };
           await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
         }
       }
@@ -221,8 +234,6 @@ export async function saveGroups(
   }
 }
 
-
-// Get and possibly create groups
 export async function getGroups(
   roomId,
   setGroups,
@@ -236,76 +247,67 @@ export async function getGroups(
     const classroomSnapshot = await getDoc(classroomRef);
     if (classroomSnapshot.exists()) {
       const classroom = classroomSnapshot.data();
+      console.log("Getting Groups... :");
+      console.log("Set Groups:", setGroups);
+      console.log("Locked groups:", lockedGroups);
+      console.log("Passed members:", passedMembers);
+      console.log("Group size:", groupSize);
+      console.log("Smart match is... ", smartMatch);
+
 
       let shuffledGroups;
 
       if (smartMatch) {
-        const students = passedMembers.map((memberId) => {
-          const member = classroom.members.find((m) => m.id === memberId);
-          return {
-            id: memberId,
-            description: member.description || "",
-            idealGroup: member.idealGroup || "",
-            availability: member.availability || [],
-          };
-        });
+        const students = await Promise.all(
+          passedMembers.map(async (memberId) => {
+            const member = await getUser(memberId);
+            console.log("Member:", member);
+            return [
+              memberId,
+              member.description || "",
+              member.idealGroup || "",
+              member.availability || [],
+            ];
+          })
+        );
 
-        shuffledGroups = await smartMatchGroups(students, groupSize);
+        console.log("Students before smart match:", students);
+
+        shuffledGroups = await SmartMatch(students, groupSize);
+        console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
-        shuffledGroups = await randomizeGroups(passedMembers, groupSize); // Use the existing randomizeGroups function
+        shuffledGroups = await randomizeGroups(passedMembers, groupSize);
+        console.log("Shuffled groups after randomization:", shuffledGroups);
       }
 
-      console.log("Shuffled groups:", shuffledGroups);
       const combinedGroups = { ...lockedGroups };
 
-      console.log("Locked groups:", lockedGroups);
-      console.log("Combined groups 1:", combinedGroups);
       let availableIndices = new Set([
         ...Array(
           Object.keys(shuffledGroups).length + Object.keys(lockedGroups).length
         ).keys(),
       ]);
 
-      // Print the initial set of available indices
-      console.log("Initial available indices:", Array.from(availableIndices));
-
-      // Remove indices already occupied by locked groups
       Object.keys(lockedGroups).forEach((index) => {
         availableIndices.delete(parseInt(index));
-        console.log(
-          `Removed locked group index ${index}, updated available indices:`,
-          Array.from(availableIndices)
-        );
       });
 
-      // Convert the available indices set to a sorted array
       let availableIndexArray = Array.from(availableIndices).sort(
         (a, b) => a - b
       );
 
-      // Print the final available indices array
-      console.log("Final sorted available indices array:", availableIndexArray);
-      console.log("Combined groups 2:", combinedGroups);
-
-      // Place random groups in the first available indices not occupied by locked groups
       Object.entries(shuffledGroups).forEach(([key, group]) => {
-        console.log("Group:", group);
-        console.log("Available index array:", availableIndexArray);
-        console.log("Key:", group.length);
         if (group && availableIndexArray.length > 0) {
-          console.log("Available index array:", availableIndexArray);
           const index = availableIndexArray.shift();
           combinedGroups[index] = group;
         }
       });
-      console.log("Combined groups 3:", combinedGroups);
 
       const allMemberIds = classroom.members || [];
       const groupedMembers = Object.values(combinedGroups).flatMap(
         (group) => group.members
       );
 
-      // Ensure ungroupedMembers is an array
       const ungroupedMembers = Array.isArray(allMemberIds)
         ? allMemberIds.filter((id) => !groupedMembers.includes(id))
         : [];
@@ -314,16 +316,17 @@ export async function getGroups(
         ? ungroupedMembers
         : [];
 
-      // Save the new groups structure to the database
+      const deletedGroups = {};
+
       await saveGroups(
         roomId,
         combinedGroups,
+        deletedGroups,
         classroom.className,
         groupedMembers,
         safeUngroupedMembers
       );
 
-      // Update the groups state in the UI
       setGroups(combinedGroups);
 
       return shuffledGroups;
@@ -337,7 +340,7 @@ export async function getGroups(
   }
 }
 
-// Save class name
+
 export async function saveClassname(roomId, className) {
   const classroomRef = doc(db, "classrooms", roomId);
   try {
@@ -347,7 +350,6 @@ export async function saveClassname(roomId, className) {
   }
 }
 
-// Create a new user with demographic and availability data
 export async function createUser(firstName, lastName, userId, userType, email) {
   try {
     await setDoc(doc(db, "users", userId), {
@@ -366,6 +368,7 @@ export async function createUser(firstName, lastName, userId, userType, email) {
       classroomCodes: [],
       groupIdInClassroom: {},
       profileComplete: false,
+      instructorsWithAccess: [],
     });
     return { id: userId, data: { firstName, lastName, userType } };
   } catch (error) {
@@ -374,33 +377,43 @@ export async function createUser(firstName, lastName, userId, userType, email) {
   }
 }
 
-// Get a user document by userId
 export async function getUser(userId) {
+
   const userRef = doc(db, "users", userId);
-  const userSnapshot = await getDoc(userRef);
-  if (userSnapshot.exists()) {
-    const data = userSnapshot.data();
-    return {
-      id: userSnapshot.id,
-      ...data,
-      availability: Array.isArray(data.availability) ? data.availability : [], // Ensure it's an array
-    };
-  } else {
-    return null;
+
+  try {
+    const userSnapshot = await getDoc(userRef);
+
+    if (userSnapshot.exists()) {
+      const data = userSnapshot.data();
+
+      const result = {
+        id: userSnapshot.id,
+        ...data,
+        availability: Array.isArray(data.availability) ? data.availability : [],
+      };
+
+      return result;
+    } else {
+      console.log("User not found for userId:", userId);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching user data for userId:", userId, error);
+    throw error;
   }
 }
 
-// Update user data
+
 export async function updateUser(userId, data) {
   try {
     await updateDoc(doc(db, "users", userId), data);
-    await checkProfileCompletion(userId); // Check if the profile is complete after updating
+    await checkProfileCompletion(userId);
   } catch (error) {
     console.error("Error updating user: ", error);
   }
 }
 
-// Remove a member from a classroom
 export async function removeMemberFromClassroom(roomId, userId) {
   const classroomRef = doc(db, "classrooms", roomId);
   const userRef = doc(db, "users", userId);
@@ -492,7 +505,7 @@ export const archiveClassroom = async (roomId) => {
       const archiveRef = doc(db, "classroomArchive", roomId);
       await setDoc(archiveRef, {
         ...classroomData,
-        archivedAt: new Date().toISOString() // Add a timestamp for when it was archived
+        archivedAt: new Date().toISOString()
       });
 
       await deleteDoc(classroomRef);
