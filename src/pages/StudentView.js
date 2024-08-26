@@ -98,49 +98,49 @@ const StudentView = () => {
   }, []);
 
   const organizeMembers = async (classroom) => {
-    if (!classroom.members || !classroom.groups) {
+    if (!classroom.members) {
       console.error("Invalid classroom data structure:", classroom);
       return;
     }
 
-    // Get current user data from localStorage or from the classroom data directly
-    const currentUserId = localStorage.getItem("userId");
+    try {
+      // Fetch the current user's data, including groupIdInClassroom
+      const currentUserDoc = await getDocument("users", userId);
+      const currentUserName = `${currentUserDoc.firstName} ${currentUserDoc.lastName} (You)`;
 
-    // Extract the user's group information from the classroom object
-    const userGroupData = classroom.groups[roomId]?.[currentUserId];
+      // Generate the list of all members
+      const allMembersList = classroom.members.map((memberId) => {
+        if (memberId === userId) {
+          return currentUserName;
+        } else {
+          const memberData = classroom.groupIdInClassroom?.[roomId]?.members.find(
+            (member) => member.id === memberId
+          );
+          return memberData ? `${memberData.firstName}` : "Anonymous";
+        }
+      });
 
-    if (!userGroupData) {
-      console.error("No group data found for this classroom for the current user.");
-      setGroupMembers([]);
-      return;
+      setAllMembers(allMembersList);
+
+      // Find the user's group members using groupIdInClassroom
+      const userGroup = currentUserDoc.groupIdInClassroom?.[roomId]?.members;
+      if (!userGroup) {
+        setGroupMembers([]);
+        return;
+      }
+
+      const userGroupMembers = userGroup.map((member) =>
+        member.id === userId
+          ? currentUserName
+          : member.firstName
+      );
+
+      setGroupMembers(userGroupMembers);
+    } catch (error) {
+      console.error("Error organizing members:", error);
     }
-
-    // Get group member IDs
-    const userGroupMembersIds = userGroupData.members;
-
-    // Fetch and set all classroom members' names
-    const allMembersList = classroom.members.map((memberId) => {
-      const memberData = classroom.groups[roomId]?.[memberId];
-      const memberName = memberData
-        ? `${memberData.firstName} ${memberData.lastName}`
-        : "Anonymous";
-
-      return memberId === currentUserId ? `${memberName} (You)` : memberName;
-    });
-    setAllMembers(allMembersList);
-
-    // Fetch and set group members' names
-    const userGroupMembers = userGroupMembersIds.map((memberId) => {
-      const memberData = classroom.groups[roomId]?.[memberId];
-      const memberName = memberData
-        ? `${memberData.firstName} ${memberData.lastName}`
-        : "Anonymous";
-
-      return memberId === currentUserId ? `${memberName} (You)` : memberName;
-    });
-
-    setGroupMembers(userGroupMembers);
   };
+
 
 
 
