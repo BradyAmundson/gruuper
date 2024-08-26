@@ -196,7 +196,7 @@ export async function saveGroups(
           allMembersDataConsent,
         };
 
-        for (const { memberId, firstName } of memberDetails) {
+        for (const { memberId, firstName, lastName } of memberDetails) {
           const userRef = doc(db, "users", memberId);
           const userSnapshot = await getDoc(userRef);
           if (userSnapshot.exists()) {
@@ -205,11 +205,14 @@ export async function saveGroups(
               ...userData.groupIdInClassroom,
               [roomId]: {
                 groupId: key,
-                members: group.members.map((id) => ({
-                  id,
-                  firstName: memberDetails.find((m) => m.memberId === id)
-                    ?.firstName,
-                })),
+                members: group.members.map((id) => {
+                  const memberDetail = memberDetails.find((m) => m.memberId === id);
+                  return {
+                    id,
+                    firstName: memberDetail?.firstName,
+                    lastName: memberDetail?.lastName,  // Include lastName here
+                  };
+                }),
               },
             };
             await updateDoc(userRef, {

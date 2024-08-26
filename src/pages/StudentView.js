@@ -116,7 +116,7 @@ const StudentView = () => {
           const memberData = classroom.groupIdInClassroom?.[roomId]?.members.find(
             (member) => member.id === memberId
           );
-          return memberData ? `${memberData.firstName}` : "Anonymous";
+          return memberData ? `${memberData.firstName} ${memberData.lastName}` : "Anonymous";
         }
       });
 
@@ -132,7 +132,7 @@ const StudentView = () => {
       const userGroupMembers = userGroup.map((member) =>
         member.id === userId
           ? currentUserName
-          : member.firstName
+          : `${member.firstName} ${member.lastName}`
       );
 
       setGroupMembers(userGroupMembers);
@@ -140,9 +140,6 @@ const StudentView = () => {
       console.error("Error organizing members:", error);
     }
   };
-
-
-
 
 
   if (loading) {

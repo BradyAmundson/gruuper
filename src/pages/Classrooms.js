@@ -87,10 +87,15 @@ const Classrooms = () => {
 
     const userGroup = Object.values(classroom.groups).find((group) => {
       const members = Array.isArray(group?.members) ? group.members : Object.values(group?.members || {});
-      return members.includes(userId);
+      return members.some((member) => member.id === userId);
     });
 
-    return userGroup ? userGroup.members.map((memberId) => memberId) : [];
+    return userGroup
+      ? userGroup.members.map(
+        (member) =>
+          `${member.firstName} ${member.lastName}`
+      )
+      : [];
   };
 
   return (
