@@ -45,7 +45,7 @@ function Navbar() {
         if (currentUser) {
           const userDataFromFirebase = await getUser(currentUser);
           setUserData(userDataFromFirebase);
-          if (userDataFromFirebase && userDataFromFirebase?.profileImageUrl) {
+          if (userDataFromFirebase) {
             setProfileImage(userDataFromFirebase.profileImageUrl);
             setIsLoading(false);
           }
