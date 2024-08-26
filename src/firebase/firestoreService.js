@@ -122,14 +122,6 @@ export async function saveGroups(
 ) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
-  console.log("Starting saveGroups process...");
-  console.log("Room ID:", roomId);
-  console.log("Class Name:", className);
-  console.log("New Groups:", JSON.stringify(newGroups, null, 2));
-  console.log("Deleted Groups:", JSON.stringify(deletedGroups, null, 2));
-  console.log("Grouped Members:", groupedMembers);
-  console.log("Ungrouped Members:", ungroupedMembers);
-  console.log("Minimum Group Size:", minGroupSize);
 
   try {
     const classroomSnapshot = await getDoc(classroomRef);
@@ -139,7 +131,6 @@ export async function saveGroups(
     }
 
     const classroomData = classroomSnapshot.data();
-    console.log("Existing Classroom Data:", JSON.stringify(classroomData, null, 2));
 
     const existingGroups = classroomData.groups || {};
     const existingDeletedGroups = classroomData.deletedGroups || {};
@@ -168,65 +159,71 @@ export async function saveGroups(
           ? [...group.logMessages, `Group deleted at ${now}`]
           : [`Group deleted at ${now}`],
       };
-      console.log(`Group ${key} marked as deleted. New Index: ${index}`);
     });
 
-    const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
-      const acc = await accPromise;
-      console.log(`Processing new group: ${key} with members: ${group.members.join(", ")}`);
+    const updatedGroups = await Object.entries(newGroups).reduce(
+      async (accPromise, [key, group]) => {
+        const acc = await accPromise;
 
-      const memberConsentStatuses = await Promise.all(
-        group.members.map(async (memberId) => {
+        const memberDetails = await Promise.all(
+          group.members.map(async (memberId) => {
+            const userRef = doc(db, "users", memberId);
+            const userSnapshot = await getDoc(userRef);
+            if (userSnapshot.exists()) {
+              const userData = userSnapshot.data();
+              return {
+                memberId,
+                firstName: userData.firstName,
+                consent: userData.consent === true,
+              };
+            }
+            console.warn(`User document does not exist for Member ID: ${memberId}`);
+            return { memberId, firstName: "", consent: false };
+          })
+        );
+
+        const allMembersDataConsent = memberDetails.every(
+          (detail) => detail.consent === true
+        );
+
+        acc[key] = {
+          members: group.members,
+          creationMethod: group.creationMethod,
+          createdAt: group.createdAt || now,
+          updatedAt: now,
+          locked: group.locked !== undefined ? group.locked : false,
+          logMessages: group.logMessages || [],
+          allMembersDataConsent,
+        };
+
+        for (const { memberId, firstName } of memberDetails) {
           const userRef = doc(db, "users", memberId);
           const userSnapshot = await getDoc(userRef);
           if (userSnapshot.exists()) {
-            const consentStatus = userSnapshot.data().consent === true;
-            console.log(`Consent status for user ${memberId}: ${consentStatus}`);
-            return consentStatus;
+            const userData = userSnapshot.data();
+            const updatedGroupIdInClassroom = {
+              ...userData.groupIdInClassroom,
+              [roomId]: {
+                groupId: key,
+                members: group.members.map((id) => ({
+                  id,
+                  firstName: memberDetails.find((m) => m.memberId === id)
+                    ?.firstName,
+                })),
+              },
+            };
+            await updateDoc(userRef, {
+              groupIdInClassroom: updatedGroupIdInClassroom,
+            });
+          } else {
+            console.warn(`User document does not exist for Member ID: ${memberId}`);
           }
-          console.warn(`User document does not exist for Member ID: ${memberId}`);
-          return false;
-        })
-      );
-
-      const allMembersDataConsent = memberConsentStatuses.every(
-        (status) => status === true
-      );
-      console.log(`All members data consent for group ${key}: ${allMembersDataConsent}`);
-
-      acc[key] = {
-        members: group.members,
-        creationMethod: group.creationMethod,
-        createdAt: group.createdAt || now,
-        updatedAt: now,
-        locked: group.locked !== undefined ? group.locked : false,
-        logMessages: group.logMessages || [],
-        allMembersDataConsent,
-      };
-
-      for (const memberId of group.members) {
-        const userRef = doc(db, "users", memberId);
-        const userSnapshot = await getDoc(userRef);
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data();
-          const updatedGroupIdInClassroom = {
-            ...userData.groupIdInClassroom,
-            [roomId]: {
-              groupId: key,
-              members: group.members,
-            },
-          };
-          await updateDoc(userRef, {
-            groupIdInClassroom: updatedGroupIdInClassroom,
-          });
-          console.log(`Updated group ID in classroom for user ${memberId}`);
-        } else {
-          console.warn(`User document does not exist for Member ID: ${memberId}`);
         }
-      }
 
-      return acc;
-    }, Promise.resolve({}));
+        return acc;
+      },
+      Promise.resolve({})
+    );
 
     const safeUngroupedMembers = Array.isArray(ungroupedMembers)
       ? ungroupedMembers
@@ -243,7 +240,6 @@ export async function saveGroups(
           await updateDoc(userRef, {
             groupIdInClassroom: updatedGroupIdInClassroom,
           });
-          console.log(`Removed group ID from classroom for ungrouped user ${memberId}`);
         } else {
           console.warn(`User document does not exist for Member ID: ${memberId}`);
         }
@@ -251,7 +247,7 @@ export async function saveGroups(
     }
 
     await updateDoc(classroomRef, {
-      groups: await updatedGroups,
+      groups: updatedGroups,
       deletedGroups: combinedDeletedGroups,
       groupedMembers: groupedMembers,
       ungroupedMembers: safeUngroupedMembers,
@@ -269,6 +265,7 @@ export async function saveGroups(
 }
 
 
+
 export async function getGroups(
   roomId,
   setGroups,
@@ -282,11 +279,6 @@ export async function getGroups(
     const classroomSnapshot = await getDoc(classroomRef);
     if (classroomSnapshot.exists()) {
       const classroom = classroomSnapshot.data();
-      console.log("Getting Groups... :");
-      console.log("Locked groups:", lockedGroups);
-      console.log("Passed members:", passedMembers);
-      console.log("Group size:", groupSize);
-      console.log("Smart match is... ", smartMatch);
 
       let shuffledGroups;
       let groupingData; // To hold additional data returned by SmartMatch
@@ -317,11 +309,8 @@ export async function getGroups(
           };
         });
 
-        console.log("Grouping data:", groupingData);
-        console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
         shuffledGroups = await randomizeGroups(passedMembers, groupSize);
-        console.log("Shuffled groups after randomization:", shuffledGroups);
       }
 
       const combinedGroups = { ...lockedGroups };
