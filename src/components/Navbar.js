@@ -44,7 +44,6 @@ function Navbar() {
         const currentUser = localStorage.getItem("userId");
         if (currentUser) {
           const userDataFromFirebase = await getUser(currentUser);
-          console.log("userDataFromFirebase", userDataFromFirebase);
           setUserData(userDataFromFirebase);
           if (userDataFromFirebase && userDataFromFirebase?.profileImageUrl) {
             setProfileImage(userDataFromFirebase.profileImageUrl);

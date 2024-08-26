@@ -247,6 +247,13 @@ export async function getGroups(
     const classroomSnapshot = await getDoc(classroomRef);
     if (classroomSnapshot.exists()) {
       const classroom = classroomSnapshot.data();
+      console.log("Getting Groups... :");
+      console.log("Set Groups:", setGroups);
+      console.log("Locked groups:", lockedGroups);
+      console.log("Passed members:", passedMembers);
+      console.log("Group size:", groupSize);
+      console.log("Smart match is... ", smartMatch);
+
 
       let shuffledGroups;
 
@@ -260,6 +267,8 @@ export async function getGroups(
             availability: member.availability || [],
           };
         });
+
+        console.log("Students before smart match:", students);
 
         shuffledGroups = await smartMatchGroups(students, groupSize);
         console.log("Shuffled groups after smart match:", shuffledGroups);

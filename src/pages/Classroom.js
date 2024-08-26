@@ -470,7 +470,6 @@ const Classroom = () => {
     const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const fetchedClassroom = docSnapshot.data();
-        console.log("snapshot:", fetchedClassroom?.className);
 
         const isProfessor =
           localStorage.getItem("userType") === "Professor" &&
@@ -498,7 +497,6 @@ const Classroom = () => {
         const className =
           fetchedClassroom?.className ||
           `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
-        console.log("classroom name:", className);
         setClassName(className);
 
         const members = fetchedClassroom?.members || [];
@@ -525,6 +523,7 @@ const Classroom = () => {
         const ungroupedMembers = members.filter(
           (member) => !groupedMembers.has(member)
         );
+        console.log("fetch ungroupedMembers:", ungroupedMembers);
         setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
       } else {
         console.error("Failed to fetch classroom data");
@@ -673,28 +672,28 @@ const Classroom = () => {
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
     const groups = fetchedClassroom?.groups || {};
+    const ungroupedMembers = fetchedClassroom?.ungroupedMembers || [];
 
-    // Create separate lists for locked and unlocked members
     const lockedMembers = new Set();
     const passedLockedGroups = {};
 
     Object.entries(groups).forEach(([groupIndex, group]) => {
       if (group?.locked) {
-        // Ensure group is defined and locked property exists
         passedLockedGroups[groupIndex] = group;
-        group.members?.forEach((member) => lockedMembers.add(member)); // Check if members array exists
+        group.members?.forEach((member) => lockedMembers.add(member));
       }
     });
 
 
-    const unlockedAndUnmatchedMembers = allMembers.filter(
+    const unlockedMembers = allMembers.filter(
       (member) =>
-        !lockedMembers.has(member) && !unmatchedMembers.includes(member)
+        !lockedMembers.has(member) && !ungroupedMembers.includes(member)
     );
+
+    const unlockedAndUnmatchedMembers = unlockedMembers.concat(ungroupedMembers);
 
     const method = smartMatch ? "Gruuper" : "Randomizer";
 
-    // Use getGroups function to process the groups, leveraging randomizeGroups or optimizeGroups
     const newGroups = await getGroups(
       roomId,
       setGroups,
@@ -704,12 +703,10 @@ const Classroom = () => {
       smartMatch
     );
 
-
     if (smartMatch) {
       setPairedGroups(newGroups);
       setIsPairingModalOpen(true);
 
-      // Show the modal for 3 seconds before updating the UI
       setTimeout(() => {
         setIsPairingModalOpen(false);
         updateGroups(newGroups, method, passedLockedGroups, allMembers);
@@ -719,7 +716,7 @@ const Classroom = () => {
     }
 
     setIsLoading(false);
-    showReminder(); // Show reminder whenever a change is made
+    showReminder();
   };
 
   const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
@@ -727,11 +724,10 @@ const Classroom = () => {
     setClassroom((prevClassroom) => {
       const updatedGroups = { ...prevClassroom.groups };
 
-      // Merge the newly generated groups with the existing locked groups
       Object.entries(newGroups || {}).forEach(([key, group], index) => {
         const groupIndex = Object.keys(updatedGroups).length;
         updatedGroups[groupIndex] = {
-          members: group?.members || [], // Ensure members array exists
+          members: group?.members || [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           creationMethod: method,
@@ -758,7 +754,7 @@ const Classroom = () => {
 
   const updateMemberNames = async (allMembers) => {
     if (!Array.isArray(allMembers) || allMembers.length === 0) {
-      setMemberNames([]); // Handle case where allMembers is not an array or is empty
+      setMemberNames([]);
       return;
     }
 
@@ -836,13 +832,11 @@ const Classroom = () => {
 
       let newGroupIndex = 0;
 
-      // Identify active groups (those that have members)
       Object.keys(currentGroups).forEach((groupKey) => {
         if (currentGroups[groupKey].members.length > 0) {
           newGroups[newGroupIndex] = currentGroups[groupKey];
           newGroupIndex++;
         } else {
-          // Groups that are empty will be marked as deleted
           deletedGroups[groupKey] = {
             ...currentGroups[groupKey],
             deletedAt: new Date().toISOString(),
@@ -863,7 +857,6 @@ const Classroom = () => {
         .map((member) => member.id)
         .filter((id) => !groupedMembers.includes(id));
 
-      // Pass both newGroups and deletedGroups to the saveGroups function
       saveGroups(
         roomId,
         newGroups,
@@ -914,7 +907,6 @@ const Classroom = () => {
         }
       }
 
-      // Create a new group with the removed member
       const newGroupIndex = Object.keys(newGroups).length;
       newGroups[newGroupIndex] = {
         members: [memberId],
