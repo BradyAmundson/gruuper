@@ -278,7 +278,16 @@ export async function getGroups(
 
         const smartMatchData = await SmartMatch(students, groupSize);
         groupingData = smartMatchData.result;
-        shuffledGroups = groupingData.groupings;
+        shuffledGroups = {};
+        groupingData.groupings.forEach((group, index) => {
+          shuffledGroups[index] = {
+            members: group,
+            creationMethod: "SmartMatch",
+            createdAt: new Date().toISOString(),
+            logMessages: [`Group created with SmartMatch at ${new Date().toISOString()}`],
+          };
+        });
+
         console.log("Grouping data:", groupingData);
         console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
