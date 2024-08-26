@@ -155,7 +155,6 @@ export async function saveGroups(
 
     const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
       const acc = await accPromise;
-      console.log(`Processing group: ${key}, Members: ${group.members.join(", ")}`);
 
       const memberConsentStatuses = await Promise.all(
         group.members.map(async (memberId) => {
@@ -264,7 +263,6 @@ export async function getGroups(
         const students = await Promise.all(
           passedMembers.map(async (memberId) => {
             const member = await getUser(memberId);
-            console.log("Member:", member);
             return [
               memberId,
               member.description || "",
@@ -274,7 +272,6 @@ export async function getGroups(
           })
         );
 
-        console.log("Students before smart match:", students);
 
         const smartMatchData = await SmartMatch(students, groupSize);
         groupingData = smartMatchData.result;
@@ -369,23 +366,65 @@ async function saveGroupingData(roomId, groupingData) {
 
   try {
     const smartMatchDoc = doc(smartMatchRef, timestamp);
-    await setDoc(smartMatchDoc, {
-      groupings: groupingData.groupings,
-      teamwork_compatibilities: groupingData.teamwork_compatibilities,
-      individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities,
-      personality_compatibilities: groupingData.personality_compatibilities,
-      individual_personality_compatibilities: groupingData.individual_personality_compatibilities,
-      availability_compatibilities: groupingData.availability_compatibilities,
-      individual_availability_compatibilities: groupingData.individual_availability_compatibilities,
+
+    // Flatten the nested arrays in groupingData
+    const flattenedGroupings = groupingData.groupings.reduce((acc, group, index) => {
+      group.forEach((member, memberIndex) => {
+        acc[`group_${index}_member_${memberIndex}`] = member;
+      });
+      return acc;
+    }, {});
+
+    const flattenedTeamworkCompatibilities = groupingData.teamwork_compatibilities.reduce((acc, compatibility, index) => {
+      acc[`teamwork_compatibility_${index}`] = compatibility;
+      return acc;
+    }, {});
+
+    const flattenedIndividualTeamworkCompatibilities = groupingData.individual_teamwork_compatibilities.reduce((acc, compatibility, index) => {
+      acc[`individual_teamwork_compatibility_${index}`] = compatibility;
+      return acc;
+    }, {});
+
+    const flattenedPersonalityCompatibilities = groupingData.personality_compatibilities.reduce((acc, compatibility, index) => {
+      acc[`personality_compatibility_${index}`] = compatibility;
+      return acc;
+    }, {});
+
+    const flattenedIndividualPersonalityCompatibilities = groupingData.individual_personality_compatibilities.reduce((acc, compatibility, index) => {
+      acc[`individual_personality_compatibility_${index}`] = compatibility;
+      return acc;
+    }, {});
+
+    const flattenedAvailabilityCompatibilities = groupingData.availability_compatibilities.reduce((acc, compatibility, index) => {
+      acc[`availability_compatibility_${index}`] = compatibility;
+      return acc;
+    }, {});
+
+    const flattenedIndividualAvailabilityCompatibilities = groupingData.individual_availability_compatibilities.reduce((acc, compatibility, index) => {
+      acc[`individual_availability_compatibility_${index}`] = compatibility;
+      return acc;
+    }, {});
+
+    const dataToSave = {
+      ...flattenedGroupings,
+      ...flattenedTeamworkCompatibilities,
+      ...flattenedIndividualTeamworkCompatibilities,
+      ...flattenedPersonalityCompatibilities,
+      ...flattenedIndividualPersonalityCompatibilities,
+      ...flattenedAvailabilityCompatibilities,
+      ...flattenedIndividualAvailabilityCompatibilities,
       group_compatibilities: groupingData.group_compatibilities,
       createdAt: now,
-    });
+    };
+
+    await setDoc(smartMatchDoc, dataToSave);
 
     console.log("Grouping data saved successfully");
   } catch (error) {
     console.error("Error saving grouping data:", error);
   }
 }
+
 
 function generateUUID() {
   let d = new Date().getTime();
