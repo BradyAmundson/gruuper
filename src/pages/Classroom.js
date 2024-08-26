@@ -200,7 +200,7 @@ const Classroom = () => {
   const [classroom, setClassroom] = useState(null);
   const [groups, setGroups] = useState({});
   const [memberNames, setMemberNames] = useState([]);
-  const [groupSize, setGroupSize] = useState(1);
+  const [groupSize, setGroupSize] = useState(2);
   const [currentlyDragging, setCurrentlyDragging] = useState(null);
   const [className, setClassName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -213,6 +213,8 @@ const Classroom = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSmartMatchLoading, setIsSmartMatchLoading] = useState(false);
+
 
   const [state, setState] = useState();
   const [timeLeft, setTimeLeft] = useState(null);
@@ -683,6 +685,7 @@ const Classroom = () => {
 
   const handleGrouping = async (smartMatch) => {
     setIsLoading(true);
+    setIsSmartMatchLoading(smartMatch);
 
     const fetchedClassroom = await getDocument("classrooms", roomId);
     const allMembers = fetchedClassroom?.members || [];
@@ -725,13 +728,14 @@ const Classroom = () => {
       setTimeout(() => {
         setIsPairingModalOpen(false);
         updateGroups(newGroups, method, passedLockedGroups, allMembers);
-        // window.location.reload();
+        window.location.reload();
       }, 8000);
     } else {
       updateGroups(newGroups, method, passedLockedGroups, allMembers);
     }
 
     setIsLoading(false);
+    setIsSmartMatchLoading(false);
     showReminder();
   };
 
@@ -996,7 +1000,7 @@ const Classroom = () => {
   };
 
   const decrementMinGroupSize = () => {
-    if (minGroupSize > 1) {
+    if (minGroupSize > 2) {
       setMinGroupSize((prevSize) => prevSize - 1);
     }
 
@@ -1013,6 +1017,9 @@ const Classroom = () => {
     <DndProvider backend={HTML5Backend}>
       {isLoading && (
         <div className="loading-overlay">
+          <div className="loading-message">
+            {isSmartMatchLoading ? "Analyzing student data..." : "Randomizing students..."}
+          </div>
           <div className="loading-spinner"></div>
         </div>
       )}

@@ -487,6 +487,12 @@ h2 {
   z-index: 10; /* Make sure this is above other content */
 }
 
+.loading-message {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
 .loading-spinner {
   border: 8px solid #f3f3f3; /* Light grey */
   border-top: 8px solid #3498db; /* Blue */
