@@ -16,8 +16,8 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
   const customStyles = {
     content: {
       backgroundColor: "white",
-      width: "30rem",
-      height: "80vh",
+      width: "60rem", // Increase the width
+      height: "90vh", // Increase the height
       margin: "auto",
       top: "50%",
       left: "50%",
@@ -80,7 +80,6 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
     textTransform: "none",
     boxShadow: "none",
     borderRadius: "10px",
-    // padding: "10px 20px",
     fontSize: "0.75rem",
     cursor: "pointer",
     transition: "color 0.3s, transform 0.3s",
@@ -103,7 +102,7 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
       </p>
       <div
         style={{
-          height: "50vh",
+          height: "70vh", // Increase the height of the PDF viewer
           overflow: "auto",
           border: "1px solid #ddd",
           borderRadius: "10px",
