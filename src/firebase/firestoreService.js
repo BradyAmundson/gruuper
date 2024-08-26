@@ -256,6 +256,7 @@ export async function getGroups(
 
 
       let shuffledGroups;
+      let groupingData;  // To hold additional data returned by SmartMatch
 
       if (smartMatch) {
         const students = await Promise.all(
@@ -274,8 +275,9 @@ export async function getGroups(
         console.log("Students before smart match:", students);
 
         const smartMatchData = await SmartMatch(students, groupSize);
+        groupingData = smartMatchData.result;
+        shuffledGroups = groupingData.groupings;
 
-        shuffledGroups = smartMatchData[2]
         console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
         shuffledGroups = await randomizeGroups(passedMembers, groupSize);
@@ -331,6 +333,10 @@ export async function getGroups(
 
       setGroups(combinedGroups);
 
+      if (smartMatch && groupingData) {
+        await saveGroupingData(roomId, groupingData);
+      }
+
       return shuffledGroups;
     } else {
       console.error("Classroom document does not exist");
@@ -342,6 +348,48 @@ export async function getGroups(
   }
 }
 
+async function saveGroupingData(roomId, groupingData) {
+  const groupingDataRef = doc(db, "GroupingData", roomId);
+  const smartMatchId = generateUUID();
+  const smartMatchRef = collection(groupingDataRef, smartMatchId);
+  const now = new Date().toISOString();
+  const timestamp = now.replace(/[:\-T.]/g, "");
+
+  try {
+    const smartMatchDoc = doc(smartMatchRef, timestamp);
+    await setDoc(smartMatchDoc, {
+      groupings: groupingData.groupings,
+      teamwork_compatibilities: groupingData.teamwork_compatibilities,
+      individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities,
+      personality_compatibilities: groupingData.personality_compatibilities,
+      individual_personality_compatibilities: groupingData.individual_personality_compatibilities,
+      availability_compatibilities: groupingData.availability_compatibilities,
+      individual_availability_compatibilities: groupingData.individual_availability_compatibilities,
+      group_compatibilities: groupingData.group_compatibilities,
+      createdAt: now,
+    });
+
+    console.log("Grouping data saved successfully");
+  } catch (error) {
+    console.error("Error saving grouping data:", error);
+  }
+}
+
+function generateUUID() {
+  let d = new Date().getTime();
+  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    let r = Math.random() * 16;
+    if (d > 0) {
+      r = (d + r) % 16 | 0;
+      d = Math.floor(d / 16);
+    } else {
+      r = (d2 + r) % 16 | 0;
+      d2 = Math.floor(d2 / 16);
+    }
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
 
 export async function saveClassname(roomId, className) {
   const classroomRef = doc(db, "classrooms", roomId);
