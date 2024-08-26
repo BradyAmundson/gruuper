@@ -210,7 +210,7 @@ export async function saveGroups(
                   return {
                     id,
                     firstName: memberDetail?.firstName,
-                    lastName: memberDetail?.lastName,  // Include lastName here
+                    lastName: memberDetail?.lastName,
                   };
                 }),
               },
@@ -219,9 +219,11 @@ export async function saveGroups(
             console.log("Member :", memberId);
             console.log("userData :", userData);
             console.log("Updated groupIdInClassroom:", updatedGroupIdInClassroom);
+            console.log("userRef", userRef);
             await updateDoc(userRef, {
               groupIdInClassroom: updatedGroupIdInClassroom,
             });
+            console.log("doc updated");
           } else {
             console.warn(`User document does not exist for Member ID: ${memberId}`);
           }
