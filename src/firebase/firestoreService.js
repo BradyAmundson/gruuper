@@ -218,6 +218,7 @@ export async function saveGroups(
             console.log("");
             console.log("Member :", memberId);
             console.log("userData :", userData);
+            console.log("Updated groupIdInClassroom:", updatedGroupIdInClassroom);
             await updateDoc(userRef, {
               groupIdInClassroom: updatedGroupIdInClassroom,
             });
