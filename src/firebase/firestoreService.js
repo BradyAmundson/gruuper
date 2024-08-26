@@ -379,20 +379,25 @@ export async function getGroups(
 }
 
 async function saveGroupingData(roomId, groupingData) {
-  const groupingDataRef = doc(db, "grouping_data", roomId);
-  const smartMatchId = generateUUID();  // Ensure this is unique for each invocation
-  const smartMatchRef = collection(groupingDataRef, smartMatchId);
+  const db = getFirestore();
+  const groupingDataCollectionRef = collection(db, "grouping_data");
   const now = new Date().toISOString();
 
   try {
-    // Save the main grouping data without nested arrays
-    const smartMatchDoc = doc(smartMatchRef, "summary");
-    await setDoc(smartMatchDoc, {
+    // Generate a unique ID for each grouping data save operation
+    const groupingDataId = generateUUID();
+
+    // Create a new document reference with the unique ID
+    const smartMatchRef = doc(groupingDataCollectionRef, groupingDataId);
+
+    // Save the main grouping data summary
+    await setDoc(smartMatchRef, {
+      roomId,
       createdAt: now,
       group_compatibilities: groupingData.group_compatibilities,
     });
 
-    // Save each group separately
+    // Save each group separately within the same document
     await Promise.all(
       groupingData.groupings.map(async (group, index) => {
         const groupDoc = doc(smartMatchRef, `group_${index}`);
@@ -409,11 +414,12 @@ async function saveGroupingData(roomId, groupingData) {
       })
     );
 
-    console.log("Grouping data saved successfully under smartMatchId:", smartMatchId);
+    console.log("Grouping data saved successfully under groupingDataId:", groupingDataId);
   } catch (error) {
     console.error("Error saving grouping data:", error);
   }
 }
+
 
 
 
