@@ -390,18 +390,21 @@ async function saveGroupingData(roomId, groupingData) {
     // Create a new document reference with the unique ID
     const smartMatchRef = doc(groupingDataCollectionRef, groupingDataId);
 
-    // Save the main grouping data summary
+    // Save the main grouping data summary in the main document
     await setDoc(smartMatchRef, {
       roomId,
       createdAt: now,
       group_compatibilities: groupingData.group_compatibilities,
     });
 
-    // Save each group separately within the same document
+    // Create a subcollection for groups within the main document
+    const groupsSubcollectionRef = collection(smartMatchRef, "groups");
+
+    // Save each group separately within the subcollection
     await Promise.all(
       groupingData.groupings.map(async (group, index) => {
-        const groupDoc = doc(smartMatchRef, `group_${index}`);
-        await setDoc(groupDoc, {
+        const groupDocRef = doc(groupsSubcollectionRef, `group_${index}`);
+        await setDoc(groupDocRef, {
           members: group,
           teamwork_compatibilities: groupingData.teamwork_compatibilities[index],
           individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities[index],
@@ -419,6 +422,7 @@ async function saveGroupingData(roomId, groupingData) {
     console.error("Error saving grouping data:", error);
   }
 }
+
 
 
 
