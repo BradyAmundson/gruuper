@@ -77,8 +77,9 @@ const DraggableMember = ({
     },
   }));
   const isCurrentlyBeingDragged = currentlyDragging === index;
-  let className = `draggable-item-professor ${isCurrentlyBeingDragged ? "dragging-item" : ""
-    }`;
+  let className = `draggable-item-professor ${
+    isCurrentlyBeingDragged ? "dragging-item" : ""
+  }`;
   if (!isProfessor) {
     className = "draggable-item-student";
   }
@@ -231,11 +232,19 @@ const Classroom = () => {
       `<!DOCTYPE html>
       <html>
         <body>
-          <p>Hi there,</p>
-          <p>Your new group has been successfully formed!</p>
-          <p>Click the link below to check it out:</p>
-          <p><a href="https://gruuper.vercel.app/classroom?roomId=${roomId}" target="_blank">Go to your new group</a></p>
-          <p>Best regards,<br>Your Team</p>
+          <p>Dear Student,</p>
+
+          <p>We are pleased to inform you that your group has been successfully created as part of your course. Your professor has finalized the group assignments, and you are now part of a designated team.</p>
+
+          <p>You can view and manage your group details by clicking the link below:</p>
+
+          <p><a href="https://gruuper.app/classroom?roomId=${roomId}" target="_blank">Access Your Group</a></p>
+
+          <p>We encourage you to connect with your group members and start collaborating on your assignments. If you have any questions or encounter any issues, please do not hesitate to contact us or your professor for assistance.</p>
+
+          <p>Thank you for your attention, and best of luck with your group work!</p>
+
+          <p>Best regards,<br>The Gruuper Team</p>
         </body>
       </html>
       `
@@ -365,7 +374,8 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${
+              newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
@@ -383,14 +393,16 @@ const Classroom = () => {
 
         // Log the addition action
         newGroups[toGroupIndex].logMessages.push(
-          `Member ${member} (ID: ${member.id
+          `Member ${member} (ID: ${
+            member.id
           }) was added at ${new Date().toISOString()}`
         );
 
         // If the creation method changes to "Hand-Picked"
         if (newGroups[toGroupIndex].creationMethod !== "Hand-Picked") {
           newGroups[toGroupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[toGroupIndex].creationMethod
+            `Group creation method changed from ${
+              newGroups[toGroupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[toGroupIndex].creationMethod = "Hand-Picked";
@@ -406,7 +418,8 @@ const Classroom = () => {
         setUnmatchedMembers((prevUnmatched) => [...prevUnmatched, member]);
 
         newGroups[fromIndexes.groupIndex].logMessages.push(
-          `Member ${member.name} (ID: ${member.id
+          `Member ${member.name} (ID: ${
+            member.id
           }) was added to Ungrouped Members at ${new Date().toISOString()}`
         );
         showReminder();
@@ -454,7 +467,7 @@ const Classroom = () => {
         if (user && user.classroomCodes) {
           setIsProfessor(
             localStorage.getItem("userType") === "Professor" &&
-            user.classroomCodes.includes(roomId)
+              user.classroomCodes.includes(roomId)
           );
         }
       } catch (error) {
@@ -467,72 +480,76 @@ const Classroom = () => {
   }, [roomId]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const fetchedClassroom = docSnapshot.data();
+    const unsubscribe = onSnapshot(
+      doc(db, "classrooms", roomId),
+      async (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const fetchedClassroom = docSnapshot.data();
 
-        const isProfessor =
-          localStorage.getItem("userType") === "Professor" &&
-          localStorage.getItem("userId") === fetchedClassroom?.instructorId;
-        setIsProfessor(isProfessor);
+          const isProfessor =
+            localStorage.getItem("userType") === "Professor" &&
+            localStorage.getItem("userId") === fetchedClassroom?.instructorId;
+          setIsProfessor(isProfessor);
 
-        if (!isProfessor) {
-          const code = query.get("roomId");
-          navigate(`/student-view?roomId=${code}`);
-        }
+          if (!isProfessor) {
+            const code = query.get("roomId");
+            navigate(`/student-view?roomId=${code}`);
+          }
 
-        setClassroom(fetchedClassroom);
+          setClassroom(fetchedClassroom);
 
-        if (!fetchedClassroom.deadline) {
-          const defaultDead = defaultDeadline();
-          saveDeadlineToFirestore(defaultDead);
-        } else {
-          setDeadline(fetchedClassroom.deadline);
-        }
+          if (!fetchedClassroom.deadline) {
+            const defaultDead = defaultDeadline();
+            saveDeadlineToFirestore(defaultDead);
+          } else {
+            setDeadline(fetchedClassroom.deadline);
+          }
 
-        const fetchedGroups = fetchedClassroom.groups || {};
-        setGroups(fetchedGroups);
+          const fetchedGroups = fetchedClassroom.groups || {};
+          setGroups(fetchedGroups);
 
-        const fetchedUser = await getUser(fetchedClassroom?.instructorId);
-        const className =
-          fetchedClassroom?.className ||
-          `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""}'s Assignment`;
-        setClassName(className);
+          const fetchedUser = await getUser(fetchedClassroom?.instructorId);
+          const className =
+            fetchedClassroom?.className ||
+            `${fetchedUser?.firstName || ""} ${
+              fetchedUser?.lastName || ""
+            }'s Assignment`;
+          setClassName(className);
 
-        const members = fetchedClassroom?.members || [];
-        const newMemberNames = await Promise.all(
-          members.map(async (member) => {
-            const user = await getUser(member);
-            return {
-              id: member,
-              name: `${user?.firstName || ""} ${user?.lastName || ""}`,
-              profileComplete: user?.profileComplete || false,
-            };
-          })
-        );
-        setMemberNames(newMemberNames);
+          const members = fetchedClassroom?.members || [];
+          const newMemberNames = await Promise.all(
+            members.map(async (member) => {
+              const user = await getUser(member);
+              return {
+                id: member,
+                name: `${user?.firstName || ""} ${user?.lastName || ""}`,
+                profileComplete: user?.profileComplete || false,
+              };
+            })
+          );
+          setMemberNames(newMemberNames);
 
-        // Initialize grouped and ungrouped members
-        const groupedMembers = new Set();
-        Object.values(fetchedGroups).forEach((group) => {
-          group.members.forEach((member) => {
-            groupedMembers.add(member);
+          // Initialize grouped and ungrouped members
+          const groupedMembers = new Set();
+          Object.values(fetchedGroups).forEach((group) => {
+            group.members.forEach((member) => {
+              groupedMembers.add(member);
+            });
           });
-        });
 
-        const ungroupedMembers = members.filter(
-          (member) => !groupedMembers.has(member)
-        );
-        console.log("fetch ungroupedMembers:", ungroupedMembers);
-        setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
-      } else {
-        console.error("Failed to fetch classroom data");
+          const ungroupedMembers = members.filter(
+            (member) => !groupedMembers.has(member)
+          );
+          console.log("fetch ungroupedMembers:", ungroupedMembers);
+          setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
+        } else {
+          console.error("Failed to fetch classroom data");
+        }
       }
-    });
+    );
 
     return () => unsubscribe();
   }, [roomId]);
-
 
   useEffect(() => {
     if (state === "Lobby" && deadline) {
@@ -684,13 +701,13 @@ const Classroom = () => {
       }
     });
 
-
     const unlockedMembers = allMembers.filter(
       (member) =>
         !lockedMembers.has(member) && !ungroupedMembers.includes(member)
     );
 
-    const unlockedAndUnmatchedMembers = unlockedMembers.concat(ungroupedMembers);
+    const unlockedAndUnmatchedMembers =
+      unlockedMembers.concat(ungroupedMembers);
 
     const method = smartMatch ? "Gruuper" : "Randomizer";
 
@@ -720,7 +737,6 @@ const Classroom = () => {
   };
 
   const updateGroups = (newGroups, method, passedLockedGroups, allMembers) => {
-
     setClassroom((prevClassroom) => {
       const updatedGroups = { ...prevClassroom.groups };
 
@@ -742,12 +758,8 @@ const Classroom = () => {
         updatedGroups[key] = group;
       });
 
-
-
       return { ...prevClassroom, groups: updatedGroups };
     });
-
-
 
     updateMemberNames(allMembers || []);
   };
@@ -763,13 +775,13 @@ const Classroom = () => {
         const fetchedUser = await getUser(member);
         return {
           id: member,
-          name: `${fetchedUser?.firstName || ""} ${fetchedUser?.lastName || ""
-            }`,
+          name: `${fetchedUser?.firstName || ""} ${
+            fetchedUser?.lastName || ""
+          }`,
         };
       })
     );
     setMemberNames(newMemberNames);
-
   };
 
   useEffect(() => {
@@ -842,9 +854,9 @@ const Classroom = () => {
             deletedAt: new Date().toISOString(),
             logMessages: currentGroups[groupKey].logMessages
               ? [
-                ...currentGroups[groupKey].logMessages,
-                `Group deleted at ${new Date().toISOString()}`,
-              ]
+                  ...currentGroups[groupKey].logMessages,
+                  `Group deleted at ${new Date().toISOString()}`,
+                ]
               : [`Group deleted at ${new Date().toISOString()}`],
           };
         }
@@ -900,7 +912,8 @@ const Classroom = () => {
           newGroups[fromIndexes.groupIndex].creationMethod !== "Hand-Picked"
         ) {
           newGroups[fromIndexes.groupIndex].logMessages.push(
-            `Group creation method changed from ${newGroups[fromIndexes.groupIndex].creationMethod
+            `Group creation method changed from ${
+              newGroups[fromIndexes.groupIndex].creationMethod
             } to Hand-Picked at ${new Date().toISOString()}`
           );
           newGroups[fromIndexes.groupIndex].creationMethod = "Hand-Picked";
@@ -1287,7 +1300,14 @@ const Classroom = () => {
                       </div>
                       <div className="group-controls">
                         <div style={{ textAlign: "center" }}>
-                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                          <span
+                            style={{
+                              display: "block",
+                              marginBottom: "4px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                            }}
+                          >
                             Random
                           </span>
                           <Tooltip title="Shuffle">
@@ -1302,7 +1322,14 @@ const Classroom = () => {
                           </Tooltip>
                         </div>
                         <div style={{ textAlign: "center" }}>
-                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                          <span
+                            style={{
+                              display: "block",
+                              marginBottom: "4px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                            }}
+                          >
                             GruupMatch
                           </span>
                           <Tooltip title="Smart Match">
@@ -1317,7 +1344,14 @@ const Classroom = () => {
                           </Tooltip>
                         </div>
                         <div style={{ textAlign: "center" }}>
-                          <span style={{ display: "block", marginBottom: "4px", fontSize: "0.85rem", fontWeight: "bold" }}>
+                          <span
+                            style={{
+                              display: "block",
+                              marginBottom: "4px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                            }}
+                          >
                             Save
                           </span>
                           <Tooltip title="Save">
