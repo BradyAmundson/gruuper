@@ -273,7 +273,9 @@ export async function getGroups(
 
         console.log("Students before smart match:", students);
 
-        shuffledGroups = await SmartMatch(students, groupSize);
+        const smartMatchData = await SmartMatch(students, groupSize);
+
+        shuffledGroups = smartMatchData[2]
         console.log("Shuffled groups after smart match:", shuffledGroups);
       } else {
         shuffledGroups = await randomizeGroups(passedMembers, groupSize);
