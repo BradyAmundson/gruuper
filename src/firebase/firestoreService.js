@@ -432,10 +432,7 @@ async function saveGroupingData(roomId, groupingData) {
   const now = new Date().toISOString();
 
   try {
-    // Generate a unique document name based on the current timestamp
     const documentName = now;
-
-    // Create a new instance of grouping data with the document name as the key
     const groupingDataInstance = {
       group_compatibilities: groupingData.group_compatibilities,
       groups: groupingData.groupings.map((group, index) => ({
@@ -459,9 +456,6 @@ async function saveGroupingData(roomId, groupingData) {
     console.error("Error saving grouping data:", error);
   }
 }
-
-}
-
 
 
 function generateUUID() {
