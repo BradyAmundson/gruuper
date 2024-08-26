@@ -600,7 +600,7 @@ const Classroom = () => {
 
         setUnmatchedMembers(remainingUnmatched);
 
-        deletedgroups = {}
+        const deletedgroups = {}
 
         saveGroups(
           roomId,
