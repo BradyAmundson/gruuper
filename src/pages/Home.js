@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from "react";
-import PhotoBanner from "../components/PhotoBanner";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "nanoid";
-import { createClassroom, joinClassroom } from "../firebase/firestoreService";
-import { smartMatchGroups, SmartMatch } from "../components/SmartMatch2.js";
+import { createClassroom, joinClassroom, getUser } from "../firebase/firestoreService";
+import PhotoBanner from "../components/PhotoBanner";
 
 import "./styles/Home.css";
 
 function Home() {
   const [error, setError] = React.useState(null);
+  const [profileIncomplete, setProfileIncomplete] = React.useState(false); // Track if the profile is incomplete
   const navigate = useNavigate();
   const hasCalledAPI = useRef(false);
 
@@ -24,13 +24,27 @@ function Home() {
 
   const joinClass = async (event) => {
     event.preventDefault();
-    const roomId = document.getElementById("roomId").value;
     const userId = localStorage.getItem("userId");
+
+    // Fetch user data to check if the profile is complete
+    const userData = await getUser(userId);
+    if (!userData.profileComplete) {
+      setError("Complete your profile in order to join a class!");
+      setProfileIncomplete(true); // Set profileIncomplete to true if the profile is not complete
+      return;
+    }
+
+    const roomId = document.getElementById("roomId").value;
     const response = await joinClassroom(roomId, userId, setError);
     if (!response) {
+      setProfileIncomplete(false); // Set profileIncomplete to false for any other errors
       return;
     }
     navigate(`/classroom?roomId=${roomId}`);
+  };
+
+  const handleRedirectToProfile = () => {
+    navigate("/edit-profile");
   };
 
   useEffect(() => {
@@ -86,6 +100,18 @@ function Home() {
             Join a Class
           </Button>
         </form>
+        {profileIncomplete && ( // Only show the button if the profile is incomplete
+          <Button
+            className="create-class-button"
+            variant="contained"
+            color="primary"
+            onClick={handleRedirectToProfile}
+            fullWidth
+            style={{ marginTop: '20px' }}
+          >
+            Complete Profile
+          </Button>
+        )}
         {localStorage.getItem("userType") === "Professor" ? (
           <>
             <Typography variant="h6" className="separator-text">
