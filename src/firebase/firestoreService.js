@@ -264,7 +264,6 @@ export async function getGroups(
     if (classroomSnapshot.exists()) {
       const classroom = classroomSnapshot.data();
       console.log("Getting Groups... :");
-      console.log("Set Groups:", setGroups);
       console.log("Locked groups:", lockedGroups);
       console.log("Passed members:", passedMembers);
       console.log("Group size:", groupSize);
@@ -378,24 +377,36 @@ async function saveGroupingData(roomId, groupingData) {
   const now = new Date().toISOString();
 
   try {
-    const smartMatchDoc = doc(smartMatchRef);
+    // Save the main grouping data without nested arrays
+    const smartMatchDoc = doc(smartMatchRef, "summary");
     await setDoc(smartMatchDoc, {
-      groupings: groupingData.groupings,
-      teamwork_compatibilities: groupingData.teamwork_compatibilities,
-      individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities,
-      personality_compatibilities: groupingData.personality_compatibilities,
-      individual_personality_compatibilities: groupingData.individual_personality_compatibilities,
-      availability_compatibilities: groupingData.availability_compatibilities,
-      individual_availability_compatibilities: groupingData.individual_availability_compatibilities,
-      group_compatibilities: groupingData.group_compatibilities,
       createdAt: now,
+      group_compatibilities: groupingData.group_compatibilities,
     });
+
+    // Save each group separately
+    await Promise.all(
+      groupingData.groupings.map(async (group, index) => {
+        const groupDoc = doc(smartMatchRef, `group_${index}`);
+        await setDoc(groupDoc, {
+          members: group,
+          teamwork_compatibilities: groupingData.teamwork_compatibilities[index],
+          individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities[index],
+          personality_compatibilities: groupingData.personality_compatibilities[index],
+          individual_personality_compatibilities: groupingData.individual_personality_compatibilities[index],
+          availability_compatibilities: groupingData.availability_compatibilities[index],
+          individual_availability_compatibilities: groupingData.individual_availability_compatibilities[index],
+          createdAt: now,
+        });
+      })
+    );
 
     console.log("Grouping data saved successfully");
   } catch (error) {
     console.error("Error saving grouping data:", error);
   }
 }
+
 
 function generateUUID() {
   let d = new Date().getTime();
