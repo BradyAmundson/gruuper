@@ -61,6 +61,17 @@
   border-color: transparent; /* Hide border on hover */
 }
 
+.forgot-password {
+  font-size: 10px;
+  margin: 10px;
+  background: white;
+  color: #1e5799;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
 .auth-buttons {
   display: flex;
   flex-direction: column;
