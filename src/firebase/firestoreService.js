@@ -372,7 +372,7 @@ export async function getGroups(
 
 async function saveGroupingData(roomId, groupingData) {
   const groupingDataRef = doc(db, "grouping_data", roomId);
-  const smartMatchId = generateUUID();
+  const smartMatchId = generateUUID();  // Ensure this is unique for each invocation
   const smartMatchRef = collection(groupingDataRef, smartMatchId);
   const now = new Date().toISOString();
 
@@ -401,11 +401,12 @@ async function saveGroupingData(roomId, groupingData) {
       })
     );
 
-    console.log("Grouping data saved successfully");
+    console.log("Grouping data saved successfully under smartMatchId:", smartMatchId);
   } catch (error) {
     console.error("Error saving grouping data:", error);
   }
 }
+
 
 
 function generateUUID() {
