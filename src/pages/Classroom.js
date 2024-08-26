@@ -628,6 +628,7 @@ const Classroom = () => {
           return;
         }
         setClassroom(fetchedClassroom);
+        setMinGroupSize(fetchedClassroom.minGroupSize || 2);
         setState(fetchedClassroom.state || "Lobby");
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -875,7 +876,8 @@ const Classroom = () => {
         deletedGroups,
         className,
         groupedMembers,
-        ungroupedMembers
+        ungroupedMembers,
+        minGroupSize
       );
       setShowSaveReminder(false);
 
