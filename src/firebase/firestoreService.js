@@ -122,18 +122,25 @@ export async function saveGroups(
 ) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
-  console.log("Saving groups...");
-  console.log("New groups:", newGroups);
-  console.log("Deleted groups:", deletedGroups);
-  console.log("Classroom ID:", roomId);
-  console.log("groupedMembers:", groupedMembers);
-  console.log("ungroupedMembers:", ungroupedMembers);
+  console.log("Starting saveGroups process...");
+  console.log("Room ID:", roomId);
+  console.log("Class Name:", className);
+  console.log("New Groups:", JSON.stringify(newGroups, null, 2));
+  console.log("Deleted Groups:", JSON.stringify(deletedGroups, null, 2));
+  console.log("Grouped Members:", groupedMembers);
+  console.log("Ungrouped Members:", ungroupedMembers);
+  console.log("Minimum Group Size:", minGroupSize);
 
   try {
     const classroomSnapshot = await getDoc(classroomRef);
-    const classroomData = classroomSnapshot.exists()
-      ? classroomSnapshot.data()
-      : {};
+    if (!classroomSnapshot.exists()) {
+      console.error("Classroom document does not exist for Room ID:", roomId);
+      return { success: false, error: "Classroom does not exist" };
+    }
+
+    const classroomData = classroomSnapshot.data();
+    console.log("Existing Classroom Data:", JSON.stringify(classroomData, null, 2));
+
     const existingGroups = classroomData.groups || {};
     const existingDeletedGroups = classroomData.deletedGroups || {};
 
@@ -161,18 +168,23 @@ export async function saveGroups(
           ? [...group.logMessages, `Group deleted at ${now}`]
           : [`Group deleted at ${now}`],
       };
+      console.log(`Group ${key} marked as deleted. New Index: ${index}`);
     });
 
     const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
       const acc = await accPromise;
+      console.log(`Processing new group: ${key} with members: ${group.members.join(", ")}`);
 
       const memberConsentStatuses = await Promise.all(
         group.members.map(async (memberId) => {
           const userRef = doc(db, "users", memberId);
           const userSnapshot = await getDoc(userRef);
           if (userSnapshot.exists()) {
-            return userSnapshot.data().consent === true;
+            const consentStatus = userSnapshot.data().consent === true;
+            console.log(`Consent status for user ${memberId}: ${consentStatus}`);
+            return consentStatus;
           }
+          console.warn(`User document does not exist for Member ID: ${memberId}`);
           return false;
         })
       );
@@ -180,6 +192,7 @@ export async function saveGroups(
       const allMembersDataConsent = memberConsentStatuses.every(
         (status) => status === true
       );
+      console.log(`All members data consent for group ${key}: ${allMembersDataConsent}`);
 
       acc[key] = {
         members: group.members,
@@ -206,13 +219,14 @@ export async function saveGroups(
           await updateDoc(userRef, {
             groupIdInClassroom: updatedGroupIdInClassroom,
           });
+          console.log(`Updated group ID in classroom for user ${memberId}`);
+        } else {
+          console.warn(`User document does not exist for Member ID: ${memberId}`);
         }
       }
 
       return acc;
-    },
-      Promise.resolve({})
-    );
+    }, Promise.resolve({}));
 
     const safeUngroupedMembers = Array.isArray(ungroupedMembers)
       ? ungroupedMembers
@@ -229,6 +243,9 @@ export async function saveGroups(
           await updateDoc(userRef, {
             groupIdInClassroom: updatedGroupIdInClassroom,
           });
+          console.log(`Removed group ID from classroom for ungrouped user ${memberId}`);
+        } else {
+          console.warn(`User document does not exist for Member ID: ${memberId}`);
         }
       }
     }
@@ -243,12 +260,14 @@ export async function saveGroups(
       minGroupSize: minGroupSize,
     });
 
+    console.log("Groups saved successfully for Room ID:", roomId);
     return { success: true };
   } catch (error) {
     console.error("Error saving groups:", error);
     return { success: false, error };
   }
 }
+
 
 export async function getGroups(
   roomId,
