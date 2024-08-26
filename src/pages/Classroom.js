@@ -600,9 +600,12 @@ const Classroom = () => {
 
         setUnmatchedMembers(remainingUnmatched);
 
+        deletedgroups = {}
+
         saveGroups(
           roomId,
           newGroups,
+          deletedgroups,
           className,
           Object.values(newGroups).flatMap((group) => group.members),
           remainingUnmatched
