@@ -11,7 +11,7 @@ import { getUser, getDocument, getArchivedClassroomsForInstructor } from "../fir
 
 const Classrooms = () => {
   const [classrooms, setClassrooms] = useState([]);
-  const [archivedClassrooms, setArchivedClassrooms] = useState([]); // Initialize as an empty array
+  const [archivedClassrooms, setArchivedClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const userType = localStorage.getItem("userType");
@@ -42,7 +42,6 @@ const Classrooms = () => {
           setClassrooms(classroomDetails.filter(Boolean));
         }
 
-        // Fetch archived classrooms
         if (userType === "Professor") {
           const archivedClassroomDetails = await getArchivedClassroomsForInstructor(userId);
           console.log("archivedClassroomDetails", archivedClassroomDetails);
