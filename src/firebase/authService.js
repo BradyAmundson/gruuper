@@ -234,7 +234,7 @@ export function SignInWithEmail() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
-  const supportEmail = "gruuper.team@gmail.com";
+  const supportEmail = "support@gruuper.app";
   const body = "#### Please describe your issue here. ####";
 
   const navigate = useNavigate();
