@@ -220,8 +220,6 @@ export const SmartMatch = async (students, groupSize) => {
             group_size: groupSize,
         });
 
-        console.log("requestBody:", requestBody);
-
         const token = await generateToken();
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");

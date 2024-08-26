@@ -376,61 +376,20 @@ async function saveGroupingData(roomId, groupingData) {
   const smartMatchId = generateUUID();
   const smartMatchRef = collection(groupingDataRef, smartMatchId);
   const now = new Date().toISOString();
-  const timestamp = now.replace(/[:\-T.]/g, "");
 
   try {
-    const smartMatchDoc = doc(smartMatchRef, timestamp);
-
-    const flattenedGroupings = groupingData.groupings.reduce((acc, group, index) => {
-      group.forEach((member, memberIndex) => {
-        acc[`group_${index}_member_${memberIndex}`] = member;
-      });
-      return acc;
-    }, {});
-
-    const flattenedTeamworkCompatibilities = groupingData.teamwork_compatibilities.reduce((acc, compatibility, index) => {
-      acc[`teamwork_compatibility_${index}`] = compatibility;
-      return acc;
-    }, {});
-
-    const flattenedIndividualTeamworkCompatibilities = groupingData.individual_teamwork_compatibilities.reduce((acc, compatibility, index) => {
-      acc[`individual_teamwork_compatibility_${index}`] = compatibility;
-      return acc;
-    }, {});
-
-    const flattenedPersonalityCompatibilities = groupingData.personality_compatibilities.reduce((acc, compatibility, index) => {
-      acc[`personality_compatibility_${index}`] = compatibility;
-      return acc;
-    }, {});
-
-    const flattenedIndividualPersonalityCompatibilities = groupingData.individual_personality_compatibilities.reduce((acc, compatibility, index) => {
-      acc[`individual_personality_compatibility_${index}`] = compatibility;
-      return acc;
-    }, {});
-
-    const flattenedAvailabilityCompatibilities = groupingData.availability_compatibilities.reduce((acc, compatibility, index) => {
-      acc[`availability_compatibility_${index}`] = compatibility;
-      return acc;
-    }, {});
-
-    const flattenedIndividualAvailabilityCompatibilities = groupingData.individual_availability_compatibilities.reduce((acc, compatibility, index) => {
-      acc[`individual_availability_compatibility_${index}`] = compatibility;
-      return acc;
-    }, {});
-
-    const dataToSave = {
-      ...flattenedGroupings,
-      ...flattenedTeamworkCompatibilities,
-      ...flattenedIndividualTeamworkCompatibilities,
-      ...flattenedPersonalityCompatibilities,
-      ...flattenedIndividualPersonalityCompatibilities,
-      ...flattenedAvailabilityCompatibilities,
-      ...flattenedIndividualAvailabilityCompatibilities,
+    const smartMatchDoc = doc(smartMatchRef);
+    await setDoc(smartMatchDoc, {
+      groupings: groupingData.groupings,
+      teamwork_compatibilities: groupingData.teamwork_compatibilities,
+      individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities,
+      personality_compatibilities: groupingData.personality_compatibilities,
+      individual_personality_compatibilities: groupingData.individual_personality_compatibilities,
+      availability_compatibilities: groupingData.availability_compatibilities,
+      individual_availability_compatibilities: groupingData.individual_availability_compatibilities,
       group_compatibilities: groupingData.group_compatibilities,
       createdAt: now,
-    };
-
-    await setDoc(smartMatchDoc, dataToSave);
+    });
 
     console.log("Grouping data saved successfully");
   } catch (error) {
@@ -438,11 +397,10 @@ async function saveGroupingData(roomId, groupingData) {
   }
 }
 
-
 function generateUUID() {
   let d = new Date().getTime();
-  let d2 = (performance && performance.now && performance.now() * 1000) || 0;
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     let r = Math.random() * 16;
     if (d > 0) {
       r = (d + r) % 16 | 0;
@@ -451,7 +409,7 @@ function generateUUID() {
       r = (d2 + r) % 16 | 0;
       d2 = Math.floor(d2 / 16);
     }
-    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
   });
 }
 
