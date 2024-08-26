@@ -725,7 +725,7 @@ const Classroom = () => {
       setTimeout(() => {
         setIsPairingModalOpen(false);
         updateGroups(newGroups, method, passedLockedGroups, allMembers);
-        window.location.reload();
+        // window.location.reload();
       }, 8000);
     } else {
       updateGroups(newGroups, method, passedLockedGroups, allMembers);

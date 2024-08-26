@@ -430,30 +430,36 @@ export async function getGroups(
 async function saveGroupingData(roomId, groupingData) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
-  console.log("classroomRef", classroomRef);
-  console.log("groupingData", groupingData);
+
   try {
-    // Update the existing classroom document with the new grouping data
+    // Generate a unique document name based on the current timestamp
+    const documentName = now;
+
+    // Create a new instance of grouping data with the document name as the key
+    const groupingDataInstance = {
+      group_compatibilities: groupingData.group_compatibilities,
+      groups: groupingData.groupings.map((group, index) => ({
+        members: group,
+        teamwork_compatibilities: groupingData.teamwork_compatibilities[index],
+        individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities[index],
+        personality_compatibilities: groupingData.personality_compatibilities[index],
+        individual_personality_compatibilities: groupingData.individual_personality_compatibilities[index],
+        availability_compatibilities: groupingData.availability_compatibilities[index],
+        individual_availability_compatibilities: groupingData.individual_availability_compatibilities[index],
+      })),
+    };
+
+    // Update the classroom document with the new grouping data instance
     await updateDoc(classroomRef, {
-      groupingData: {
-        createdAt: now,
-        group_compatibilities: groupingData.group_compatibilities,
-        groups: groupingData.groupings.map((group, index) => ({
-          members: group,
-          teamwork_compatibilities: groupingData.teamwork_compatibilities[index],
-          individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities[index],
-          personality_compatibilities: groupingData.personality_compatibilities[index],
-          individual_personality_compatibilities: groupingData.individual_personality_compatibilities[index],
-          availability_compatibilities: groupingData.availability_compatibilities[index],
-          individual_availability_compatibilities: groupingData.individual_availability_compatibilities[index],
-        })),
-      },
+      [`groupingData.${documentName}`]: groupingDataInstance,
     });
 
     console.log("Grouping data saved successfully in classroom:", roomId);
   } catch (error) {
     console.error("Error saving grouping data:", error);
   }
+}
+
 }
 
 
