@@ -155,6 +155,8 @@ export async function saveGroups(
 
     const updatedGroups = Object.entries(newGroups).reduce(async (accPromise, [key, group]) => {
       const acc = await accPromise;
+      console.log(`Processing group: ${key}, Members: ${group.members.join(", ")}`);
+
       const memberConsentStatuses = await Promise.all(
         group.members.map(async (memberId) => {
           const userRef = doc(db, "users", memberId);
