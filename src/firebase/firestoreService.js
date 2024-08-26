@@ -430,7 +430,8 @@ export async function getGroups(
 async function saveGroupingData(roomId, groupingData) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
-
+  Console.log("groupingData", groupingData);
+  console.log("classroomRef", classroomRef);
   try {
     // Update the existing classroom document with the new grouping data
     await updateDoc(classroomRef, {
