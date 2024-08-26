@@ -80,14 +80,17 @@ export async function joinClassroom(roomId, userId, setError) {
       const members = classroomData.members;
       const instructorId = classroomData.instructorId;
       const currentCodes = usrDocumentSnapshot.data().classroomCodes || [];
-      const instructorsWithAccess = usrDocumentSnapshot.data().instructorsWithAccess || [];
+      const instructorsWithAccess =
+        usrDocumentSnapshot.data().instructorsWithAccess || [];
 
       if (currentCodes.includes(roomId)) {
         return roomId;
       }
 
       const updatedCodes = [...currentCodes, roomId];
-      const updatedInstructorsWithAccess = [...new Set([...instructorsWithAccess, instructorId])];
+      const updatedInstructorsWithAccess = [
+        ...new Set([...instructorsWithAccess, instructorId]),
+      ];
 
       members.push(userId);
       await updateDoc(documentRef, { members: members });
@@ -114,7 +117,8 @@ export async function saveGroups(
   deletedGroups,
   className,
   groupedMembers,
-  ungroupedMembers
+  ungroupedMembers,
+  minGroupSize = 2
 ) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
@@ -167,7 +171,9 @@ export async function saveGroups(
         })
       );
 
-      const allMembersDataConsent = memberConsentStatuses.every(status => status === true);
+      const allMembersDataConsent = memberConsentStatuses.every(
+        (status) => status === true
+      );
 
       acc[key] = {
         members: group.members,
@@ -188,10 +194,12 @@ export async function saveGroups(
             ...userData.groupIdInClassroom,
             [roomId]: {
               groupId: key,
-              members: group.members
-            }
+              members: group.members,
+            },
           };
-          await updateDoc(userRef, { groupIdInClassroom: updatedGroupIdInClassroom });
+          await updateDoc(userRef, {
+            groupIdInClassroom: updatedGroupIdInClassroom,
+          });
         }
       }
 
@@ -226,6 +234,7 @@ export async function saveGroups(
       ungroupedMembers: safeUngroupedMembers,
       className,
       updatedAt: now,
+      minGroupSize: minGroupSize,
     });
 
     return { success: true };
@@ -255,9 +264,8 @@ export async function getGroups(
       console.log("Group size:", groupSize);
       console.log("Smart match is... ", smartMatch);
 
-
       let shuffledGroups;
-      let groupingData;  // To hold additional data returned by SmartMatch
+      let groupingData; // To hold additional data returned by SmartMatch
 
       if (smartMatch) {
         const students = await Promise.all(
@@ -428,8 +436,8 @@ async function saveGroupingData(roomId, groupingData) {
 
 function generateUUID() {
   let d = new Date().getTime();
-  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+  let d2 = (performance && performance.now && performance.now() * 1000) || 0;
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     let r = Math.random() * 16;
     if (d > 0) {
       r = (d + r) % 16 | 0;
@@ -438,7 +446,7 @@ function generateUUID() {
       r = (d2 + r) % 16 | 0;
       d2 = Math.floor(d2 / 16);
     }
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
@@ -479,7 +487,6 @@ export async function createUser(firstName, lastName, userId, userType, email) {
 }
 
 export async function getUser(userId) {
-
   const userRef = doc(db, "users", userId);
 
   try {
@@ -504,7 +511,6 @@ export async function getUser(userId) {
     throw error;
   }
 }
-
 
 export async function updateUser(userId, data) {
   try {
@@ -593,7 +599,6 @@ export async function saveClassroomSettings(roomId, settings) {
   }
 }
 
-
 export const archiveClassroom = async (roomId) => {
   try {
     const db = getFirestore();
@@ -606,7 +611,7 @@ export const archiveClassroom = async (roomId) => {
       const archiveRef = doc(db, "classroomArchive", roomId);
       await setDoc(archiveRef, {
         ...classroomData,
-        archivedAt: new Date().toISOString()
+        archivedAt: new Date().toISOString(),
       });
 
       await deleteDoc(classroomRef);
@@ -661,7 +666,6 @@ export async function checkProfileCompletion(userId) {
     return false;
   }
 }
-
 
 export async function getArchivedClassroomsForInstructor(instructorId) {
   try {
