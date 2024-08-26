@@ -4,12 +4,14 @@ import Button from "@mui/material/Button";
 import { updateUser } from "../firebase/firestoreService";
 import { Viewer } from "@react-pdf-viewer/core";
 import { Worker } from "@react-pdf-viewer/core";
+import { useNavigate } from "react-router-dom";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 const pdfUrl = "/docs/Informed Consent Form Updated RCR 5.9.23.pdf";
 
 Modal.setAppElement("#root");
 
 const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
+  const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   const customStyles = {
     content: {
@@ -38,11 +40,17 @@ const IRBConsentPopUp = ({ isOpen, onRequestClose }) => {
   const handleAgree = async () => {
     await updateUser(userId, { consent: true });
     onRequestClose();
+    if (localStorage.getItem("userType") !== "Professor") {
+      navigate("/edit-profile");
+    }
   };
 
   const handleDisagree = async () => {
     await updateUser(userId, { consent: false });
     onRequestClose();
+    if (localStorage.getItem("userType") !== "Professor") {
+      navigate("/edit-profile");
+    }
   };
 
   const buttonContainerStyle = {
