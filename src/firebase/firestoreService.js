@@ -240,6 +240,8 @@ export async function saveGroups(
           const userData = userSnapshot.data();
           const updatedGroupIdInClassroom = { ...userData.groupIdInClassroom };
           delete updatedGroupIdInClassroom[roomId];
+          console.log("userData :", userData);
+          console.log("Updated groupIdInClassroom:", updatedGroupIdInClassroom);
           await updateDoc(userRef, {
             groupIdInClassroom: updatedGroupIdInClassroom,
           });
@@ -248,6 +250,11 @@ export async function saveGroups(
         }
       }
     }
+
+    console.log("Updated groups:", updatedGroups);
+    console.log("Combined deleted groups:", combinedDeletedGroups);
+    console.log("Grouped members:", groupedMembers);
+    console.log("Ungrouped members:", safeUngroupedMembers);
 
     await updateDoc(classroomRef, {
       groups: updatedGroups,
