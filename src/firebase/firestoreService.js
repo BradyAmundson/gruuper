@@ -174,6 +174,7 @@ export async function saveGroups(
               return {
                 memberId,
                 firstName: userData.firstName,
+                lastName: userData.lastName,
                 consent: userData.consent === true,
               };
             }
@@ -215,7 +216,7 @@ export async function saveGroups(
                 }),
               },
             };
-            console.log("");
+            console.log("HERE");
             console.log("Member :", memberId);
             console.log("userData :", userData);
             console.log("Updated groupIdInClassroom:", updatedGroupIdInClassroom);
