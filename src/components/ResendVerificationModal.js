@@ -16,6 +16,7 @@ const ResendVerificationModal = ({ isOpen, onRequestClose }) => {
             const user = userCredential.user;
 
             console.log("user", user);
+            auth.signOut();
 
             if (!user.emailVerified) {
                 // Send the verification email
@@ -25,9 +26,8 @@ const ResendVerificationModal = ({ isOpen, onRequestClose }) => {
             } else {
                 setError("Email is already verified.");
             }
-
-            // Optionally sign out the user after sending the email
             auth.signOut();
+
         } catch (error) {
             setError("Error sending verification email. Please check your credentials and try again.");
         }
