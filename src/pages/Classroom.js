@@ -268,6 +268,8 @@ const Classroom = () => {
   };
 
   const [deadline, setDeadline] = useState(defaultDeadline());
+  const [tempDeadline, setTempDeadline] = useState(defaultDeadline()); // Temp deadline for confirmation
+
   const [isLiveGrouping, setIsLiveGrouping] = useState(false);
   const [minGroupSize, setMinGroupSize] = useState(2);
   const [showSaveReminder, setShowSaveReminder] = useState(false);
@@ -275,6 +277,16 @@ const Classroom = () => {
   const showReminder = () => {
     setShowSaveReminder(true);
   };
+
+  const handleDeadlineChange = (e) => {
+    setTempDeadline(e.target.value);
+  };
+
+  const handleConfirmDeadline = () => {
+    setDeadline(tempDeadline);
+    saveDeadlineToFirestore(tempDeadline);
+  };
+
 
   const saveDeadlineToFirestore = async (newDeadline) => {
     try {
@@ -1088,18 +1100,39 @@ const Classroom = () => {
                 )}
                 <p
                   style={{
-                    marginTop: "3rem",
-                    fontSize: "0.75rem",
+                    marginTop: "2rem",
+                    fontSize: "0.8rem",
+                    color: "#333",
+                    textAlign: "center",
+                    letterSpacing: "0.5px",
+                    lineHeight: "1.5",
+                    fontStyle: "italic",
                   }}
                 >
-                  Choose a deadline below:
+                  Choose a new deadline below:
                 </p>
                 <input
                   type="datetime-local"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
+                  value={tempDeadline}
+                  onChange={handleDeadlineChange}
                   className="deadline-picker"
                 />
+                <button
+                  className="btn-confirm-deadline"
+                  onClick={handleConfirmDeadline}
+                  style={{
+                    marginBottom: "1rem",
+                    backgroundColor: "#8D8D8D",
+                    color: "white",
+                    padding: "5px 10px",
+                    borderRadius: "5px",
+                    fontSize: "0.65rem",
+                    cursor: "pointer",
+                    textAlign: "center",
+                  }}
+                >
+                  Confirm Deadline
+                </button>
                 <button
                   className="btn-start-grouping"
                   onClick={handleStateChange}
