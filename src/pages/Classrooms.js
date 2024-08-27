@@ -44,7 +44,6 @@ const Classrooms = () => {
 
         if (userType === "Professor") {
           const archivedClassroomDetails = await getArchivedClassroomsForInstructor(userId);
-          console.log("archivedClassroomDetails", archivedClassroomDetails);
           const formattedArchivedClassrooms = archivedClassroomDetails.map((classroom) => ({
             code: classroom.id,
             name: classroom.className || "Unnamed",

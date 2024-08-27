@@ -2,10 +2,6 @@ import { generateToken } from "../api/tokenFetch";
 
 export const smartMatchGroups = async (students, groupSize) => {
     try {
-        console.log("Starting SmartMatch 2.0 grouping...");
-        console.log("Students:", students);
-        console.log("Group Size:", groupSize);
-        console.log("JSON:", JSON.stringify({ students, group_size: groupSize }));
         const preToken = await generateToken();
         const token = JSON.parse(preToken).access_token;
 
@@ -21,7 +17,6 @@ export const smartMatchGroups = async (students, groupSize) => {
             }
         );
 
-        console.log("API Response Status:", response.status);
 
         if (!response.ok) {
             throw new Error(
@@ -30,7 +25,6 @@ export const smartMatchGroups = async (students, groupSize) => {
         }
 
         const data = await response.json();
-        console.log("API Response Data:", data);
 
         // Convert the result to the expected format similar to your randomizeGroups function
         const groups = {};
@@ -45,7 +39,6 @@ export const smartMatchGroups = async (students, groupSize) => {
             };
         });
 
-        console.log("Generated Groups:", groups);
         return groups;
     } catch (error) {
         console.error("Error with SmartMatch 2.0 grouping:", error);

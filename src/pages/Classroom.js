@@ -310,7 +310,6 @@ const Classroom = () => {
       await saveClassroomSettings(roomId, { ...settings, deadline });
       const updatedClassroom = await getDocument("classrooms", roomId);
       setClassroom(updatedClassroom);
-      console.log("settings uopdate name:", updatedClassroom.className);
       setClassName(updatedClassroom.className);
     } catch (error) {
       console.error("Failed to save settings:", error);
@@ -548,7 +547,6 @@ const Classroom = () => {
           const ungroupedMembers = members.filter(
             (member) => !groupedMembers.has(member)
           );
-          console.log("fetch ungroupedMembers:", ungroupedMembers);
           setUnmatchedMembers(ungroupedMembers); // Store ungrouped members
         } else {
           console.error("Failed to fetch classroom data");
@@ -653,12 +651,10 @@ const Classroom = () => {
     if (state === "Lobby") {
       setState("Grouping");
       updateClassroomState(roomId, "Grouping");
-      console.log("State changed to: Grouping");
     } else if (state === "Grouping") {
       setState("LiveGrouping");
       setIsLiveGrouping(true);
       updateClassroomState(roomId, "LiveGrouping");
-      console.log("State changed to: LiveGrouping");
     }
   };
 

@@ -53,9 +53,7 @@ function Home() {
 
     const testSmartMatch = async () => {
       try {
-        console.log("Starting SmartMatch 2.0 Grouping Test...");
         // const result = await SmartMatch();
-        // console.log("SmartMatch 2.0 Grouping Result: SMARTMATRCG", result);
       } catch (error) {
         console.error("Error in SmartMatch 2.0:", error);
       }

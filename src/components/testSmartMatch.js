@@ -54,17 +54,9 @@ const groupSize = 2;
 
 async function testSmartMatch() {
     try {
-        console.log("Starting SmartMatch 2.0 Grouping Test...");
-
-        // Log the student data and group size before the request
-        console.log("Test Students Data:", JSON.stringify(testStudents, null, 2));
-        console.log("Group Size:", groupSize);
 
         // Run the SmartMatch 2.0 grouping algorithm
         const result = await smartMatchGroups(testStudents, groupSize);
-
-        console.log("SmartMatch 2.0 Grouping Result:");
-        console.log(JSON.stringify(result, null, 2));
     } catch (error) {
         console.error("Error in SmartMatch 2.0:", error);
     }

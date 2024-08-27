@@ -42,7 +42,6 @@ export const sendBulkEmails = async (roomId, subject, content) => {
     }
 
     const data = await response.json();
-    console.log("Emails sent:", data);
     return data;
   } catch (error) {
     console.error("Error sending emails:", error);
