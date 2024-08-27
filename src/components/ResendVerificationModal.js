@@ -15,6 +15,8 @@ const ResendVerificationModal = ({ isOpen, onRequestClose }) => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
+            console.log("user", user);
+
             if (!user.emailVerified) {
                 // Send the verification email
                 await sendEmailVerification(user);

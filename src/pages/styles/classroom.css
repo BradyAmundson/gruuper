@@ -482,6 +482,7 @@ h2 {
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 10; /* Make sure this is above other content */
@@ -490,7 +491,7 @@ h2 {
 .loading-message {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  color: #333;
+  color: #fafafa;
 }
 
 .loading-spinner {

@@ -331,21 +331,39 @@ const Classroom = () => {
     setShowMembers(!showMembers);
   };
 
-  const toggleLockGroup = (index) => {
-    setClassroom((prevClassroom) => {
-      const newGroups = { ...prevClassroom.groups };
-      newGroups[index].locked = !newGroups[index].locked; // Toggle the locked state
-      saveGroups(
+  const [isSavingGroup, setIsSavingGroup] = useState(false);
+
+
+  const toggleLockGroup = async (index) => {
+    setIsSavingGroup(true); // Start loading
+
+    // Create a copy of the newGroups outside of setClassroom
+    const updatedGroups = { ...classroom.groups };
+    updatedGroups[index].locked = !updatedGroups[index].locked; // Toggle the locked state
+
+    try {
+      // Save the updated groups to Firestore
+      await saveGroups(
         roomId,
-        newGroups,
+        updatedGroups,
         {},
         className,
-        Object.values(newGroups).flatMap((group) => group.members),
+        Object.values(updatedGroups).flatMap((group) => group.members),
         unmatchedMembers
       );
-      return { ...prevClassroom, groups: newGroups };
-    });
+
+      // If save is successful, update the state
+      setClassroom((prevClassroom) => ({
+        ...prevClassroom,
+        groups: updatedGroups
+      }));
+    } catch (error) {
+      console.error("Failed to save groups:", error);
+    } finally {
+      setIsSavingGroup(false); // End loading
+    }
   };
+
 
   const moveMember = useCallback((fromIndexes, toGroupIndex) => {
     setClassroom((prevClassroom) => {
@@ -1027,6 +1045,15 @@ const Classroom = () => {
         <div className="loading-overlay">
           <div className="loading-message">
             {isSmartMatchLoading ? "Analyzing student data..." : "Randomizing students..."}
+          </div>
+          <div className="loading-spinner"></div>
+        </div>
+      )}
+
+      {isSavingGroup && (
+        <div className="loading-overlay">
+          <div className="loading-message">
+            Saving Locked Group...
           </div>
           <div className="loading-spinner"></div>
         </div>
