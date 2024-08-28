@@ -175,8 +175,6 @@ export function SignUpEmail({
       return;
     }
     try {
-      navigate("/about");
-
       // Proceed with sign-up
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -184,12 +182,12 @@ export function SignUpEmail({
         password
       );
       setLoading(true);
+      navigate("/about");
+      createUser(firstName, lastName, auth.currentUser.uid, userType, email);
       await sendEmailVerification(userCredential.user).then(() => {
         alert("Email sent (Check Spam folder)");
         setLoading(false);
       });
-
-      createUser(firstName, lastName, auth.currentUser.uid, userType, email);
       signOut(auth);
       localStorage.clear();
     } catch (error) {
