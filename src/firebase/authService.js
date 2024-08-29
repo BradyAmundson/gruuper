@@ -149,7 +149,6 @@ export function SignUpPhone() {
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          onKeyDown={handleKeyPress}
         />
       </label>
       <StyledButton onClick={handleVerifyCode}>Verify Code</StyledButton>
