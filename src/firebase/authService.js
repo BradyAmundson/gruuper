@@ -127,6 +127,13 @@ export function SignUpPhone() {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSignUp();
+    }
+  };
+
   return (
     <div>
       <h2>Phone Number Authentication</h2>
@@ -136,6 +143,7 @@ export function SignUpPhone() {
           type="tel"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
+          onKeyDown={handleKeyPress}
         />
       </label>
       <div id="recaptcha-container"></div>
@@ -149,6 +157,7 @@ export function SignUpPhone() {
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value)}
+          onKeyDown={handleKeyPress}
         />
       </label>
       <StyledButton onClick={handleVerifyCode}>Verify Code</StyledButton>
@@ -196,6 +205,13 @@ export function SignUpEmail({
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSignUp();
+    }
+  };
+
   return (
     <div>
       <div style={{ marginTop: "10px", width: "100%", textAlign: "center" }}>
@@ -206,6 +222,7 @@ export function SignUpEmail({
       ) : (
         <button
           onClick={handleSignUp}
+          onKeyDown={handleKeyPress}
           style={{
             background: "linear-gradient(145deg, #6db3f2, #1e5799)",
             color: "white",
@@ -260,6 +277,13 @@ export function SignInWithEmail() {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSignIn();
+    }
+  };
+
   return (
     <div>
       <div className="input-group" style={{ marginBottom: "15px" }}>
@@ -268,6 +292,7 @@ export function SignInWithEmail() {
             value={email}
             required
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={handleKeyPress}
             id="email"
             label="Email"
             type="search"
@@ -285,6 +310,7 @@ export function SignInWithEmail() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyPress}
             id="password"
             label="Password"
             type="password"
@@ -370,6 +396,13 @@ export function ResetPassword() {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleResetPassword();
+    }
+  };
+
   return (
     <div
       style={{
@@ -404,6 +437,7 @@ export function ResetPassword() {
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
+            onKeyDown={handleKeyPress}
             style={{
               width: "100%",
               padding: "10px",
@@ -421,6 +455,7 @@ export function ResetPassword() {
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            onKeyDown={handleKeyPress}
             style={{
               width: "100%",
               padding: "10px",
