@@ -127,13 +127,6 @@ export function SignUpPhone() {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSignUp();
-    }
-  };
-
   return (
     <div>
       <h2>Phone Number Authentication</h2>
@@ -143,7 +136,6 @@ export function SignUpPhone() {
           type="tel"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          onKeyDown={handleKeyPress}
         />
       </label>
       <div id="recaptcha-container"></div>
