@@ -154,8 +154,12 @@ const Classrooms = () => {
                 }}
               >
                 <ListItemText
-                  primary={`Classroom: ${name ? name : "Unnamed"} @ ${code}`}
-                  secondary={
+                  primary={
+                    <span style={{ textTransform: "uppercase" }}>
+                      Classroom: {name ? name : "Unnamed"}{" "}
+                      <span style={{ textTransform: "none" }}>@ {code}</span>
+                    </span>
+                  } secondary={
                     userType === "Student" && userGroup.length > 0
                       ? `Your Group: ${userGroup.join(", ")}`
                       : userType !== "Student"
