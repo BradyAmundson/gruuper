@@ -182,8 +182,9 @@ export function SignUpEmail({
         password
       );
       setLoading(true);
-      signOut(auth);
       createUser(firstName, lastName, auth.currentUser.uid, userType, email);
+      signOut(auth);
+
       await sendEmailVerification(userCredential.user).then(() => {
         alert("Email sent (Check Spam folder)");
         setLoading(false);
