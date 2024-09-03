@@ -182,13 +182,12 @@ export function SignUpEmail({
         password
       );
       setLoading(true);
-      navigate("/about");
+      signOut(auth);
       createUser(firstName, lastName, auth.currentUser.uid, userType, email);
       await sendEmailVerification(userCredential.user).then(() => {
         alert("Email sent (Check Spam folder)");
         setLoading(false);
       });
-      signOut(auth);
       localStorage.clear();
     } catch (error) {
       console.error("Error signing up:", error.message);
@@ -253,8 +252,8 @@ export function SignInWithEmail() {
         password
       );
       if (!auth.currentUser.emailVerified) {
-        alert("Must Verify Email (Check Spam folder)");
         signOut(auth);
+        alert("Must Verify Email (Check Spam folder)");
         return;
       }
       const userData = await getUser(userCredential.user.uid);
