@@ -176,9 +176,12 @@ export async function saveGroups(
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 consent: userData.consent === true,
+                email: userData.email,
               };
             }
-            console.warn(`User document does not exist for Member ID: ${memberId}`);
+            console.warn(
+              `User document does not exist for Member ID: ${memberId}`
+            );
             return { memberId, firstName: "", consent: false };
           })
         );
@@ -207,11 +210,14 @@ export async function saveGroups(
               [roomId]: {
                 groupId: key,
                 members: group.members.map((id) => {
-                  const memberDetail = memberDetails.find((m) => m.memberId === id);
+                  const memberDetail = memberDetails.find(
+                    (m) => m.memberId === id
+                  );
                   return {
                     id,
                     firstName: memberDetail?.firstName,
                     lastName: memberDetail?.lastName,
+                    email: memberDetail?.email,
                   };
                 }),
               },
@@ -220,7 +226,9 @@ export async function saveGroups(
               groupIdInClassroom: updatedGroupIdInClassroom,
             });
           } else {
-            console.warn(`User document does not exist for Member ID: ${memberId}`);
+            console.warn(
+              `User document does not exist for Member ID: ${memberId}`
+            );
           }
         }
 
@@ -245,7 +253,9 @@ export async function saveGroups(
             groupIdInClassroom: updatedGroupIdInClassroom,
           });
         } else {
-          console.warn(`User document does not exist for Member ID: ${memberId}`);
+          console.warn(
+            `User document does not exist for Member ID: ${memberId}`
+          );
         }
       }
     }
@@ -266,8 +276,6 @@ export async function saveGroups(
     return { success: false, error };
   }
 }
-
-
 
 export async function getGroups(
   roomId,
@@ -299,7 +307,6 @@ export async function getGroups(
           })
         );
 
-
         const smartMatchData = await SmartMatch(students, groupSize);
         groupingData = smartMatchData.result;
         shuffledGroups = {};
@@ -308,10 +315,11 @@ export async function getGroups(
             members: group,
             creationMethod: "SmartMatch",
             createdAt: new Date().toISOString(),
-            logMessages: [`Group created with SmartMatch at ${new Date().toISOString()}`],
+            logMessages: [
+              `Group created with SmartMatch at ${new Date().toISOString()}`,
+            ],
           };
         });
-
       } else {
         shuffledGroups = await randomizeGroups(passedMembers, groupSize);
       }
@@ -425,7 +433,6 @@ export async function getGroups(
 //   }
 // }
 
-
 async function saveGroupingData(roomId, groupingData) {
   const classroomRef = doc(db, "classrooms", roomId);
   const now = new Date().toISOString();
@@ -437,11 +444,16 @@ async function saveGroupingData(roomId, groupingData) {
       groups: groupingData.groupings.map((group, index) => ({
         members: group,
         teamwork_compatibilities: groupingData.teamwork_compatibilities[index],
-        individual_teamwork_compatibilities: groupingData.individual_teamwork_compatibilities[index],
-        personality_compatibilities: groupingData.personality_compatibilities[index],
-        individual_personality_compatibilities: groupingData.individual_personality_compatibilities[index],
-        availability_compatibilities: groupingData.availability_compatibilities[index],
-        individual_availability_compatibilities: groupingData.individual_availability_compatibilities[index],
+        individual_teamwork_compatibilities:
+          groupingData.individual_teamwork_compatibilities[index],
+        personality_compatibilities:
+          groupingData.personality_compatibilities[index],
+        individual_personality_compatibilities:
+          groupingData.individual_personality_compatibilities[index],
+        availability_compatibilities:
+          groupingData.availability_compatibilities[index],
+        individual_availability_compatibilities:
+          groupingData.individual_availability_compatibilities[index],
       })),
     };
 
@@ -449,17 +461,15 @@ async function saveGroupingData(roomId, groupingData) {
     await updateDoc(classroomRef, {
       [`groupingData.${documentName}`]: groupingDataInstance,
     });
-
   } catch (error) {
     console.error("Error saving grouping data:", error);
   }
 }
 
-
 function generateUUID() {
   let d = new Date().getTime();
-  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+  let d2 = (performance && performance.now && performance.now() * 1000) || 0;
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     let r = Math.random() * 16;
     if (d > 0) {
       r = (d + r) % 16 | 0;
@@ -468,7 +478,7 @@ function generateUUID() {
       r = (d2 + r) % 16 | 0;
       d2 = Math.floor(d2 / 16);
     }
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
@@ -636,7 +646,6 @@ export const archiveClassroom = async (roomId) => {
       });
 
       await deleteDoc(classroomRef);
-
     } else {
       console.error("Classroom does not exist.");
     }

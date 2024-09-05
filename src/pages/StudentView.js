@@ -51,16 +51,19 @@ const StudentView = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, "classrooms", roomId), async (doc) => {
-      if (doc.exists()) {
-        const fetchedClassroom = doc.data();
-        setClassroom(fetchedClassroom);
-        await organizeMembers(fetchedClassroom);
-      } else {
-        console.error("No classroom data found for roomId:", roomId);
+    const unsubscribe = onSnapshot(
+      doc(db, "classrooms", roomId),
+      async (doc) => {
+        if (doc.exists()) {
+          const fetchedClassroom = doc.data();
+          setClassroom(fetchedClassroom);
+          await organizeMembers(fetchedClassroom);
+        } else {
+          console.error("No classroom data found for roomId:", roomId);
+        }
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    );
 
     return () => unsubscribe();
   }, [roomId]);
@@ -76,8 +79,12 @@ const StudentView = () => {
           setTimeLeft(null);
         } else {
           const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+          );
           const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
           setTimeLeft({ days, hours, minutes, seconds });
@@ -92,7 +99,9 @@ const StudentView = () => {
     const alertShown = localStorage.getItem("profileAlertShown");
 
     if (!alertShown) {
-      alert("Don't forget to stop by your profile settings to make sure your information is up to date!");
+      alert(
+        "Don't forget to stop by your profile settings to make sure your information is up to date!"
+      );
       localStorage.setItem("profileAlertShown", "true");
     }
   }, []);
@@ -113,10 +122,12 @@ const StudentView = () => {
         if (memberId === userId) {
           return currentUserName;
         } else {
-          const memberData = classroom.groupIdInClassroom?.[roomId]?.members.find(
-            (member) => member.id === memberId
-          );
-          return memberData ? `${memberData.firstName} ${memberData.lastName}` : "Anonymous";
+          const memberData = classroom.groupIdInClassroom?.[
+            roomId
+          ]?.members.find((member) => member.id === memberId);
+          return memberData
+            ? `${memberData.firstName} ${memberData.lastName}`
+            : "Anonymous";
         }
       });
 
@@ -129,18 +140,20 @@ const StudentView = () => {
         return;
       }
 
-      const userGroupMembers = userGroup.map((member) =>
-        member.id === userId
-          ? currentUserName
-          : `${member.firstName} ${member.lastName}`
-      );
-
+      const userGroupMembers = userGroup.map((member) => {
+        return {
+          name:
+            member.id === userId
+              ? currentUserName
+              : `${member.firstName} ${member.lastName}`,
+          email: member.email,
+        };
+      });
       setGroupMembers(userGroupMembers);
     } catch (error) {
       console.error("Error organizing members:", error);
     }
   };
-
 
   if (loading) {
     return <div className="student-view-container">Loading...</div>;
@@ -157,17 +170,27 @@ const StudentView = () => {
       {classroom.state === "Lobby" && (
         <div className="lobby-state">
           <div className="lobby-message">
-            <p>Group formation will start when the countdown ends. If you want to pick your own group, please notify your professor before the countdown ends.</p>
+            <p>
+              Group formation will start when the countdown ends. If you want to
+              pick your own group, please notify your professor before the
+              countdown ends.
+            </p>
             {timeLeft ? (
               <p className="countdown-timer">
-                Time left: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                Time left: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}
+                m {timeLeft.seconds}s
               </p>
             ) : (
-              <p className="countdown-timer">The countdown has ended. Group formation is starting.</p>
+              <p className="countdown-timer">
+                The countdown has ended. Group formation is starting.
+              </p>
             )}
             <p>If you haven't already, be sure to complete your profile!</p>
             <div className="edit-profile-button-container">
-              <button className="edit-profile-button" onClick={() => navigate("/edit-profile")}>
+              <button
+                className="edit-profile-button"
+                onClick={() => navigate("/edit-profile")}
+              >
                 Edit Your Profile
               </button>
             </div>
@@ -180,10 +203,10 @@ const StudentView = () => {
             <h2 className="group-title">Your Group:</h2>
             <ul className="group-member-list">
               {groupMembers.length ? (
-                groupMembers.map((name, index) => {
+                groupMembers.map((groupMember, index) => {
                   const cloudWidth = 200;
                   const { beforeWidth, beforeHeight, afterWidth, afterHeight } =
-                    calculateCloudParts(name, cloudWidth);
+                    calculateCloudParts(groupMember.name, cloudWidth);
 
                   return (
                     <li
@@ -201,7 +224,11 @@ const StudentView = () => {
                           "--afterHeight": `${afterHeight}px`,
                         }}
                       >
-                        <span className="member-name">{name}</span>
+                        <span className="member-name">{groupMember.name}</span>
+                        <br />
+                        <a href={`mailto:${groupMember.email}`}>
+                          {groupMember.email}
+                        </a>
                       </div>
                     </li>
                   );
@@ -220,7 +247,9 @@ const StudentView = () => {
             {allMembers.map((name, index) => (
               <li
                 key={index}
-                className={`member-item ${name.includes(userId) ? "highlighted-member" : ""}`}
+                className={`member-item ${
+                  name.includes(userId) ? "highlighted-member" : ""
+                }`}
               >
                 <span className="member-name">{name}</span>
               </li>
@@ -228,7 +257,9 @@ const StudentView = () => {
           </ul>
         </div>
       </div>
-      <p className="contact-message">Please contact your professor for any group updates and inquiries.</p>
+      <p className="contact-message">
+        Please contact your professor for any group updates and inquiries.
+      </p>
     </div>
   );
 };
