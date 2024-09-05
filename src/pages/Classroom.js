@@ -258,6 +258,7 @@ const Classroom = () => {
 
   const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
   const [pairedGroups, setPairedGroups] = useState({});
+  const [isSavingGroups, setIsSavingGroups] = useState(false);
 
   const defaultDeadline = () => {
     const now = new Date();
@@ -268,7 +269,7 @@ const Classroom = () => {
   };
 
   const [deadline, setDeadline] = useState(defaultDeadline());
-  const [tempDeadline, setTempDeadline] = useState(defaultDeadline()); // Temp deadline for confirmation
+  const [tempDeadline, setTempDeadline] = useState(defaultDeadline());
 
   const [isLiveGrouping, setIsLiveGrouping] = useState(false);
   const [minGroupSize, setMinGroupSize] = useState(2);
@@ -325,7 +326,6 @@ const Classroom = () => {
     }
   };
 
-  // Show/Hide Members button position
   const buttonRightPosition = showMembers ? "400px" : "50px";
   const toggleMembers = () => {
     setShowMembers(!showMembers);
@@ -337,12 +337,10 @@ const Classroom = () => {
   const toggleLockGroup = async (index) => {
     setIsSavingGroup(true); // Start loading
 
-    // Create a copy of the newGroups outside of setClassroom
     const updatedGroups = { ...classroom.groups };
     updatedGroups[index].locked = !updatedGroups[index].locked; // Toggle the locked state
 
     try {
-      // Save the updated groups to Firestore
       await saveGroups(
         roomId,
         updatedGroups,
@@ -864,40 +862,47 @@ const Classroom = () => {
     }));
   }, [lockedGroups]);
 
-  const saveGroupsToFirestore = () => {
-    setClassroom((prevClassroom) => {
-      const currentGroups = prevClassroom.groups;
-      const newGroups = {};
-      const deletedGroups = {};
+  const saveGroupsToFirestore = async () => {
+    setIsSavingGroups(true);
+    try {
+      let newGroups = {};
+      let deletedGroups = {};
+      let groupedMembers = {}
+      let ungroupedMembers = {}
 
-      let newGroupIndex = 0;
+      setClassroom((prevClassroom) => {
+        const currentGroups = prevClassroom.groups;
+        let newGroupIndex = 0;
 
-      Object.keys(currentGroups).forEach((groupKey) => {
-        if (currentGroups[groupKey].members.length > 0) {
-          newGroups[newGroupIndex] = currentGroups[groupKey];
-          newGroupIndex++;
-        } else {
-          deletedGroups[groupKey] = {
-            ...currentGroups[groupKey],
-            deletedAt: new Date().toISOString(),
-            logMessages: currentGroups[groupKey].logMessages
-              ? [
-                ...currentGroups[groupKey].logMessages,
-                `Group deleted at ${new Date().toISOString()}`,
-              ]
-              : [`Group deleted at ${new Date().toISOString()}`],
-          };
-        }
+        Object.keys(currentGroups).forEach((groupKey) => {
+          if (currentGroups[groupKey].members.length > 0) {
+            newGroups[newGroupIndex] = currentGroups[groupKey];
+            newGroupIndex++;
+          } else {
+            deletedGroups[groupKey] = {
+              ...currentGroups[groupKey],
+              deletedAt: new Date().toISOString(),
+              logMessages: currentGroups[groupKey].logMessages
+                ? [
+                  ...currentGroups[groupKey].logMessages,
+                  `Group deleted at ${new Date().toISOString()}`,
+                ]
+                : [`Group deleted at ${new Date().toISOString()}`],
+            };
+          }
+        });
+
+        groupedMembers = Object.values(newGroups).flatMap(
+          (group) => group.members
+        );
+        ungroupedMembers = memberNames
+          .map((member) => member.id)
+          .filter((id) => !groupedMembers.includes(id));
+
+        return { ...prevClassroom, groups: newGroups };
       });
 
-      const groupedMembers = Object.values(newGroups).flatMap(
-        (group) => group.members
-      );
-      const ungroupedMembers = memberNames
-        .map((member) => member.id)
-        .filter((id) => !groupedMembers.includes(id));
-
-      saveGroups(
+      await saveGroups(
         roomId,
         newGroups,
         deletedGroups,
@@ -907,9 +912,11 @@ const Classroom = () => {
         minGroupSize
       );
       setShowSaveReminder(false);
-
-      return { ...prevClassroom, groups: newGroups };
-    });
+    } catch (error) {
+      console.error("Failed to save groups:", error);
+    } finally {
+      setIsSavingGroups(false);
+    }
   };
 
   const createNewGroup = async (fromIndexes) => {
@@ -1046,6 +1053,13 @@ const Classroom = () => {
           <div className="loading-message">
             {isSmartMatchLoading ? "Analyzing student data..." : "Randomizing students..."}
           </div>
+          <div className="loading-spinner"></div>
+        </div>
+      )}
+
+      {isSavingGroups && (
+        <div className="loading-overlay">
+          <div className="loading-message">Saving...</div>
           <div className="loading-spinner"></div>
         </div>
       )}

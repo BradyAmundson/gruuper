@@ -22,7 +22,6 @@ const ResendVerificationModal = ({ isOpen, onRequestClose }) => {
             );
             const user = userCredential.user;
 
-            console.log("user", user);
             auth.signOut();
 
 
