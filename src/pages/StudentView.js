@@ -3,6 +3,16 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getDocument, getUser } from "../firebase/firestoreService";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase.js";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 import "./styles/studentView.css";
 
 const calculateCloudParts = (name, cloudWidth) => {
@@ -43,6 +53,8 @@ const StudentView = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const cloudRef = useRef(null);
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   useEffect(() => {
     if (cloudRef.current) {
@@ -159,6 +171,14 @@ const StudentView = () => {
     return <div className="student-view-container">Loading...</div>;
   }
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div>
       <h1 className="classroom-header">
@@ -225,10 +245,6 @@ const StudentView = () => {
                         }}
                       >
                         <span className="member-name">{groupMember.name}</span>
-                        <br />
-                        <a href={`mailto:${groupMember.email}`}>
-                          {groupMember.email}
-                        </a>
                       </div>
                     </li>
                   );
@@ -239,6 +255,12 @@ const StudentView = () => {
                 </li>
               )}
             </ul>
+            <div className="contact-group-button-container">
+              <button className="btn contact-group-button" onClick={handleOpenModal}>
+                Contact Group
+              </button>
+            </div>
+
           </div>
         )}
         <div className="classroom-box">
@@ -247,9 +269,8 @@ const StudentView = () => {
             {allMembers.map((name, index) => (
               <li
                 key={index}
-                className={`member-item ${
-                  name.includes(userId) ? "highlighted-member" : ""
-                }`}
+                className={`member-item ${name.includes(userId) ? "highlighted-member" : ""
+                  }`}
               >
                 <span className="member-name">{name}</span>
               </li>
@@ -260,6 +281,35 @@ const StudentView = () => {
       <p className="contact-message">
         Please contact your professor for any group updates and inquiries.
       </p>
+
+      <Dialog open={isModalOpen} onClose={handleCloseModal} className="modal-backdrop">
+        <div className="modal-container">
+          <DialogTitle className="modal-title">Contact Group</DialogTitle>
+          <DialogContent className="modal-content">
+            <List>
+              {groupMembers.map((groupMember, index) => (
+                <ListItem key={index}>
+                  <ListItemText
+                    primary={groupMember.name}
+                    secondary={
+                      <a href={`mailto:${groupMember.email}`} className="email-link">
+                        {groupMember.email}
+                      </a>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </DialogContent>
+          <DialogActions className="modal-footer">
+            <Button onClick={handleCloseModal} className="btn btn-cancel">
+              Close
+            </Button>
+          </DialogActions>
+        </div>
+      </Dialog>
+
+
     </div>
   );
 };

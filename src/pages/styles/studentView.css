@@ -228,3 +228,119 @@ h2 {
   margin-top: 20px;
   text-align: center;
 }
+
+/* Contact Group button */
+.contact-group-button {
+  background: linear-gradient(
+    145deg,
+    #6db3f2,
+    #1e5799
+  ); /* Same gradient style */
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.contact-group-button:hover {
+  background-color: #154362;
+  transform: scale(0.95);
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+/* Modal Container */
+.modal-container {
+  position: relative; /* Change from absolute to relative */
+  max-width: 50%; /* Ensure the modal is responsive */
+  max-height: 50%; /* Prevent modal from overflowing vertically */
+  width: 600px; /* Fixed width */
+  background-color: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  font-family: 'Roboto', sans-serif;
+  margin-top: 30vh;
+}
+
+/* Modal Header */
+.modal-header {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #1e5799;
+  margin-bottom: 16px;
+}
+
+/* Modal Content */
+.modal-content {
+  font-size: 1.125rem;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+/* Modal Buttons */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.modal-footer .btn {
+  background: linear-gradient(145deg, #6db3f2, #1e5799);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.modal-footer .btn:hover {
+  background-color: #154362;
+  transform: scale(0.95);
+}
+
+/* Modal Close Button */
+.modal-close {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.modal-close:hover {
+  background-color: #d32f2f;
+  transform: scale(0.95);
+}
+
+/* Email link */
+.email-link {
+  color: #1e5799;
+  text-decoration: none;
+}
+
+.email-link:hover {
+  text-decoration: underline;
+}
