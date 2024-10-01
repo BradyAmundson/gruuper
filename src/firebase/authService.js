@@ -258,11 +258,18 @@ export function SignInWithEmail() {
         return;
       }
       const userData = await getUser(userCredential.user.uid);
-      localStorage.setItem("firstName", userData.firstName);
-      localStorage.setItem("lastName", userData.lastName);
-      localStorage.setItem("userType", userData.userType);
-      localStorage.setItem("userId", userCredential.user.uid);
-      navigate("/");
+      if (userData === null) {
+        signOut(auth);
+        navigate("/support");
+        alert("User not found, please email support@gruuper.app and we will take care of it ASAP :)")
+        return;
+      } else {
+        localStorage.setItem("firstName", userData.firstName);
+        localStorage.setItem("lastName", userData.lastName);
+        localStorage.setItem("userType", userData.userType);
+        localStorage.setItem("userId", userCredential.user.uid);
+        navigate("/");
+      }
     } catch (error) {
       setError(ErrorConversion(error));
     }

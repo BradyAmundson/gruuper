@@ -1,7 +1,7 @@
 import "./pages/styles/App.css";
 import IRBConsentPopUp from "./components/IRBConsentPopUp";
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -37,21 +37,26 @@ function App() {
     <Router>
       <div className="App">
         <Navbar />
-        {!user ? (
-          <AuthPage />
-        ) : (
-          <Routes>
-            <Route path="/about" element={<About />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/classroom" element={<Classroom />} />
-            <Route path="/classrooms" element={<Classrooms />} />
-            <Route path="/student-view" element={<StudentView />} />
-            <Route path="/" element={<Home />} />
-          </Routes>
-        )}
-        {!userConsent && (
+        <Routes>
+          {!user ? (
+            <>
+              <Route path="/" element={<AuthPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          ) : (
+            <>
+              <Route path="/about" element={<About />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
+              <Route path="/classroom" element={<Classroom />} />
+              <Route path="/classrooms" element={<Classrooms />} />
+              <Route path="/student-view" element={<StudentView />} />
+              <Route path="/" element={<Home />} />
+            </>
+          )}
+        </Routes>
+        {user && !userConsent && (
           <IRBConsentPopUp
             isOpen={showModal}
             onRequestClose={handleModalClose}
