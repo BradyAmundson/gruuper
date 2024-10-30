@@ -491,6 +491,7 @@ export async function saveClassname(roomId, className) {
   }
 }
 
+
 export async function createUser(firstName, lastName, userId, userType, email) {
   try {
     await setDoc(doc(db, "users", userId), {

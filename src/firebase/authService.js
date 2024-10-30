@@ -175,20 +175,21 @@ export function SignUpEmail({
       return;
     }
     try {
-      // Proceed with sign-up
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
       setLoading(true);
-      createUser(firstName, lastName, auth.currentUser.uid, userType, email);
+      await createUser(firstName, lastName, auth.currentUser.uid, userType, email);
       signOut(auth);
 
       await sendEmailVerification(userCredential.user).then(() => {
         alert("Email sent (Check Spam folder)");
-        setLoading(false);
       });
+
+      await signOut(auth);
+      setLoading(false);
       localStorage.clear();
     } catch (error) {
       console.error("Error signing up:", error.message);
